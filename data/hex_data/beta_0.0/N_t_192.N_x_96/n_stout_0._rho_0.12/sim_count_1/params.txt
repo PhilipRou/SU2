@@ -1,0 +1,23 @@
+Hexagonal Simulation with:
+    N_t     = 192
+    N_x     = 96 
+    β       = 0.0
+    hot     = true
+
+    N_metro = 3
+    N_over  = 1
+    N_therm = 50
+    N_meas  = 400
+
+    n_stout = 0
+    ρ       = 0.12
+    loops   = [[1, 1], [1, 2], [2, 1], [2, 2], [2, 3], [3, 2], [3, 3], [3, 4], [4, 3], [4, 4]]
+
+ 
+ϵ
+ 
+=
+ 
+0
+.
+2

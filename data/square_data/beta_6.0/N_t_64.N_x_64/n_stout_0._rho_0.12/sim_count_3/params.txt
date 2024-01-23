@@ -1,0 +1,15 @@
+N_t     = 64
+    N_x     = 64 
+    β       = 6.0
+    hot     = true
+
+    N_metro = 3
+    N_over  = 1
+    N_therm = 50
+    N_meas  = 1600
+    acc_wish= 0.9
+
+    n_stout = 0
+    ρ       = 0.12
+    loops   = [[1, 1]]
+  ϵ = 0.11281465886942886
