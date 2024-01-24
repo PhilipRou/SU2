@@ -17,52 +17,52 @@ function staple_dag_cube(U, μ, x, y, t)
     ym = mod1(y-1, NX)
     tm = mod1(t-1, NT) # (t + NT -2)%NT +1   
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
         # n  a  a / a  a  n 
         # 2  1  2 / 2  1  2
         # xp x  x / xp x  x
         # y  yp y / ym ym ym
         # t: const
-        a = U[2,xp,y,t] * adj_SU2(U[1,x,yp,t]) * adj_SU2(U[2,x,y,t])
-        b =  adj_SU2(U[2,xp,ym,t]) * adj_SU2(U[1,x,ym,t]) * U[2,x,ym,t]
+        a = U[2,xp,y,t] * adjoint(U[1,x,yp,t]) * adjoint(U[2,x,y,t])
+        b =  adjoint(U[2,xp,ym,t]) * adjoint(U[1,x,ym,t]) * U[2,x,ym,t]
         # n  a  a / a  a  n 
         # 3  1  3 / 3  1  3
         # xp x  x / xp x  x
         # y: const
         # t  tp t / tm tm tm
-        c = U[3,xp,y,t] * adj_SU2(U[1,x,y,tp]) * adj_SU2(U[3,x,y,t])
-        d = adj_SU2(U[3,xp,y,tm]) * adj_SU2(U[1,x,y,tm]) * U[3,x,y,tm]
+        c = U[3,xp,y,t] * adjoint(U[1,x,y,tp]) * adjoint(U[3,x,y,t])
+        d = adjoint(U[3,xp,y,tm]) * adjoint(U[1,x,y,tm]) * U[3,x,y,tm]
     elseif μ == 2
         # n  a  a / a  a  n 
         # 1  2  1 / 1  2  1
         # x  xp x / xm xm xm
         # yp y  y / yp y  y
         # t: const.
-        a = U[1,x,yp,t] * adj_SU2(U[2,xp,y,t]) * adj_SU2(U[1,x,y,t])
-        b = adj_SU2(U[1,xm,yp,t]) * adj_SU2(U[2,xm,y,t]) * U[1,xm,y,t]
+        a = U[1,x,yp,t] * adjoint(U[2,xp,y,t]) * adjoint(U[1,x,y,t])
+        b = adjoint(U[1,xm,yp,t]) * adjoint(U[2,xm,y,t]) * U[1,xm,y,t]
         # n  a  a / a  a  n 
         # 3  2  3 / 3  2  3
         # x: const.
         # yp y  y / yp y  y
         # t  tp t / tm tm tm 
-        c = U[3,x,yp,t] * adj_SU2(U[2,x,y,tp]) * adj_SU2(U[3,x,y,t])
-        d = adj_SU2(U[3,x,yp,tm]) * adj_SU2(U[2,x,y,tm]) * U[3,x,y,tm]
+        c = U[3,x,yp,t] * adjoint(U[2,x,y,tp]) * adjoint(U[3,x,y,t])
+        d = adjoint(U[3,x,yp,tm]) * adjoint(U[2,x,y,tm]) * U[3,x,y,tm]
     else #if μ == 3
         # n  a  a / a  a  n 
         # 1  3  1 / 1  3  1 
         # x  xp x / xm xm xm
         # y: const
         # tp t  t / tp t  t 
-        a = U[1,x,y,tp] * adj_SU2(U[3,xp,y,t]) * adj_SU2(U[1,x,y,t])
-        b = adj_SU2(U[1,xm,y,tp]) * adj_SU2(U[3,xm,y,t]) * U[1,xm,y,t]
+        a = U[1,x,y,tp] * adjoint(U[3,xp,y,t]) * adjoint(U[1,x,y,t])
+        b = adjoint(U[1,xm,y,tp]) * adjoint(U[3,xm,y,t]) * U[1,xm,y,t]
         # n a a / a a n 
         # 2 3 2 / 2 3 2
         # x: const 
         # y  yp y / ym ym ym 
         # tp t  t / tp t  t
-        c = U[2,x,y,tp] * adj_SU2(U[3,x,yp,t]) * adj_SU2(U[2,x,y,t])
-        d = adj_SU2(U[2,x,ym,tp]) * adj_SU2(U[3,x,ym,t]) * U[2,x,ym,t]
+        c = U[2,x,y,tp] * adjoint(U[3,x,yp,t]) * adjoint(U[2,x,y,t])
+        d = adjoint(U[2,x,ym,tp]) * adjoint(U[3,x,ym,t]) * U[2,x,ym,t]
     end
     return a + b + c + d
 end

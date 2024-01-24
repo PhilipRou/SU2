@@ -28,22 +28,22 @@ function staple(U, μ, x, t)
     x_m = mod1(x-1, NX) # (x + NX -2)%NX +1  
 
     if μ == 1
-        # a = U[2,x_p,t] * adj_SU2(U[1,x,t_p]) * adj_SU2(U[2,x,t])
-        # b = adj_SU2(U[2,x_p,t_m]) * adj_SU2(U[1,x,t_m]) * U[2,x,t_m]
-        a = U[2,x,t] * U[1,x,t_p] * adj_SU2(U[2,x_p,t])
-        b = adj_SU2(U[2,x,t_m]) * U[1,x,t_m] * U[2,x_p,t_m]
+        # a = U[2,x_p,t] * adjoint(U[1,x,t_p]) * adjoint(U[2,x,t])
+        # b = adjoint(U[2,x_p,t_m]) * adjoint(U[1,x,t_m]) * U[2,x,t_m]
+        a = U[2,x,t] * U[1,x,t_p] * adjoint(U[2,x_p,t])
+        b = adjoint(U[2,x,t_m]) * U[1,x,t_m] * U[2,x_p,t_m]
     else #if μ == 2
-        # a = U[1,x,t_p] * adj_SU2(U[2,x_p,t]) * adj_SU2(U[1,x,t])
-        # b = adj_SU2(U[1,x_m,t_p]) * adj_SU2(U[2,x_m,t]) * U[1,x_m,t]
-        a = U[1,x,t] * U[2,x_p,t] * adj_SU2(U[1,x,t_p])
-        b = adj_SU2(U[1,x_m,t]) * U[2,x_m,t] * U[1,x_m,t_p]
+        # a = U[1,x,t_p] * adjoint(U[2,x_p,t]) * adjoint(U[1,x,t])
+        # b = adjoint(U[1,x_m,t_p]) * adjoint(U[2,x_m,t]) * U[1,x_m,t]
+        a = U[1,x,t] * U[2,x_p,t] * adjoint(U[1,x,t_p])
+        b = adjoint(U[1,x_m,t]) * U[2,x_m,t] * U[1,x_m,t_p]
     end
     return a + b
 end
 
 # Function to make X traceless and return the exponential of that
 function exp_traceless(X::coeffs_SU2)
-    X = X - adj_SU2(X)  # Make X traceless (works 'cause X ∈ SU(2))
+    X = X - adjoint(X)  # Make X traceless (works 'cause X ∈ SU(2))
     w = sqrt(X.b^2 + X.c^2 + X.d^2)
     s = sin(w)/w
     return coeffs_SU2(cos(w), s*X.b, s*X.c, s*X.d)
@@ -59,10 +59,10 @@ function stout_single(U, ρ)
     for t = 1:NT
         for x = 1:NX
             for μ = 1:2
-                stap_link = staple(U,μ,x,t) * adj_SU2(U[μ,x,t])
+                stap_link = staple(U,μ,x,t) * adjoint(U[μ,x,t])
                 stap_link = 0.5*ρ*stap_link
                 V[μ,x,t] = exp_traceless(stap_link) * U[μ,x,t]
-                # stap_link = coeffs2grp(staple(V,μ,x,t) * adj_SU2(V[μ,x,t]))
+                # stap_link = coeffs2grp(staple(V,μ,x,t) * adjoint(V[μ,x,t]))
                 # V[μ,x,t] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,x,t]
             end
         end
@@ -91,7 +91,7 @@ end
 # # μ = rand(1:2)
 # # t = rand(1:N_t)
 # # x = rand(1:N_x)
-# # stap_link = coeffs2grp(staple(V,t,x,μ) * adj_SU2(V[μ,t,x]))
+# # stap_link = coeffs2grp(staple(V,t,x,μ) * adjoint(V[μ,t,x]))
 # # # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link-adjoint(stap_link) - 0.5*tr(stap_link-adjoint(stap_link)))) * coeffs2grp(V[μ,t,x]))
 # # V[μ,t,x] = grp2coeffs(exp(0.1*0.5*(stap_link - adjoint(stap_link) - 0.5*tr(stap_link - adjoint(stap_link)) * σ0))) * V[μ,t,x]
 
@@ -120,22 +120,22 @@ end
 #     t_pp = mod1(t+2, NT) # (t+1)%NT +1
 #     t_mm = mod1(t-2, NT) # (t + NT - 3)%NT +1
 
-#     # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+#     # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
 #     if μ == 1
-#         a = adj_SU2([U[3,t_p,x]]) * U[2,t_p,x] * U[1,t_pp,x_p] * U[3,t_pp,x_p] * adj_SU2(U[2,t,x])
-#         b = adj_SU2(U[2,t_m,x_m]) * U[3,t_m,x_m] * U[1,t_mm,x_m] * U[2,t_mm,x_m] * adj_SU2(U[3,t,x])
-#         # a = U[2,t,x] * adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x]
-#         # b = U[3,t,x] * adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m]
+#         a = adjoint([U[3,t_p,x]]) * U[2,t_p,x] * U[1,t_pp,x_p] * U[3,t_pp,x_p] * adjoint(U[2,t,x])
+#         b = adjoint(U[2,t_m,x_m]) * U[3,t_m,x_m] * U[1,t_mm,x_m] * U[2,t_mm,x_m] * adjoint(U[3,t,x])
+#         # a = U[2,t,x] * adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x]
+#         # b = U[3,t,x] * adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m]
 #     elseif μ == 2
-#         a = U[3,t,x] * U[1,t_m,x] * U[2,t_m,x] * adj_SU2(U[3,t_p,x_p]) * adj_SU2(U[1,t_p,x_p]) 
-#         b = adj_SU2(U[1,t,x]) * adj_SU2(U[3,t_p,x]) * U[2,t_p,x] * U[1,t_pp,x_p] * U[3,t_pp,x_p]
-#         # a = U[1,t_p,x_p] * U[3,t_p,x_p] * adj_SU2(U[2,t_m,x]) * adj_SU2(U[1,t_m,x]) * adj_SU2(U[3,t,x]) 
-#         # b = adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
+#         a = U[3,t,x] * U[1,t_m,x] * U[2,t_m,x] * adjoint(U[3,t_p,x_p]) * adjoint(U[1,t_p,x_p]) 
+#         b = adjoint(U[1,t,x]) * adjoint(U[3,t_p,x]) * U[2,t_p,x] * U[1,t_pp,x_p] * U[3,t_pp,x_p]
+#         # a = U[1,t_p,x_p] * U[3,t_p,x_p] * adjoint(U[2,t_m,x]) * adjoint(U[1,t_m,x]) * adjoint(U[3,t,x]) 
+#         # b = adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
 #     elseif μ == 3
-#         a = U[2,t,x] * U[1,t_p,x_p] * U[3,t_p,x_p] * adj_SU2(U[2,t_m,x]) * adj(U[1,t_m,x])
-#         b = adj_SU2(U[1,t,x]) * adj_SU2(U[2,t_m,x_m]) * U[3,t_m,x_m] * U[1,t_mm,x_m] * U[2,t_mm,x_m]
-#         # a = U[1,t_m,x] * U[2,t_m,x] * adj_SU2(U[3,t_p,x_p]) * adj_SU2(U[1,t_p,x_p]) * adj_SU2(U[2,t,x])
-#         # b = adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
+#         a = U[2,t,x] * U[1,t_p,x_p] * U[3,t_p,x_p] * adjoint(U[2,t_m,x]) * adj(U[1,t_m,x])
+#         b = adjoint(U[1,t,x]) * adjoint(U[2,t_m,x_m]) * U[3,t_m,x_m] * U[1,t_mm,x_m] * U[2,t_mm,x_m]
+#         # a = U[1,t_m,x] * U[2,t_m,x] * adjoint(U[3,t_p,x_p]) * adjoint(U[1,t_p,x_p]) * adjoint(U[2,t,x])
+#         # b = adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
 #     end
 
 #     return a+b
@@ -152,10 +152,10 @@ end
 #     for μ = 1:3
 #         for t = 1:NT
 #             for x = 1:NX
-#                 stap_link = staple_hex(U,μ,t,x) * adj_SU2(U[μ,t,x])
+#                 stap_link = staple_hex(U,μ,t,x) * adjoint(U[μ,t,x])
 #                 stap_link = 0.5*ρ*stap_link
 #                 V[μ,t,x] = exp_traceless(stap_link) * U[μ,t,x]
-#                 # stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+#                 # stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
 #                 # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
 #             end
 #         end

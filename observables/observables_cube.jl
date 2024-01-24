@@ -9,7 +9,7 @@ function plaq_12(U, x, y, t)
     # t_p = mod1(t+1,NT)
     x_p = mod1(x+1,NX)
     y_p = mod1(y+1,NX)
-    return U[1,x,y,t] * U[2,x_p,y,t] * adj_SU2(U[1,x,y_p,t])  * adj_SU2(U[2,x,y,t])
+    return U[1,x,y,t] * U[2,x_p,y,t] * adjoint(U[1,x,y_p,t])  * adjoint(U[2,x,y,t])
 end
 
 function plaq_13(U, x, y, t)
@@ -18,7 +18,7 @@ function plaq_13(U, x, y, t)
     t_p = mod1(t+1,NT)
     x_p = mod1(x+1,NX)
     # y_p = mod1(y+1,NX)
-    return U[1,x,y,t] * U[3,x_p,y,t] * adj_SU2(U[1,x,y,t_p])  * adj_SU2(U[3,x,y,t])
+    return U[1,x,y,t] * U[3,x_p,y,t] * adjoint(U[1,x,y,t_p])  * adjoint(U[3,x,y,t])
 end
 
 function plaq_23(U, x, y, t)
@@ -27,7 +27,7 @@ function plaq_23(U, x, y, t)
     t_p = mod1(t+1,NT)
     # x_p = mod1(x+1,NX)
     y_p = mod1(y+1,NX)
-    return U[2,x,y,t] * U[3,x,y_p,t] * adj_SU2(U[2,x,y,t_p])  * adj_SU2(U[3,x,y,t])
+    return U[2,x,y,t] * U[3,x,y_p,t] * adjoint(U[2,x,y,t_p])  * adjoint(U[3,x,y,t])
 end
 
 # Compute the Wilson gauge action of a 3-dim. cubic config
@@ -42,9 +42,9 @@ function action_cube(U)
             for y = 1:NX
                 y_p = mod1(y+1,NX)
                 # Don't use the plaq's because then significantly more mod1()-computations
-                S -= tr(U[1,x,y,t] * U[3,x_p,y,t] * adj_SU2(U[1,x,y,t_p])  * adj_SU2(U[3,x,y,t]))
-                S -= tr(U[2,x,y,t] * U[3,x,y_p,t] * adj_SU2(U[2,x,y,t_p])  * adj_SU2(U[3,x,y,t]))
-                S -= tr(U[1,x,y,t] * U[2,x_p,y,t] * adj_SU2(U[1,x,y_p,t])  * adj_SU2(U[2,x,y,t]))
+                S -= tr(U[1,x,y,t] * U[3,x_p,y,t] * adjoint(U[1,x,y,t_p])  * adjoint(U[3,x,y,t]))
+                S -= tr(U[2,x,y,t] * U[3,x,y_p,t] * adjoint(U[2,x,y,t_p])  * adjoint(U[3,x,y,t]))
+                S -= tr(U[1,x,y,t] * U[2,x_p,y,t] * adjoint(U[1,x,y_p,t])  * adjoint(U[2,x,y,t]))
             end
         end
     end
@@ -74,11 +74,11 @@ function loop_mat_cube(U, l_1, l_2)
     end
     for i = 1:l_1
         circshift!(y_arr,1)
-        res_t = res_t .* adj_SU2.(U[2,x_arr,y_arr,:])
+        res_t = res_t .* adjoint.(U[2,x_arr,y_arr,:])
     end
     for i = 1:l_2
         circshift!(x_arr,1)
-        res_t = res_t .* adj_SU2.(U[1,x_arr,y_arr,:])
+        res_t = res_t .* adjoint.(U[1,x_arr,y_arr,:])
     end
 
     # # The x-t-loops, stored in res_y:
@@ -92,11 +92,11 @@ function loop_mat_cube(U, l_1, l_2)
     # end
     # for i = 1:l_1
     #     circshift!(x_arr,1)
-    #     res_y = res_y .* adj_SU2.(U[1,x_arr,:,t_arr])
+    #     res_y = res_y .* adjoint.(U[1,x_arr,:,t_arr])
     # end
     # for i = 1:l_2
     #     circshift!(t_arr,1)
-    #     res_y = res_y .* adj_SU2.(U[3,x_arr,:,t_arr])
+    #     res_y = res_y .* adjoint.(U[3,x_arr,:,t_arr])
     # end
 
     # # The y-t-loops, stored in res_x:
@@ -110,11 +110,11 @@ function loop_mat_cube(U, l_1, l_2)
     # end
     # for i = 1:l_1
     #     circshift!(y_arr,1)
-    #     res_x = res_x .* adj_SU2.(U[2,:,y_arr,t_arr])
+    #     res_x = res_x .* adjoint.(U[2,:,y_arr,t_arr])
     # end
     # for i = 1:l_2
     #     circshift!(t_arr,1)
-    #     res_x = res_x .* adj_SU2.(U[3,:,y_arr,t_arr])
+    #     res_x = res_x .* adjoint.(U[3,:,y_arr,t_arr])
     # end
 
     return res_t #, res_x, res_y

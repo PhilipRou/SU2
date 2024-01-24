@@ -54,8 +54,8 @@ function plaq(U, x, t)
     NT = size(U,3)
     x_p = mod1(x+1, NX) # x%NX + 1
     t_p = mod1(t+1, NT) # t%NT + 1
-    # return mult_SU2(U.U[2,t,x], mult_SU2(U.U[1,t,x_p], mult_SU2(adj_SU2(U.U[2,t_p,x]), adj_SU2(U.U[1,t,x]))))
-    return U[1,x,t] * U[2,x_p,t] * adj_SU2(U[1,x,t_p]) * adj_SU2(U[2,x,t])
+    # return mult_SU2(U.U[2,t,x], mult_SU2(U.U[1,t,x_p], mult_SU2(adjoint(U.U[2,t_p,x]), adjoint(U.U[1,t,x]))))
+    return U[1,x,t] * U[2,x_p,t] * adjoint(U[1,x,t_p]) * adjoint(U[2,x,t])
 end
 
 function action(U, β)
@@ -86,7 +86,7 @@ function loop_2x3_square(U, x, t)
     # t   t   t   tp1 tp2 |  tp3 tp3 tp2 tp1 t 
 
     res = U[1,x,t] * U[1,xp1,t] * U[2,xp2,t] * U[2,xp2,tp1] * U[2,xp2,tp2]
-    res = res * adj_SU2(U[1,xp1,tp3]) * adj_SU2(U[1,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    res = res * adjoint(U[1,xp1,tp3]) * adjoint(U[1,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
     return res
 end
 
@@ -105,11 +105,11 @@ function RT_loop(U, R, T, x, t)
     end
     for i = 1:R
         x = mod1(x-1, NX)
-        loop *= adj_SU2(U[1,x,t])
+        loop *= adjoint(U[1,x,t])
     end
     for i = 1:T
         t = mod1(t-1,NT)
-        loop *= adj_SU2(U[2,x,t])
+        loop *= adjoint(U[2,x,t])
     end
     return loop
 end
@@ -135,11 +135,11 @@ function loop_mat(U, R, T)
     end
     for i = 1:R
         circshift!(x_arr,1)
-        res = res .* adj_SU2.(U[1,x_arr,t_arr])
+        res = res .* adjoint.(U[1,x_arr,t_arr])
     end
     for i = 1:T
         circshift!(t_arr,1)
-        res = res .* adj_SU2.(U[2,x_arr,t_arr])
+        res = res .* adjoint.(U[2,x_arr,t_arr])
     end
     return res
 end
@@ -177,22 +177,22 @@ function RT_loop_mike(U, R, T, x, t, avg_U)
     t = mod1(t+1,NT)
 
     x = mod1(x-1,NX)
-    res *= adj_SU2(U[1,x,t])
+    res *= adjoint(U[1,x,t])
     for i = 2:R-1
         x = mod1(x-1, NX)
-        res *= adj_SU2(avg_U[1,x,t])
+        res *= adjoint(avg_U[1,x,t])
     end
     x = mod1(x-1,NX)
-    res *= adj_SU2(U[1,x,t])
+    res *= adjoint(U[1,x,t])
 
     t = mod1(t-1,NT)
-    res *= adj_SU2(U[2,x,t])
+    res *= adjoint(U[2,x,t])
     for i = 2:T-1
         t = mod1(t-1,NT)
-        res *= adj_SU2(avg_U[2,x,t])
+        res *= adjoint(avg_U[2,x,t])
     end
     t = mod1(t-1,NT)
-    res *= adj_SU2(U[2,x,t])
+    res *= adjoint(U[2,x,t])
 
     return res
 end
@@ -303,7 +303,7 @@ function edge_loop_1(U, x, t)
     tp  = mod1(t+1, NT) # t%NT + 1
     xpp = mod1(x+2, NX) 
     tpp = mod1(t+2, NT) 
-    return U[1,x,t] * U[1,xp,t] * U[2,xpp,t] * adj_SU2(U[1,xp,tp]) * U[2,xp,tp] * adj_SU2(U[1,x,tpp]) * adj_SU2(U[2,x,tp]) * adj_SU2(U[2,x,t])
+    return U[1,x,t] * U[1,xp,t] * U[2,xpp,t] * adjoint(U[1,xp,tp]) * U[2,xp,tp] * adjoint(U[1,x,tpp]) * adjoint(U[2,x,tp]) * adjoint(U[2,x,t])
 end
 
 # test_field = gaugefield_SU2(32,32,true)
@@ -328,7 +328,7 @@ function L_loop_1(U, x, t)
     tp  = mod1(t+1, NT) # t%NT + 1
     tpp = mod1(t+2, NT) 
     tp3 = mod1(t+3, NT) 
-    return U[1,x,t] * U[1,xp,t] * U[2,xpp,t] * adj_SU2(U[1,xp,tp]) * U[2,xp,tp] * U[2,xp,tpp] * adj_SU2(U[1,x,tp3]) * adj_SU2(U[2,x,tpp]) * adj_SU2(U[2,x,tp]) * adj_SU2(U[2,x,t])
+    return U[1,x,t] * U[1,xp,t] * U[2,xpp,t] * adjoint(U[1,xp,tp]) * U[2,xp,tp] * U[2,xp,tpp] * adjoint(U[1,x,tp3]) * adjoint(U[2,x,tpp]) * adjoint(U[2,x,tp]) * adjoint(U[2,x,t])
 end
 
 #
@@ -340,10 +340,10 @@ function rhomb_half_loop_square(U, x, t)
     # xpp = mod1(x+2, NX) 
     tpp = mod1(t+2, NT) 
     a = U[1,x,t]*U[2,xp,t] + U[2,x,t]*U[1,x,tp]
-    b = adj_SU2(U[1,x,tp])*U[2,x,tp] + U[2,xp,tp]*adj_SU2(U[1,x,tpp])
+    b = adjoint(U[1,x,tp])*U[2,x,tp] + U[2,xp,tp]*adjoint(U[1,x,tpp])
     # c = a*b/det(a*b)
-    # return c*adj_SU2(U[2,x,tp])*adj_SU2(U[2,x,t])
-    return proj_SU2(a*b*adj_SU2(U[2,x,tp])*adj_SU2(U[2,x,t]))
+    # return c*adjoint(U[2,x,tp])*adjoint(U[2,x,t])
+    return proj_SU2(a*b*adjoint(U[2,x,tp])*adjoint(U[2,x,t]))
 end
 
 #
@@ -354,10 +354,10 @@ function rhomb_loop_square(U, x, t)
     tp  = mod1(t+1, NT) # t%NT + 1
     xpp = mod1(x+2, NX) 
     tpp = mod1(t+2, NT) 
-    a = adj_SU2(U[2,x,t])*U[1,x,t] + U[1,x,tp]*adj_SU2(U[2,xp,t])
+    a = adjoint(U[2,x,t])*U[1,x,t] + U[1,x,tp]*adjoint(U[2,xp,t])
     b = U[1,xp,t]*U[2,xpp,t] + U[2,xp,t]*U[1,xp,tp]
-    c = adj_SU2(U[1,xp,tp])*U[2,xp,tp] + U[2,xpp,tp]*adj_SU2(U[1,xp,tpp])
-    d = adj_SU2(U[2,xp,tp])*adj_SU2(U[1,x,tp]) + adj_SU2(U[1,x,tpp])*adj_SU2(U[2,x,tp])
+    c = adjoint(U[1,xp,tp])*U[2,xp,tp] + U[2,xpp,tp]*adjoint(U[1,xp,tpp])
+    d = adjoint(U[2,xp,tp])*adjoint(U[1,x,tp]) + adjoint(U[1,x,tpp])*adjoint(U[2,x,tp])
     # return a*b*c*d/det(a*b*c*d)
     return proj_SU2(a*b*c*d)
 end

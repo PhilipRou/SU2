@@ -17,8 +17,8 @@ function hexplaq(U, t, x)
     # 123123
     # t, t, t_pp, t_pp, t_p, t_p
     # x, x, x_p, x_p, x, x 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
-    return U[1,x,t] * U[2,x,t] * adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x]
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
+    return U[1,x,t] * U[2,x,t] * adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x]
 end
 =#
 
@@ -48,7 +48,7 @@ function hexplaq(U,x,t)
     # tm = mod1(t-1, NT) # (t + NT -2)%NT +1   
     # tmm = mod1(t-2, NT) # (t + NT - 3)%NT +1
     tpp = mod1(t+2, NT) # (t+1)%NT +1
-    return U[1,x,t]*U[2,xp,t]*U[2,xp,tp]*adj_SU2(U[1,x,tpp])*adj_SU2(U[2,x,tp])*adj_SU2(U[2,x,t])
+    return U[1,x,t]*U[2,xp,t]*U[2,xp,tp]*adjoint(U[1,x,tpp])*adjoint(U[2,x,tp])*adjoint(U[2,x,t])
 end
 
 function action_hex(U,β)
@@ -79,7 +79,7 @@ function loop_1x2_hex(U,x,t)
     # 1   2   2   2   2   |   1   2   2   2   2
     # x   xp1 xp1 xp1 xp1 |   x   x   x   x   x
     # t   t   tp1 tp2 tp3 |   tp4 tp3 tp2 tp1 t
-return U[1,x,t] * U[2,xp1,t] * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3] * adj_SU2(U[1,x,tp4]) * adj_SU2(U[2,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+return U[1,x,t] * U[2,xp1,t] * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3] * adjoint(U[1,x,tp4]) * adjoint(U[2,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 # For a spatial Wilson line we'll always start with μ=1 and then μ=2, 
@@ -99,7 +99,7 @@ function loop_2x1_hex(U,x,t)
     # 1   2   1   2   2   |   1   2   1   2   2 
     # x   xp1 xp1 xp2 xp2 |   xp1 xp1 x   x   x
     # t   t   tp1 tp1 tp2 |   tp3 tp2 tp2 tp1 t
-    return U[1,x,t] * U[2,xp1,t] * U[1,xp1,tp1] * U[2,xp2,tp1] * U[2,xp2,tp2] * adj_SU2(U[1,xp1,tp3]) * adj_SU2(U[2,xp1,tp2]) * adj_SU2(U[1,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    return U[1,x,t] * U[2,xp1,t] * U[1,xp1,tp1] * U[2,xp2,tp1] * U[2,xp2,tp2] * adjoint(U[1,xp1,tp3]) * adjoint(U[2,xp1,tp2]) * adjoint(U[1,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 function loop_2x2_hex(U,x,t)
@@ -119,7 +119,7 @@ function loop_2x2_hex(U,x,t)
     # x   xp1 xp1 xp2 xp2 xp2 xp2 |   xp1 xp1 x   x   x   x   x   
     # t   t   tp1 tp1 tp2 tp3 tp4 |   tp5 tp4 tp4 tp3 tp2 tp1 t
     bla =  U[1,x,t] * U[2,xp1,t] * U[1,xp1,tp1] * U[2,xp2,tp1] * U[2,xp2,tp2]  * U[2,xp2,tp3]  * U[2,xp2,tp4] 
-    return bla * adj_SU2(U[1,xp1,tp5]) * adj_SU2(U[2,xp1,tp4]) * adj_SU2(U[1,x,tp4]) * adj_SU2(U[2,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    return bla * adjoint(U[1,xp1,tp5]) * adjoint(U[2,xp1,tp4]) * adjoint(U[1,x,tp4]) * adjoint(U[2,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 
@@ -147,11 +147,11 @@ function loop_mat(U, l_t, l_x)
     end
     for i = 1:l_x
         circshift!(x_arr,-(-1))
-        res = res .* adj_SU2.(U[2,t_arr,x_arr])
+        res = res .* adjoint.(U[2,t_arr,x_arr])
     end
     for i = 1:l_t
         circshift!(t_arr,-(-1))
-        res = res .* adj_SU2.(U[1,t_arr,x_arr])
+        res = res .* adjoint.(U[1,t_arr,x_arr])
     end
     return res
 end
@@ -180,7 +180,7 @@ function loop_mat_hex(U, l_x, l_t)
     res = U[1,x_arr,t_arr]
     circshift!(x_arr,-1)
     for i = 1:div(LX,2)
-        res = res .* U[2,x_arr,t_arr] .* U[1,x_arr,circshift(t_arr,-1)] .* adj_SU2.(U[2,circshift(x_arr,-1),t_arr]) .* U[1,circshift(x_arr,-1),t_arr]
+        res = res .* U[2,x_arr,t_arr] .* U[1,x_arr,circshift(t_arr,-1)] .* adjoint.(U[2,circshift(x_arr,-1),t_arr]) .* U[1,circshift(x_arr,-1),t_arr]
         circshift!(x_arr,-2)     # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
     end
     for i = 1:Int(LX - 2*div(LX,2))
@@ -195,19 +195,19 @@ function loop_mat_hex(U, l_x, l_t)
     end
 
     for i = 1:Int(LX - 2*div(LX,2))
-        res = res .* adj_SU2.(U[1,circshift(x_arr,1),t_arr]) .* adj_SU2.(U[2,circshift(x_arr,1),circshift(t_arr,1)])
+        res = res .* adjoint.(U[1,circshift(x_arr,1),t_arr]) .* adjoint.(U[2,circshift(x_arr,1),circshift(t_arr,1)])
         circshift!(t_arr,1)
         circshift!(x_arr,1)
     end
     for i = 1:div(LX,2)
-        res = res .* adj_SU2.(U[1,circshift(x_arr,1),t_arr]) .* U[2,circshift(x_arr,1),t_arr] .* adj_SU2.(U[1,circshift(x_arr,2),circshift(t_arr,-1)]) .* adj_SU2.(U[2,circshift(x_arr,2),t_arr])
+        res = res .* adjoint.(U[1,circshift(x_arr,1),t_arr]) .* U[2,circshift(x_arr,1),t_arr] .* adjoint.(U[1,circshift(x_arr,2),circshift(t_arr,-1)]) .* adjoint.(U[2,circshift(x_arr,2),t_arr])
         circshift!(x_arr,2)     
     end
     circshift!(x_arr,1)
-    res = res .* adj_SU2.(U[1,x_arr,t_arr])
+    res = res .* adjoint.(U[1,x_arr,t_arr])
     
     for i = 1:l_t
-        res = res .* adj_SU2.(U[2, x_arr, circshift(t_arr,1)]) .* adj_SU2.(U[2, x_arr, circshift(t_arr,2)])
+        res = res .* adjoint.(U[2, x_arr, circshift(t_arr,1)]) .* adjoint.(U[2, x_arr, circshift(t_arr,2)])
         circshift!(t_arr,2)
     end
 
@@ -235,7 +235,7 @@ function RT_loop_hex(U, R, T, x, t)
     for i = 1:div(LX,2)
         xp = mod1(x+1,NX)
         tp = mod1(t+1,NT)
-        res = res * U[2,x,t] * U[1,x,tp] * adj_SU2(U[2,xp,t]) * U[1,xp,t]
+        res = res * U[2,x,t] * U[1,x,tp] * adjoint(U[2,xp,t]) * U[1,xp,t]
         x = mod1(x+2,NX)
         
     end
@@ -255,7 +255,7 @@ function RT_loop_hex(U, R, T, x, t)
     for i = 1:Int(LX - 2*div(LX,2))
         xm = mod1(x-1,NX)
         tm = mod1(t-1,NT)
-        res = res * adj_SU2(U[1,xm,t]) * adj_SU2(U[2,xm,tm])
+        res = res * adjoint(U[1,xm,t]) * adjoint(U[2,xm,tm])
         x = xm
         t = tm
     end
@@ -263,16 +263,16 @@ function RT_loop_hex(U, R, T, x, t)
         xm = mod1(x-1,NX)
         xmm = mod1(x-2,NX)
         tp = mod1(t+1,NT)
-        res = res * adj_SU2(U[1,xm,t]) * U[2,xm,t] * adj_SU2(U[1,xmm,tp]) * adj_SU2(U[2,xmm,t])
+        res = res * adjoint(U[1,xm,t]) * U[2,xm,t] * adjoint(U[1,xmm,tp]) * adjoint(U[2,xmm,t])
         x = xmm
     end
     x = mod1(x-1,NX)
-    res = res * adj_SU2(U[1,x,t])
+    res = res * adjoint(U[1,x,t])
     
     for i = 1:T
         tm = mod1(t-1,NT)
         tmm = mod1(t-2,NT)
-        res = res * adj_SU2(U[2,x, tm]) * adj_SU2(U[2,x, tmm])
+        res = res * adjoint(U[2,x, tm]) * adjoint(U[2,x, tmm])
         t = tmm
     end
     return res
@@ -306,8 +306,8 @@ function rhomb_half_loop(U, x, t)
     # x   xp1 xp1 xp2 xp2 | xp1 xp1 | x   x   x   x   x
     # t   t   tp1 tp1 tp2 | tp3 tp3 | tp4 tp3 tp2 tp1 t
     bla = U[1,x,t] * U[2,xp1,t] * U[1,xp1,tp1] * U[2,xp2,tp1] * U[2,xp2,tp2] 
-    bla = bla * adj_SU2(U[1,xp1,tp3]) * U[2,xp1,tp3]
-    return bla * adj_SU2(U[1,x,tp4]) * adj_SU2(U[2,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    bla = bla * adjoint(U[1,xp1,tp3]) * U[2,xp1,tp3]
+    return bla * adjoint(U[1,x,tp4]) * adjoint(U[2,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 #
@@ -327,9 +327,9 @@ function edge_loop_hex(U, x, t)
     # 1   2   1   2   2   | 1   2   2   2   | 1   2   2   2   2 
     # x   xp1 xp1 xp2 xp2 | xp1 xp1 xp1 xp1 | x   x   x   x   x 
     # t   tm  tm  tm  t   | tp1 tp1 tp2 tp3 | tp4 tp3 tp2 tp1 t
-    bla = U[1,x,t] * adj_SU2(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[2,xp2,t]
-    bla = bla * adj_SU2(U[1,xp1,tp1]) * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3]
-    return bla * adj_SU2(U[1,x,tp4]) * adj_SU2(U[2,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    bla = U[1,x,t] * adjoint(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[2,xp2,t]
+    bla = bla * adjoint(U[1,xp1,tp1]) * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3]
+    return bla * adjoint(U[1,x,tp4]) * adjoint(U[2,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 #
@@ -349,9 +349,9 @@ function rhomb_loop(U, x, t)
     # 1   2   1   2   1   2   2   | 1   2   | 1   2   1   2   2
     # x   xp1 xp1 xp2 xp2 xp3 xp3 | xp2 xp2 | xp1 xp1 x   x   x 
     # t   tm  tm  tm  t   t   tp1 | tp2 tp2 | tp3 tp2 tp2 tp1 t
-    bla = U[1,x,t] * adj_SU2(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[1,xp2,t] * U[2,xp3,t] * U[2,xp3,tp1]
-    bla = bla * adj_SU2(U[1,xp2,tp2]) * U[2,xp2,tp2]
-    return bla * adj_SU2(U[1,xp1,tp3]) * adj_SU2(U[2,xp1,tp2]) * adj_SU2(U[1,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    bla = U[1,x,t] * adjoint(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[1,xp2,t] * U[2,xp3,t] * U[2,xp3,tp1]
+    bla = bla * adjoint(U[1,xp2,tp2]) * U[2,xp2,tp2]
+    return bla * adjoint(U[1,xp1,tp3]) * adjoint(U[2,xp1,tp2]) * adjoint(U[1,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 #
@@ -373,9 +373,9 @@ function L_loop_hex(U, x, t)
     # 1   2   1   2   2   | 1   2   2   2   2   2   | 1   2   2   2   2   2   2
     # x   xp1 xp1 xp2 xp2 | xp1 xp1 xp1 xp1 xp1 xp1 | x   x   x   x   x   x   x
     # t   tm  tm  tm  t   | tp1 tp1 tp2 tp3 tp4 tp5 | tp6 tp5 tp4 tp3 tp2 tp1 t
-    bla = U[1,x,t] * adj_SU2(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[2,xp2,t]
-    bla = bla * adj_SU2(U[1,xp1,tp1]) * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3] * U[2,xp1,tp4] * U[2,xp1,tp5]
-    return bla * adj_SU2(U[1,x,tp6]) * adj_SU2(U[2,x,tp5]) * adj_SU2(U[2,x,tp4]) * adj_SU2(U[2,x,tp3]) * adj_SU2(U[2,x,tp2]) * adj_SU2(U[2,x,tp1]) * adj_SU2(U[2,x,t])
+    bla = U[1,x,t] * adjoint(U[2,xp1,tm]) * U[1,xp1,tm] * U[2,xp2,tm] * U[2,xp2,t]
+    bla = bla * adjoint(U[1,xp1,tp1]) * U[2,xp1,tp1] * U[2,xp1,tp2] * U[2,xp1,tp3] * U[2,xp1,tp4] * U[2,xp1,tp5]
+    return bla * adjoint(U[1,x,tp6]) * adjoint(U[2,x,tp5]) * adjoint(U[2,x,tp4]) * adjoint(U[2,x,tp3]) * adjoint(U[2,x,tp2]) * adjoint(U[2,x,tp1]) * adjoint(U[2,x,t])
 end
 
 #= 

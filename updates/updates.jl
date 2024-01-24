@@ -12,13 +12,13 @@ function staple_dag(U, μ, t, x)
     t_m = mod1(t-1, NT) # (t + NT -2)%NT +1   
     x_m = mod1(x-1, NX) # (x + NX -2)%NX +1   
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
-        a = U[2,t_p,x] * adj_SU2(U[1,t,x_p]) * adj_SU2(U[2,t,x])
-        b = adj_SU2(U[2,t_p,x_m]) * adj_SU2(U[1,t,x_m]) * U[2,t,x_m]
+        a = U[2,t_p,x] * adjoint(U[1,t,x_p]) * adjoint(U[2,t,x])
+        b = adjoint(U[2,t_p,x_m]) * adjoint(U[1,t,x_m]) * U[2,t,x_m]
     else #if μ == 2
-        a = U[1,t,x_p] * adj_SU2(U[2,t_p,x]) * adj_SU2(U[1,t,x])
-        b = adj_SU2(U[1,t_m,x_p]) * adj_SU2(U[2,t_m,x]) * U[1,t_m,x]
+        a = U[1,t,x_p] * adjoint(U[2,t_p,x]) * adjoint(U[1,t,x])
+        b = adjoint(U[1,t_m,x_p]) * adjoint(U[2,t_m,x]) * U[1,t_m,x]
     end
     return a + b 
 end
@@ -43,7 +43,7 @@ end
 
 function overrelax!(U, μ, t, x)
     v = proj_SU2!(staple_dag(U,μ,t,x))
-    U[μ,t,x] = adj_SU2(v *  U[μ,t,x] * v)
+    U[μ,t,x] = adjoint(v *  U[μ,t,x] * v)
     return nothing
 end
 
@@ -130,40 +130,40 @@ function staple_dag_hex(U, μ, t, x)
     t_pp = mod1(t+2, NT) # (t+1)%NT +1
     t_mm = mod1(t-2, NT) # (t + NT - 3)%NT +1
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
         # n a a a n
         # 23123
         # t, t_pp, t_pp, t_p, t_p
         # x, x_p, x_p, x, x
-        a = U[2,t,x] * adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x]
+        a = U[2,t,x] * adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x]
         # n a a a n
         # 32132
         # t, t_mm, t_mm, t_m, t_m
         # x, x_m, x_m, x_m, x_m
-        b = U[3,t,x] * adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m]
+        b = U[3,t,x] * adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m]
     elseif μ == 2
         # n n a a a
         # 13213
         # t_p, t_p, t_m, t_m ,t
         # x_p, x_p, x, x, x
-        a = U[1,t_p,x_p] * U[3,t_p,x_p] * adj_SU2(U[2,t_m,x]) * adj_SU2(U[1,t_m,x]) * adj_SU2(U[3,t,x]) 
+        a = U[1,t_p,x_p] * U[3,t_p,x_p] * adjoint(U[2,t_m,x]) * adjoint(U[1,t_m,x]) * adjoint(U[3,t,x]) 
         # a a a n n
         # 31231
         # t_pp, t_pp, t_p, t_p, t
         # x_p, x_p, x, x, x
-        b = adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
+        b = adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
     elseif μ == 3
         # n n a a a 
         # 12312
         # t_m, t_m, t_p, t_p, t
         # x, x, x_p, x_p, x
-        a = U[1,t_m,x] * U[2,t_m,x] * adj_SU2(U[3,t_p,x_p]) * adj_SU2(U[1,t_p,x_p]) * adj_SU2(U[2,t,x])
+        a = U[1,t_m,x] * U[2,t_m,x] * adjoint(U[3,t_p,x_p]) * adjoint(U[1,t_p,x_p]) * adjoint(U[2,t,x])
         # a a a n n
         # 21321
         # t_mm, t_mm, t_m, t_m, t
         # x_m, x_m, x_m, x_m, x
-        b = adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
+        b = adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
     end
 
     return a+b
@@ -330,7 +330,7 @@ end
 
 function overrelax_hex!(U, μ, t, x)
     v = proj_SU2!(staple_dag_hex(U,μ,t,x))
-    U[μ,t,x] = adj_SU2(v *  U[μ,t,x] * v)
+    U[μ,t,x] = adjoint(v *  U[μ,t,x] * v)
     return nothing
 end
 
@@ -376,32 +376,32 @@ function staple_dag_3d(U, μ, t, x, y)
     x_m = mod1(x-1, NX) # (x + NX -2)%NX +1   
     y_m = mod1(y-1, NX)
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
-        a = U[2,t_p,x,y] * adj_SU2(U[1,t,x_p,y]) * adj_SU2(U[2,t,x,y])
-        b = adj_SU2(U[2,t_p,x_m,y]) * adj_SU2(U[1,t,x_m,y]) * U[2,t,x_m,y]
-        c = U[3,t_p,x,y] * adj_SU2(U[1,t,x,y_p]) * adj_SU2(U[3,t,x,y])
-        d = adj_SU2(U[3,t_p,x,y_m]) * adj_SU2(U[1,t,x,y_m]) * U[3,t,x,y_m]
+        a = U[2,t_p,x,y] * adjoint(U[1,t,x_p,y]) * adjoint(U[2,t,x,y])
+        b = adjoint(U[2,t_p,x_m,y]) * adjoint(U[1,t,x_m,y]) * U[2,t,x_m,y]
+        c = U[3,t_p,x,y] * adjoint(U[1,t,x,y_p]) * adjoint(U[3,t,x,y])
+        d = adjoint(U[3,t_p,x,y_m]) * adjoint(U[1,t,x,y_m]) * U[3,t,x,y_m]
     elseif μ == 2
-        a = U[1,t,x_p,y] * adj_SU2(U[2,t_p,x,y]) * adj_SU2(U[1,t,x,y])
-        b = adj_SU2(U[1,t_m,x_p,y]) * adj_SU2(U[2,t_m,x,y]) * U[1,t_m,x,y]
-        c = U[3,t,x_p,y] * adj_SU2(U[2,t,x,y_p]) * adj_SU2(U[3,t,x,y])
-        d = adj_SU2(U[3,t,x_p,y_m]) * adj_SU2(U[2,t,x,y_m]) * U[3,t,x,y_m]
+        a = U[1,t,x_p,y] * adjoint(U[2,t_p,x,y]) * adjoint(U[1,t,x,y])
+        b = adjoint(U[1,t_m,x_p,y]) * adjoint(U[2,t_m,x,y]) * U[1,t_m,x,y]
+        c = U[3,t,x_p,y] * adjoint(U[2,t,x,y_p]) * adjoint(U[3,t,x,y])
+        d = adjoint(U[3,t,x_p,y_m]) * adjoint(U[2,t,x,y_m]) * U[3,t,x,y_m]
     elseif μ == 3
         # n a a / a a n 
         # 1 3 1 / 1 3 1 
         # t tp t / tm tm tm 
         # x: const
         # yp y y / yp y y
-        a = U[1,t,x,y_p] * adj_SU2(U[3,t_p,x,y]) * adj_SU2(U[1,t,x,y])
-        b = adj_SU2(U[1,t_m,x,y_p]) * adj_SU2(U[3,t_m,x,y]) * U[1,t_m,x,y]
+        a = U[1,t,x,y_p] * adjoint(U[3,t_p,x,y]) * adjoint(U[1,t,x,y])
+        b = adjoint(U[1,t_m,x,y_p]) * adjoint(U[3,t_m,x,y]) * U[1,t_m,x,y]
         # n a a / a a n 
         # 2 3 2 / 2 3 2
         # t: const
         # x xp x / xm xm xm 
         # yp y y / yp y y
-        c = U[2,t,x,y_p] * adj_SU2(U[3,t,x_p,y]) * adj_SU2(U[2,t,x,y])
-        d = adj_SU2(U[2,t,x_m,y_p]) * adj_SU2(U[3,t,x_m,y]) * U[2,t,x_m,y]
+        c = U[2,t,x,y_p] * adjoint(U[3,t,x_p,y]) * adjoint(U[2,t,x,y])
+        d = adjoint(U[2,t,x_m,y_p]) * adjoint(U[3,t,x_m,y]) * U[2,t,x_m,y]
     end
     return a + b + c + d
 end

@@ -245,33 +245,33 @@ function loop_mat_mike_old(U, R, T, β)
     
     if R > 2
         circshift!(x_arr,1)
-        res = res .* adj_SU2.(U[1,x_arr,t_arr])
+        res = res .* adjoint.(U[1,x_arr,t_arr])
         for i = 2:R-1
             circshift!(x_arr,1)
-            res = res .* adj_SU2.(avg_U[1,x_arr,t_arr])
+            res = res .* adjoint.(avg_U[1,x_arr,t_arr])
         end
         circshift!(x_arr,1)
-        res = res .* adj_SU2.(U[1,x_arr,t_arr])
+        res = res .* adjoint.(U[1,x_arr,t_arr])
     else
         for i = 1:R
             circshift!(x_arr,1)
-            res = res .* adj_SU2.(U[1,x_arr,t_arr])
+            res = res .* adjoint.(U[1,x_arr,t_arr])
         end
     end
     
     if T > 2
         circshift!(t_arr,1)
-        res = res .* adj_SU2.(U[2,x_arr,t_arr])
+        res = res .* adjoint.(U[2,x_arr,t_arr])
         for i = 2:T-1
             circshift!(t_arr,1)
-            res = res .* adj_SU2.(avg_U[2,x_arr,t_arr])
+            res = res .* adjoint.(avg_U[2,x_arr,t_arr])
         end
         circshift!(t_arr,1)
-        res = res .* adj_SU2.(U[2,x_arr,t_arr])
+        res = res .* adjoint.(U[2,x_arr,t_arr])
     else
         for i = 1:T
             circshift!(t_arr,1)
-            res = res .* adj_SU2.(U[2,x_arr,t_arr])
+            res = res .* adjoint.(U[2,x_arr,t_arr])
         end
     end
 

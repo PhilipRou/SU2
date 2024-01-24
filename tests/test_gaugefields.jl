@@ -76,16 +76,16 @@ end
 
 grp2coeffs_test()
 
-function adj_SU2_test()
+function adjoint_test()
     coeffs = ran_SU2(rand())
-    adj_coeffs = adj_SU2(coeffs)
+    adj_coeffs = adjoint(coeffs)
     mat = coeffs2grp(coeffs)
     adj_mat = coeffs2grp(adj_coeffs)
-    @assert isapprox(adj_mat, adjoint(mat)) "Something went wrong while testing adj_SU2"
+    @assert isapprox(adj_mat, adjoint(mat)) "Something went wrong while testing adjoint"
     return true
 end
 
-adj_SU2_test()
+adjoint_test()
 
 function temp_gauge_test()
     test_field = gaugefield_SU2(N_x, N_t, true)

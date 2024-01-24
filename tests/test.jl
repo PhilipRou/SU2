@@ -136,16 +136,16 @@ end
 
 grp2coeffs_test()
 
-function adj_SU2_test()
+function adjoint_test()
     coeffs = ran_SU2(rand())
-    adj_coeffs = adj_SU2(coeffs)
+    adj_coeffs = adjoint(coeffs)
     mat = coeffs2grp(coeffs)
     adj_mat = coeffs2grp(adj_coeffs)
-    @assert isapprox(adj_mat, adjoint(mat)) "Something went wrong while testing adj_SU2"
+    @assert isapprox(adj_mat, adjoint(mat)) "Something went wrong while testing adjoint"
     return true
 end
 
-adj_SU2_test()
+adjoint_test()
 
 # function read_last_config_test()
 #     test_config = gaugefield_SU2(4,4,true)
@@ -412,7 +412,7 @@ function staple_test()
     μ = rand(1:2)
     t = rand(1:N_t)
     x = rand(1:N_x)
-    @assert isapprox(staple(U,μ,t,x), adj_SU2(staple_dag(U,μ,t,x)))
+    @assert isapprox(staple(U,μ,t,x), adjoint(staple_dag(U,μ,t,x)))
     return true
 end
 
@@ -420,7 +420,7 @@ staple_test()
 
 function traceless_test()
     coeffs = ran_SU2(rand())
-    @assert tr(coeffs - adj_SU2(coeffs)) == 0.0
+    @assert tr(coeffs - adjoint(coeffs)) == 0.0
     return true
 end
 
@@ -428,7 +428,7 @@ traceless_test()
 
 function exp_traceless_test()
     coeffs = ran_SU2(rand())
-    coeffs_tr_less = coeffs - adj_SU2(coeffs)
+    coeffs_tr_less = coeffs - adjoint(coeffs)
     @assert isapprox(exp_traceless(coeffs), grp2coeffs(exp(coeffs2grp(coeffs_tr_less))))
     return true
 end
@@ -443,10 +443,10 @@ function old_VS_new_stout_test()
                 for trip = 1:2  # For the chequer board pattern
                     for t = 1:N_t
                         for x = (1+mod(t+trip,2)):2:N_x
-                            # stap_link = staple(V,μ,t,x) * adj_SU2(V[μ,t,x])
+                            # stap_link = staple(V,μ,t,x) * adjoint(V[μ,t,x])
                             # stap_link *= α*0.5
                             # V[μ,t,x] = exp_traceless(stap_link) * V[μ,t,x]
-                            stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+                            stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
                             V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
                         end
                     end
@@ -462,10 +462,10 @@ function old_VS_new_stout_test()
                 for trip = 1:2  # For the chequer board pattern
                     for t = 1:N_t
                         for x = (1+mod(t+trip,2)):2:N_x
-                            stap_link = staple(V,μ,t,x) * adj_SU2(V[μ,t,x])
+                            stap_link = staple(V,μ,t,x) * adjoint(V[μ,t,x])
                             stap_link = α*0.5*stap_link
                             V[μ,t,x] = exp_traceless(stap_link) * V[μ,t,x]
-                            # stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+                            # stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
                             # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
                         end
                     end

@@ -12,13 +12,13 @@ function staple_dag(U, μ, x, t)
     x_m = mod1(x-1, NX) # (x + NX -2)%NX +1   
     t_m = mod1(t-1, NT) # (t + NT -2)%NT +1   
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
-        a = U[2,x_p,t] * adj_SU2(U[1,x,t_p]) * adj_SU2(U[2,x,t])
-        b = adj_SU2(U[2,x_p,t_m]) * adj_SU2(U[1,x,t_m]) * U[2,x,t_m]
+        a = U[2,x_p,t] * adjoint(U[1,x,t_p]) * adjoint(U[2,x,t])
+        b = adjoint(U[2,x_p,t_m]) * adjoint(U[1,x,t_m]) * U[2,x,t_m]
     else #if μ == 2
-        a = U[1,x,t_p] * adj_SU2(U[2,x_p,t]) * adj_SU2(U[1,x,t])
-        b = adj_SU2(U[1,x_m,t_p]) * adj_SU2(U[2,x_m,t]) * U[1,x_m,t]
+        a = U[1,x,t_p] * adjoint(U[2,x_p,t]) * adjoint(U[1,x,t])
+        b = adjoint(U[1,x_m,t_p]) * adjoint(U[2,x_m,t]) * U[1,x_m,t]
     end
     return a + b 
 end
@@ -83,7 +83,7 @@ end
 #
 function overrelax!(U, μ, x, t)
     v = proj_SU2(staple_dag(U,μ,x,t))
-    U[μ,x,t] = adj_SU2(v *  U[μ,x,t] * v)
+    U[μ,x,t] = adjoint(v *  U[μ,x,t] * v)
     return nothing
 end
 

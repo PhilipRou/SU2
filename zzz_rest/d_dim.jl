@@ -96,8 +96,8 @@ function staple_dag_D(U, μ, coord::Vector)
         arg_5 = mod1.(coord-vecs[:,news[i]], N[news[i]])
         arg_6 = mod1.(coord-vecs[:,news[i]], N[news[i]])
 
-        wings[i] = U[news[i], arg_1...] * adj_SU2(U[μ, arg_2...]) * adj_SU2(U[news[i], arg_3...])
-        wings[i] += adj_SU2(U[news[i], arg_4...]) * adj_SU2(U[μ, arg_5...]) * U[news[i], arg_6...]
+        wings[i] = U[news[i], arg_1...] * adjoint(U[μ, arg_2...]) * adjoint(U[news[i], arg_3...])
+        wings[i] += adjoint(U[news[i], arg_4...]) * adjoint(U[μ, arg_5...]) * U[news[i], arg_6...]
     end
     
     return sum(wings)
@@ -167,14 +167,14 @@ end
 # # overrelax!, but in D dimensions (D arbitrary)
 # function overrelax_D!(U, μ, coord::Vector)
 #     v = proj_SU2!(staple_dag_D(U,μ,coord))
-#     U[μ,coord...] = adj_SU2(v *  U[μ,coord...] * v)
+#     U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
 #     return nothing
 # end
 
 # overrelax!, but in D dimensions (D arbitrary)
 function overrelax_D!(U, μ, coord::Vector)
     v = proj_SU2!(staple_dag_D(U,μ,coord))
-    U[μ,coord...] = adj_SU2(v *  U[μ,coord...] * v)
+    U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
     return nothing
 end
 

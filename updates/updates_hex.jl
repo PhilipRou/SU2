@@ -15,40 +15,40 @@ function staple_dag_hex(U, μ, t, x)
     t_pp = mod1(t+2, NT) # (t+1)%NT +1
     t_mm = mod1(t-2, NT) # (t + NT - 3)%NT +1
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 1
         # n a a a n
         # 23123
         # t, t_pp, t_pp, t_p, t_p
         # x, x_p, x_p, x, x
-        a = U[2,t,x] * adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x]
+        a = U[2,t,x] * adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x]
         # n a a a n
         # 32132
         # t, t_mm, t_mm, t_m, t_m
         # x, x_m, x_m, x_m, x_m
-        b = U[3,t,x] * adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m]
+        b = U[3,t,x] * adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m]
     elseif μ == 2
         # n n a a a
         # 13213
         # t_p, t_p, t_m, t_m ,t
         # x_p, x_p, x, x, x
-        a = U[1,t_p,x_p] * U[3,t_p,x_p] * adj_SU2(U[2,t_m,x]) * adj_SU2(U[1,t_m,x]) * adj_SU2(U[3,t,x]) 
+        a = U[1,t_p,x_p] * U[3,t_p,x_p] * adjoint(U[2,t_m,x]) * adjoint(U[1,t_m,x]) * adjoint(U[3,t,x]) 
         # a a a n n
         # 31231
         # t_pp, t_pp, t_p, t_p, t
         # x_p, x_p, x, x, x
-        b = adj_SU2(U[3,t_pp,x_p]) * adj_SU2(U[1,t_pp,x_p]) * adj_SU2(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
+        b = adjoint(U[3,t_pp,x_p]) * adjoint(U[1,t_pp,x_p]) * adjoint(U[2,t_p,x]) * U[3,t_p,x] * U[1,t,x]
     elseif μ == 3
         # n n a a a 
         # 12312
         # t_m, t_m, t_p, t_p, t
         # x, x, x_p, x_p, x
-        a = U[1,t_m,x] * U[2,t_m,x] * adj_SU2(U[3,t_p,x_p]) * adj_SU2(U[1,t_p,x_p]) * adj_SU2(U[2,t,x])
+        a = U[1,t_m,x] * U[2,t_m,x] * adjoint(U[3,t_p,x_p]) * adjoint(U[1,t_p,x_p]) * adjoint(U[2,t,x])
         # a a a n n
         # 21321
         # t_mm, t_mm, t_m, t_m, t
         # x_m, x_m, x_m, x_m, x
-        b = adj_SU2(U[2,t_mm,x_m]) * adj_SU2(U[1,t_mm,x_m]) * adj_SU2(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
+        b = adjoint(U[2,t_mm,x_m]) * adjoint(U[1,t_mm,x_m]) * adjoint(U[3,t_m,x_m]) * U[2,t_m,x_m] * U[1,t,x]
     end
 
     return a+b
@@ -74,42 +74,42 @@ function staple_dag_hex(U, μ, x, t)
 
     # coords = half_chess_coords(N_t, N_x)
 
-    # 🐌 More efficient: only use adj_SU2 once 🐌 (but less human-readable, no?)
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
     if μ == 2
         if iseven(x+t)
             # n  n   a  a  a 
             # 2  1   2  2  1 
             # x  x   xp xp x
             # tp tpp tp t  t
-            a = U[2,x,tp] * U[1,x,tpp] * adj_SU2(U[2,xp,tp]) * adj_SU2(U[2,xp,t]) * adj_SU2(U[1,x,t])
+            a = U[2,x,tp] * U[1,x,tpp] * adjoint(U[2,xp,tp]) * adjoint(U[2,xp,t]) * adjoint(U[1,x,t])
             # a  a  a  n  n 
             # 1  2  2  1  2 
             # xm xm xm xm x 
             # tp t  tm tm tm 
-            b = adj_SU2(U[1,xm,tp]) * adj_SU2(U[2,xm,t]) * adj_SU2(U[2,xm,tm]) * U[1,xm,tm] * U[2,x,tm]
+            b = adjoint(U[1,xm,tp]) * adjoint(U[2,xm,t]) * adjoint(U[2,xm,tm]) * U[1,xm,tm] * U[2,x,tm]
         else
             # n  a  a  a  n 
             # 1  2  2  1  2 
             # x  xp xp x  x
             # tp t  tm tm tm 
-            a = U[1,x,tp] * adj_SU2(U[2,xp,t]) * adj_SU2(U[2,xp,tm]) * adj_SU2(U[1,x,tm]) * U[2,x,tm]
+            a = U[1,x,tp] * adjoint(U[2,xp,t]) * adjoint(U[2,xp,tm]) * adjoint(U[1,x,tm]) * U[2,x,tm]
             # n  a   a  a  n 
             # 2  1   2  2  1
             # x  xm  xm xm xm
             # tp tpp tp t  t
-            b = U[2,x,tp] * adj_SU2(U[1,xm,tpp]) * adj_SU2(U[2,xm,tp]) * adj_SU2(U[2,xm,t]) * U[1,xm,t]
+            b = U[2,x,tp] * adjoint(U[1,xm,tpp]) * adjoint(U[2,xm,tp]) * adjoint(U[2,xm,t]) * U[1,xm,t]
         end
     else #if μ == 1
         # n  n  a   a  a
         # 2  2  1   2  2
         # xp xp x   x  x
         # t  tp tpp tp t
-        a = U[2,xp,t] * U[2,xp,tp] * adj_SU2(U[1,x,tpp]) * adj_SU2(U[2,x,tp]) * adj_SU2(U[2,x,t])
+        a = U[2,xp,t] * U[2,xp,tp] * adjoint(U[1,x,tpp]) * adjoint(U[2,x,tp]) * adjoint(U[2,x,t])
         # a  a   a   n   n 
         # 2  2   1   2   2
         # xp xp  x   x   x 
         # tm tmm tmm tmm tm 
-        b = adj_SU2(U[2,xp,tm]) * adj_SU2(U[2,xp,tmm]) * adj_SU2(U[1,x,tmm]) * U[2,x,tmm] * U[2,x,tm]
+        b = adjoint(U[2,xp,tm]) * adjoint(U[2,xp,tmm]) * adjoint(U[1,x,tmm]) * U[2,x,tmm] * U[2,x,tm]
     end
     # if μ == 1
     #     if iseven(t+x)
@@ -117,35 +117,35 @@ function staple_dag_hex(U, μ, x, t)
     #         # 2  1  1  2  1
     #         # tp t  tm tm tm
     #         # xm xm xm xm x
-    #         a = adj_SU2(U[2,tp,xm]) * adj_SU2(U[1,t,xm]) * adj_SU2(U[1,tm,xm]) * U[2,tm,xm] * U[1,tm,x]
+    #         a = adjoint(U[2,tp,xm]) * adjoint(U[1,t,xm]) * adjoint(U[1,tm,xm]) * U[2,tm,xm] * U[1,tm,x]
     #         # n  n   a  a  a
     #         # 1  2   1  1  2
     #         # tp tpp tp t  t
     #         # x  x   xp xp x
-    #         b = U[1,tp,x] * U[2,tpp,x] * adj_SU2(U[1,tp,xp]) * adj_SU2(U[1,t,xp]) * adj_SU2(U[2,t,x])
+    #         b = U[1,tp,x] * U[2,tpp,x] * adjoint(U[1,tp,xp]) * adjoint(U[1,t,xp]) * adjoint(U[2,t,x])
     #     else
     #         # n  a   a  a  n
     #         # 1  2   1  1  2
     #         # tp tpp tp t  t
     #         # x  xm  xm xm xm 
-    #         a = U[1,tp,x] * adj_SU2(U[2,tpp,xm]) * adj_SU2(U[1,tp,xm]) * adj_SU2(U[1,t,xm]) * U[2,t,xm]
+    #         a = U[1,tp,x] * adjoint(U[2,tpp,xm]) * adjoint(U[1,tp,xm]) * adjoint(U[1,t,xm]) * U[2,t,xm]
     #         # n  a  a  a  n
     #         # 2  1  1  2  1
     #         # tp t  tm tm tm 
     #         # x  xp xp x  x
-    #         b = U[2,tp,x] * adj_SU2(U[1,t,xp]) * adj_SU2(U[1,tm,xp]) * adj_SU2(U[2,tm,x]) * U[1,tm,x]
+    #         b = U[2,tp,x] * adjoint(U[1,t,xp]) * adjoint(U[1,tm,xp]) * adjoint(U[2,tm,x]) * U[1,tm,x]
     #     end
     # else #if μ == 2
     #     # n  n  a   a  a
     #     # 1  1  2   1  1
     #     # t  tp tpp tp t
     #     # xp xp x   x  x
-    #     a = U[1,t,xp] * U[1,tp,xp] * adj_SU2(U[2,tpp,x]) * adj_SU2(U[1,tp,x]) * adj_SU2(U[1,t,x])
+    #     a = U[1,t,xp] * U[1,tp,xp] * adjoint(U[2,tpp,x]) * adjoint(U[1,tp,x]) * adjoint(U[1,t,x])
     #     # a  a   a   n   n 
     #     # 1  1   2   1   1 
     #     # tm tmm tmm tmm tm 
     #     # xp xp  x   x   x 
-    #     b = adj_SU2(U[1,tm,xp]) * adj_SU2(U[1,tmm,xp]) * adj_SU2(U[2,tmm,x]) * U[1,tmm,x] * U[1,tm,x]
+    #     b = adjoint(U[1,tm,xp]) * adjoint(U[1,tmm,xp]) * adjoint(U[2,tmm,x]) * U[1,tmm,x] * U[1,tm,x]
     # end
     return a+b
 end
@@ -223,7 +223,7 @@ end
 
 function overrelax_hex!(U, μ, x, t)
     v = proj_SU2(staple_dag_hex(U,μ,x,t))
-    U[μ,x,t] = adj_SU2(v *  U[μ,x,t] * v)
+    U[μ,x,t] = adjoint(v *  U[μ,x,t] * v)
     return nothing
 end
 

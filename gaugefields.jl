@@ -101,7 +101,7 @@ function get_array(X::coeffs_SU2)
     return [X.a, X.b, X.c, X.d]
 end
 
-# Generate an array of four coefficients [x₀,...,x₃] such that 
+# Generate coeffs_SU2(x₀,x₁,x₂,x₃) such that 
 # x₀σ₀ + i ∑ₖ xₖσₖ ∈ SU(2)
 function ran_SU2(ϵ)
     # r1 = 2 * (rand()-0.5)
@@ -125,24 +125,33 @@ end
 #     return sqrt(1/det(X)) * X
 # end
 
+# Project coeffs_SU2 onto SU2 (since addition is allowed it may happen that
+# some coeffs_SU2 do not describe an SU2 element anymore)
 function proj_SU2(X::coeffs_SU2)
     return X/sqrt(det(X))
 end
 
-
+# Given coeffs_SU2 create the corresponding SU2-matrix
 function coeffs2grp(X::coeffs_SU2)
     # @assert isapprox(sum(coeffs.^2), 1.0) "coeffs2grp needs coeffs which square up to 1.0"
     # return sum(coeffs .* Σ_im)
     return X.a*σ0 + im*X.b*σ1 + im*X.c*σ2 + im*X.d*σ3
 end
 
+# Given an SU2-matrix return the corresponding coeffs_SU2
 function grp2coeffs(mat)
     return coeffs_SU2(real(mat[1,1]), imag(mat[1,2]), real(mat[1,2]), imag(mat[1,1]))
 end
 
-# Take the adjoint of an SU(2) matrix, where the input is an array of
-# four coefficients needed in the quaternionic representation
-function adj_SU2(X::coeffs_SU2)
+# # Take the adjoint of an SU(2) matrix, where the input is an array of
+# # four coefficients needed in the quaternionic representation
+# function adjoint(X::coeffs_SU2)
+#     return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
+# end
+
+# Take the adjoint of coeffs_SU2, i.e. the adjoint of the matrix 
+# corresponding to said coeffs_SU2
+function LinearAlgebra.adjoint(X::coeffs_SU2)
     return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
 end
 
@@ -220,7 +229,7 @@ function temp_gauge(U)
     V = gaugefield_SU2(NX, NT, false)
     Ω_slice = [coeffs_Id_SU2() for x = 1:NX] 
     for t = 1:NT
-        V[1,:,t] = Ω_slice .* U[1,:,t] .* adj_SU2.(circshift(Ω_slice,-1))
+        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
         Ω_slice = Ω_slice .* U[2,:,t]
     end
     V[2,:,NT] = Ω_slice
@@ -237,12 +246,12 @@ function comb_gauge(U)
     Ω_slice = U[2,:,1]
     Ω_slice[2:NX] = [reduce(*, U[1,1:x,1]) for x = 1:NX-1] .* Ω_slice[2:NX]
     for t = 2:NT-1
-        V[1,:,t] = Ω_slice .* U[1,:,t] .* adj_SU2.(circshift(Ω_slice,-1))
+        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
         Ω_slice = Ω_slice .* U[2,:,t]
     end
     V[2,:,NT] = Ω_slice
     for t = NT:NT
-        V[1,:,t] = Ω_slice .* U[1,:,t] .* adj_SU2.(circshift(Ω_slice,-1))
+        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
         Ω_slice = Ω_slice .* U[2,:,t]
     end
     return V
@@ -379,8 +388,8 @@ function temp_gauge_hex(U)
     V = hexfield_SU2(NX, NT, false)
     Ω_slice = [coeffs_Id_SU2() for x = 1:NX] 
     for t = 1:NT
-        # V[1,:,t] = Ω_slice .* U[1,:,t] .* adj_SU2.(circshift(Ω_slice,-1))
-        V[1,1+mod(t+1,2):2:NX,t] = Ω_slice[1+mod(t+1,2):2:NX] .* U[1,1+mod(t+1,2):2:NX,t] .* adj_SU2.(circshift(Ω_slice,-1)[1+mod(t+1,2):2:NX])
+        # V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
+        V[1,1+mod(t+1,2):2:NX,t] = Ω_slice[1+mod(t+1,2):2:NX] .* U[1,1+mod(t+1,2):2:NX,t] .* adjoint.(circshift(Ω_slice,-1)[1+mod(t+1,2):2:NX])
         Ω_slice = Ω_slice .* U[2,:,t]
     end
     V[2,:,NT] = Ω_slice

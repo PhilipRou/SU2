@@ -123,11 +123,11 @@ function staple_dag_alt(U::Array, t::Int64, x::Int64, dir::Int64)
     x_min = (x + N_x -2)%N_x +1   
 
     if dir == 1
-        a = mult_SU2(U[2,t_plu,x], mult_SU2(adj_SU2(U[1,t,x_plu]), adj_SU2(U[2,t,x])))
-        b = mult_SU2(adj_SU2(U[2,t_plu,x_min]), mult_SU2(adj_SU2(U[1,t,x_min]), U[2,t,x_min]))
+        a = mult_SU2(U[2,t_plu,x], mult_SU2(adjoint(U[1,t,x_plu]), adjoint(U[2,t,x])))
+        b = mult_SU2(adjoint(U[2,t_plu,x_min]), mult_SU2(adjoint(U[1,t,x_min]), U[2,t,x_min]))
     elseif dir == 2
-        a = mult_SU2(U[1,t,x_plu], mult_SU2(adj_SU2(U[2,t_plu,x]), adj_SU2(U[1,t,x])))
-        b = mult_SU2(adj_SU2(U[1,t_min,x_plu]), mult_SU2(adj_SU2(U[2,t_min,x]), U[1,t_min,x]))
+        a = mult_SU2(U[1,t,x_plu], mult_SU2(adjoint(U[2,t_plu,x]), adjoint(U[1,t,x])))
+        b = mult_SU2(adjoint(U[1,t_min,x_plu]), mult_SU2(adjoint(U[2,t_min,x]), U[1,t_min,x]))
     end
     return coeffs2grp(a) + coeffs2grp(b)
 end
@@ -309,10 +309,10 @@ function stout_bench(U, n_stout, ρ)
             for trip = 1:2  # For the chequer board pattern
                 for t = 1:N_t
                     for x = (1+mod(t+trip,2)):2:N_x
-                        stap_link = staple(V,μ,t,x) * adj_SU2(V[μ,t,x])
+                        stap_link = staple(V,μ,t,x) * adjoint(V[μ,t,x])
                         stap_link = 0.5*ρ*stap_link
                         V[μ,t,x] = exp_traceless(stap_link) * V[μ,t,x]
-                        # stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+                        # stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
                         # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
                     end
                 end
@@ -349,10 +349,10 @@ function stout_single_bench(U, ρ)
             for trip = 1:2  # For the chequer board pattern
                 for t = 1:NT
                     for x = (1+mod(t+trip,2)):2:NX
-                        stap_link = staple(U,μ,t,x) * adj_SU2(U[μ,t,x])
+                        stap_link = staple(U,μ,t,x) * adjoint(U[μ,t,x])
                         stap_link = 0.5*ρ*stap_link
                         V[μ,t,x] = exp_traceless(stap_link) * U[μ,t,x]
-                        # stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+                        # stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
                         # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
                     end
                 end
@@ -371,10 +371,10 @@ function stout_single_2_bench(U, ρ)
     for μ = 1:2
         for t = 1:NT
             for x = 1:NX
-                stap_link = staple(U,μ,t,x) * adj_SU2(U[μ,t,x])
+                stap_link = staple(U,μ,t,x) * adjoint(U[μ,t,x])
                 stap_link = 0.5*ρ*stap_link
                 V[μ,t,x] = exp_traceless(stap_link) * U[μ,t,x]
-                # stap_link = coeffs2grp(staple(V,μ,t,x) * adj_SU2(V[μ,t,x]))
+                # stap_link = coeffs2grp(staple(V,μ,t,x) * adjoint(V[μ,t,x]))
                 # V[μ,t,x] = grp2coeffs(exp(α*0.5*(stap_link - adjoint(stap_link)))) * V[μ,t,x]
             end
         end
