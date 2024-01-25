@@ -368,3 +368,16 @@ end
 # topological charge (even though non-existent in 2D SU(2))
 # Polyakov loop???
 
+
+
+
+########    U(2) Shenanigans    ########
+
+
+
+
+function top_charge_U2(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    return imag(sum([log(det(plaq(U, x, t))) for x = 1:NX, t = 1:NT])) / 2 / π
+end
