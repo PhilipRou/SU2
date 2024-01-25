@@ -1,6 +1,7 @@
 include("test_head.jl")
 
 
+
 function alg2grp_SU2_test()
     mat = alg2grp_SU2(rand(3).-0.5)
     @assert is_SU2(mat) "Something went wrong while testing alg2grp_SU2"
@@ -10,7 +11,7 @@ end
 alg2grp_SU2_test()
 
 function ran_SU2_test()
-    coeffs = ran_SU2(rand()-0.5)
+    coeffs = ran_SU2(rand())
     @assert isapprox(sum(get_array(coeffs).^2), 1.0) "Something went wrong while testing ran_SU2"
     return true
 end
@@ -66,10 +67,11 @@ end
 coeffs2grp_test()
 
 function grp2coeffs_test()
-    coeffs = rand() * ran_SU2(rand())
+    coeffs = ran_SU2(rand())
     mat = coeffs2grp(coeffs)
     new_coeffs = grp2coeffs(mat)
     # @assert isapprox(coeffs.a, new_coeffs.a) * isapprox(coeffs.b, new_coeffs.b) * isapprox(coeffs.c, new_coeffs.c) * isapprox(coeffs.d, new_coeffs.d)
+    @assert is_SU2(mat)
     @assert isapprox(coeffs, new_coeffs)
     return true
 end
@@ -162,3 +164,5 @@ function temp_gauge_hex_test()
     end
     return true
 end
+
+temp_gauge_hex_test()

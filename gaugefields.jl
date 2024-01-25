@@ -75,17 +75,18 @@ function Base.:(==)(X::coeffs_SU2, Y::coeffs_SU2)
 end
 
 function Base.isapprox(X::coeffs_SU2, Y::coeffs_SU2)
-    if isapprox(X.a, Y.a)
-        if isapprox(X.b, Y.b)
-            if isapprox(X.c, Y.c)
-                if isapprox(X.d, Y.d)
-                    return true
-                end
-            end
-        end
-    else 
-        return false
-    end
+    # if isapprox(X.a, Y.a)
+    #     if isapprox(X.b, Y.b)
+    #         if isapprox(X.c, Y.c)
+    #             if isapprox(X.d, Y.d)
+    #                 return true
+    #             end
+    #         end
+    #     end
+    # else 
+    #     return false
+    # end
+    return isapprox([X.a,X.b,X.c,X.d], [Y.a,Y.b,Y.c,Y.d])
 end
 
 function LinearAlgebra.tr(X::coeffs_SU2)
@@ -96,13 +97,20 @@ function LinearAlgebra.det(X::coeffs_SU2)
     return X.a^2 + X.b^2 + X.c^2 + X.d^2 
 end
 
+# Take the adjoint of coeffs_SU2, i.e. the adjoint of the matrix 
+# corresponding to said coeffs_SU2
+function LinearAlgebra.adjoint(X::coeffs_SU2)
+    return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
+end
+
 # ❗ Very inefficient, only for debugging purposes ❗
 function get_array(X::coeffs_SU2)
     return [X.a, X.b, X.c, X.d]
 end
 
 # Generate coeffs_SU2(x₀,x₁,x₂,x₃) such that 
-# x₀σ₀ + i ∑ₖ xₖσₖ ∈ SU(2)
+# x₀σ₀ + i ∑ₖ xₖσₖ ∈ SU(2) and close to the identity:
+# the smaller ϵ, the closer, and ϵ = 0 gives the identity
 function ran_SU2(ϵ)
     # r1 = 2 * (rand()-0.5)
     # r2 = 2 * (rand()-0.5)
@@ -145,15 +153,9 @@ end
 
 # # Take the adjoint of an SU(2) matrix, where the input is an array of
 # # four coefficients needed in the quaternionic representation
-# function adjoint(X::coeffs_SU2)
+# function adj_SU2(X::coeffs_SU2)
 #     return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
 # end
-
-# Take the adjoint of coeffs_SU2, i.e. the adjoint of the matrix 
-# corresponding to said coeffs_SU2
-function LinearAlgebra.adjoint(X::coeffs_SU2)
-    return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
-end
 
 # mutable struct gaugefield_SU2
 #     U::Array{Vector{Float64}, 3}
@@ -194,12 +196,12 @@ end
 # end                                                                                                   
 
 
-# Construct a square gauge field: an (2 × N_t × N_x)-Array with 
+# Construct a square gauge field: an (2 × N_x × N_t)-Array with 
 # entries which are SU(2)-valued, or rather in our case, coeffs_SU2-valued 
 # (see struct "coeffs_SU2" above). This means that in order to access the
-# link in μ-direction at space-time point n = (t,x), we need U[μ,t,x], where
-# μ = 1 corresponds to the t-direction ("upwards") and 
-# μ = 2 corresponds to the x-direction ("sideways").
+# link in μ-direction at space-time point n = (x,t), we need U[μ,x,t], where
+# μ = 1 corresponds to the x-direction ("sideways") and
+# μ = 2 corresponds to the t-direction ("upwards").
 function gaugefield_SU2(N_x::Int64, N_t::Int64, hot::Bool)
     U = Array{coeffs_SU2}(undef, 2, N_x, N_t)
     if hot

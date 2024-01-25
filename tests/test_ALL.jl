@@ -1,4 +1,5 @@
 include("test_gaugefields.jl")
+include("test_U2_gaugefields.jl")
 include("test_hex.jl")
 include("test_observables_square.jl")
 include("test_observables_hex.jl")

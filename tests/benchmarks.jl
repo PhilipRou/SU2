@@ -598,7 +598,7 @@ mutable struct coeffs_U2{T <: Real}
 end
 
 
-# Multiply two SU(2)-matrices whose coefficients are given in X and Y
+# Multiply two U(2)-matrices whose coefficients are given in X and Y
 function Base.:*(X::coeffs_U2, Y::coeffs_U2)
     a = X.a*Y.a - X.b*Y.b - X.c*Y.c - X.d*Y.d 
     b = X.a*Y.b + X.b*Y.a - X.c*Y.d + X.d*Y.c
@@ -626,3 +626,46 @@ c4 = ran_U2(rand())
 @benchmark ran_U2(0.1*pi)       # (105±184) ns
 @benchmark ran_mat_U2(0.1*pi)   # (660±863) ns
 
+
+
+mutable struct coeffs_U2{T <: Number}
+    a::T
+    b::T
+    c::T
+    d::T
+    function coeffs_U2(
+        a::T,
+        b::T,
+        c::T,
+        d::T
+        ) where {T <: Number}
+        return new{T}(a,b,c,d)
+    end
+end
+
+
+# Multiply two U(2)-matrices whose coefficients are given in X and Y
+function Base.:*(X::coeffs_U2, Y::coeffs_U2)
+    a = X.a*Y.a - X.b*Y.b - X.c*Y.c - X.d*Y.d 
+    b = X.a*Y.b + X.b*Y.a - X.c*Y.d + X.d*Y.c
+    c = X.a*Y.c + X.b*Y.d + X.c*Y.a - X.d*Y.b
+    d = X.a*Y.d - X.b*Y.c + X.c*Y.b + X.d*Y.a
+    # ϕ = mod(X.ϕ + Y.ϕ, 2*π)     # This is supposed to store the phase of the determinant
+    return coeffs_U2(a,b,c,d)#,ϕ)
+end
+
+function ran_U2(ϵ)
+    # r1 = 2 * (rand()-0.5)
+    # r2 = 2 * (rand()-0.5)
+    # r3 = 2 * (rand()-0.5)
+    r1, r2, r3 = 2 .* (rand(3) .- 0.5)
+    phase = exp(ϵ*im*π*rand()) 
+    absr = sqrt(r1^2 + r2^2 + r3^2)
+    return coeffs_U2(phase*sqrt(1-ϵ^2), phase*ϵ*r1/absr, phase*ϵ*r2/absr, phase*ϵ*r3/absr)#, ϕ)
+end
+
+c1 = ran_U2(rand())
+c2 = ran_U2(rand())
+
+
+@benchmark c1*c2               # (45±60) ns
