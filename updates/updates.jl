@@ -1,6 +1,6 @@
 # We want:
 # staple, local metropolis, chess metropolis
-include("SU2_gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 
 function staple_dag(U, μ, t, x)
     NT = size(U,2)

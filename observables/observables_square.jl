@@ -64,7 +64,7 @@ function action(U, β)
     S = 2*NX*NT   # later generalization: N_colour * NT * (NX)^d_s
     for t = 1:NT
         for x = 1:NX
-            S -= tr(plaq(U,x,t))
+            S -= real(tr(plaq(U,x,t)))
         end
     end
     return β*S/2    # later generalization: β*S/N_colour
@@ -94,8 +94,10 @@ end
 function RT_loop(U, R, T, x, t)
     NX = size(U,2)
     NT = size(U,3)
-    loop = coeffs_Id_SU2()
-    for i = 1:R
+    # loop = coeffs_Id_SU2()
+    loop = U[1,x,t]
+    x = mod1(x+1,NX)
+    for i = 2:R
         loop *= U[1,x,t]
         x = mod1(x+1, NX)
     end
@@ -371,7 +373,9 @@ end
 
 
 
+
 ########    U(2) Shenanigans    ########
+
 
 
 

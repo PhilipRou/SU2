@@ -57,7 +57,7 @@ function action_hex(U,β)
     S = 2*NX*NT
     for t = 1:NT
         for x = (1+mod(t+1,2)):2:NX
-            S -= tr(hexplaq(U,x,t))
+            S -= real(tr(hexplaq(U,x,t)))
         end
     end
     S *= 0.5*β

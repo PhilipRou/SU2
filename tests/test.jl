@@ -5,7 +5,8 @@ using BenchmarkTools
 using LinearAlgebra
 using DelimitedFiles
 
-include("SU2_gaugefields.jl")
+# Crazy outdated⭕⭕⭕
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("SU2_observables.jl")
 include("SU2_observables_hex.jl")
 include("SU2_updates.jl")

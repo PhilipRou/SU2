@@ -1,13 +1,13 @@
 using LinearAlgebra
 using Statistics 
-using Plots
+# using Plots
 # using BenchmarkTools
 using DelimitedFiles
 
 # include("SU2_gaugefields.jl")
 # include("SU2_observables.jl")
 # include("SU2_updates.jl")
-include("gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
 
@@ -16,21 +16,22 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params   ####
-for beta in [2.0,4.0,6.0,8.0]
-    for L = 32:32:128
+for beta in [3.0] # [2.0,4.0,6.0,8.0]
+    for L = 32:32:32
         # beta = 8.0
         # L = 32
         ####    Update params   ####
+        global group    = "U2"   # For "group" choose from: "SU2" or "U2"
         global β        = beta
-        global N_t      = L
-        global N_x      = L
+        global N_t      = L # 32
+        global N_x      = L # copy(N_t)
         global ϵ        = 0.2
         global hot      = true
         global read_last_config = false
         global N_metro  = 3                           # N_metro-many Metropolois sweeps followed by...
         global N_over   = 1                           # ...N_over-many overrelaxation sweeps will be performed...
         global N_therm  = Int(200/(N_metro+N_over))   # ...for N_therm times,
-        global N_meas   = Int( 100* (round(3200 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
+        global N_meas   = Int( 100* (round(800 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
         # N_meas    = Int(800/(N_metro+N_over))  # ...plus N_meas times,
         #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
 
@@ -48,8 +49,13 @@ for beta in [2.0,4.0,6.0,8.0]
 
 
         ####    Handling directories    ####
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
-        last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+        last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+        base_path = string(base_path, group)
+        last_base_path = string(last_base_path, group)
+        base_path = string(base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+        last_base_path = string(last_base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+
         count_path = string(base_path, "\\sim_count.txt")
 
         # Have we already simulated with these parameters (excluding "loops")? If so,
@@ -82,6 +88,7 @@ for beta in [2.0,4.0,6.0,8.0]
         half_rhomb_means_path = string(base_path,"\\half_rhomb_means.txt")
 
 
+        # Write down the parameters of the simulation
         params = "N_t     = $N_t
         N_x     = $N_x 
         β       = $β
@@ -109,18 +116,19 @@ for beta in [2.0,4.0,6.0,8.0]
 
 
 
-        U = gaugefield_SU2(N_t, N_x, hot)
+        # U = gaugefield_SU2(N_t, N_x, hot)
+        U = gaugefield(N_x, N_t, hot, group, "square")      # "lattice" manually set to "square"
         if read_last_config 
-            U = read_last_conf(last_conf_path, N_t, N_x)   # Watch out ❗❗❗❗❗
+            U = read_last_conf(last_conf_path, N_t, N_x)    # Watch out ❗❗❗❗❗
         end
 
         for i = 1:N_therm
             acc_copy = acc[1]
             for j = 1:N_metro
-                chess_metro!(U,ϵ,β,acc)
+                chess_metro!(U,ϵ,β,acc, group)
             end
             for j = 1:N_over
-                chess_overrelax!(U,acc)
+                chess_overrelax!(U,acc, group)
             end
             # mywrite(acceptances_path, acc[1])
             ϵ *= sqrt((acc[1]-acc_copy)  /2/N_t/N_x/(N_metro+N_over) / acc_wish)
@@ -135,17 +143,17 @@ for beta in [2.0,4.0,6.0,8.0]
             if i%(Int(N_meas/100)) == 1
                 println(" ")
                 println("We're already ", counter, "% deep in the simulation with N_t = $N_t, N_x = $N_x, β = $β and ϵ = $ϵ !")
-                mywrite(last_conf_path, U, N_x, N_t)
-                bla = open(last_conf_path, "a")
-                write(bla, "Progress in simulation: $counter %")
-                close(bla)
+                # mywrite(last_conf_path, U, N_x, N_t)
+                # bla = open(last_conf_path, "a")
+                # write(bla, "Progress in simulation: $counter %")
+                # close(bla)
                 counter += 1
             end
             for metro = 1:N_metro
-                chess_metro!(U,ϵ,β,acc)
+                chess_metro!(U,ϵ,β,acc, group)
             end
             for over = 1:N_over
-                chess_overrelax!(U,acc)
+                chess_overrelax!(U,acc, group)
             end
 
 
@@ -155,18 +163,18 @@ for beta in [2.0,4.0,6.0,8.0]
             #     mywrite(corr_mat_paths[t], results[1][:,:,t])
             # end
 
-            # loop_means = measure_loops(U,loops,n_stout,ρ)
-            loop_means_mike = measure_loops_mike(U,loops,β)
-            # mywrite(mean_vals_path, loop_means)
-            mywrite(mean_vals_mike_path, loop_means_mike)
-            edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            mywrite(edge_loop_means_path, edge_loop_mean)
-            L_loop_mean = sum([tr(L_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            mywrite(L_loop_means_path, L_loop_mean)
-            rhomb_mean = sum([tr(rhomb_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            mywrite(rhomb_means_path, rhomb_mean)
-            half_rhomb_mean = sum([tr(rhomb_half_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            mywrite(half_rhomb_means_path, half_rhomb_mean)
+            loop_means = measure_loops(U,loops,n_stout,ρ)
+            # loop_means_mike = measure_loops_mike(U,loops,β)
+            mywrite(mean_vals_path, loop_means)
+            # mywrite(mean_vals_mike_path, loop_means_mike)
+            # edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+            # mywrite(edge_loop_means_path, edge_loop_mean)
+            # L_loop_mean = sum([tr(L_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+            # mywrite(L_loop_means_path, L_loop_mean)
+            # rhomb_mean = sum([tr(rhomb_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+            # mywrite(rhomb_means_path, rhomb_mean)
+            # half_rhomb_mean = sum([tr(rhomb_half_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+            # mywrite(half_rhomb_means_path, half_rhomb_mean)
         end
         println(" ")
         println("We're done!")
