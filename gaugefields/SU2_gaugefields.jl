@@ -14,7 +14,7 @@ using LinearAlgebra
 σ2 = [0 -im; im 0]
 σ3 = [1 0; 0 -1]
 Σ  = [σ0, σ1, σ2, σ3]
-# Σ_im = [σ0, im*σ1, im*σ2, im*σ3]
+Σ_im = [σ0, im*σ1, im*σ2, im*σ3]
 
 # Construct a Lie group element out of a linear combination of Lie algebra elements
 function alg2grp_SU2(coeffs::Array)
@@ -303,13 +303,20 @@ end
 =#
 
 # Produce an array containing the indices to be used on a hexagonal config
-# (see hexfield_SU2() below). Each element is of the form [μ,t,x] with
-# μ ∈ {1,2},  t ∈ {1,...,N_t}  and  x ∈ {1,...,N_x}. 
+# (see hexfield_SU2() below). Each element is of the form [μ,x,t] with
+# μ ∈ {1,2},  x ∈ {1,...,N_x}  and  t ∈ {1,...,N_t}. 
 # The way to store a hexagonal config is the following: we leave out every 
 # other link in 2-direction, creating a "shifted brick-structure". The 
 # remaining links to be used are the ones created by the function below.
-function chess_hex_link_coords(N_x, N_t)
+function hex_links_coords_chess(N_x, N_t)
     coords = []
+    μ = 1
+    for t = 1:N_t
+        for x = 2-mod(t,2):2:N_x
+            push!(coords, [μ,x,t])
+            # println(μ, ", ", x, ", ", t)
+        end
+    end
     μ = 2
     for trip = 1:2
         for start_t = 1:2
@@ -321,18 +328,11 @@ function chess_hex_link_coords(N_x, N_t)
             end
         end
     end
-    μ = 1
-    for t = 1:N_t
-        for x = 2-mod(t,2):2:N_x
-            push!(coords, [μ,x,t])
-            # println(μ, ", ", x, ", ", t)
-        end
-    end
     return coords
 end
 
 # Produce an array of all legal [μ,x,t] indices in lexicographical order
-function chess_hex_link_coords_lex(N_x, N_t)
+function hex_link_coords_lex(N_x, N_t)
     coords = []
     for t = 1:N_t
         for x = 1:N_x
@@ -346,29 +346,47 @@ function chess_hex_link_coords_lex(N_x, N_t)
     return coords
 end
 
-# @benchmark chess_hex_link_coords(10,10)     # (7±12) μs
+# @benchmark hex_links_coords_chess(10,10)     # (7±12) μs
 # @benchmark chess_hex_link_coords_lex(10,10) # (9±17) µs
 
 # Produce an array of coords [x,t] on which there are two non-trivial 
 # gauge links, i.e. where also U[1,x,t] is defined
 function half_chess_coords(N_x, N_t)
     coords = []
-    trip = 1  # Only want half the indices
+    # trip = 1  # Only want half the indices
     for t = 1:N_t
-        for x = (1+mod(t+trip,2)):2:N_x
+        for x = mod1(t,2):2:N_x
             push!(coords, [x,t])
         end
     end
     return coords
 end
 
-# Construct a hexagonal gauge field. See comment on chess_hex_link_coords() 
+function hex_link_coords(N_x, N_t)
+    coords = []
+    μ = 1
+    for t = 1:N_t
+        for x = mod1(t,2):2:N_x
+            push!(coords, [μ,x,t])
+        end
+    end
+    μ = 2
+    for t = 1:N_t
+        for x = 1:N_x
+            push!(coords, [μ,x,t])
+        end
+    end
+    return coords
+end
+
+# Construct a hexagonal gauge field. See comment on hex_links_coords_chess() 
 # above. Every taboo link is constructed as (coeffs_SU2 of) a NaN matrix.
 function hexfield_SU2(N_x::Int64, N_t::Int64, hot::Bool)
     @assert iseven(N_x)
     @assert iseven(N_t)
     U = [coeffs_SU2(NaN,NaN,NaN,NaN) for μ = 1:2, x = 1:N_x, t = 1:N_t]
-    coords = chess_hex_link_coords(N_x, N_t)
+    # coords = hex_links_coords_chess(N_x, N_t)
+    coords = hex_link_coords(N_x, N_t)
     if hot
         for coord in coords
             U[coord[1], coord[2], coord[3]] = ran_SU2(rand())

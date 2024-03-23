@@ -1,5 +1,5 @@
 using Plots
-using Statistics
+using StatsBase
 using DelimitedFiles
 using LsqFit
 using SpecialFunctions

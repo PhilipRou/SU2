@@ -37,4 +37,4 @@ function gaugefield(N_x::Int64, N_t::Int64, hot::Bool, group::String, lattice::S
     end
 end
 
-# test_field = gaugefield(32, 32, true, "U2", "hexagon")
+# test_field = gaugefield(32, 32, true, "U2", "pentagon")

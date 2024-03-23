@@ -275,7 +275,7 @@ function measure_loops(U, loops::Array, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops)
-    results = [tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2])) for loop in loops]
+    results = [real.(tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2]))) for loop in loops]
     mean_vals = [sum(results[i]) for i = 1:L] ./(NX*NT)
     return mean_vals
 end
@@ -383,5 +383,5 @@ end
 function top_charge_U2(U)
     NX = size(U,2)
     NT = size(U,3)
-    return imag(sum([log(det(plaq(U, x, t))) for x = 1:NX, t = 1:NT])) / 2 / π
+    return sum([imag(log(det(plaq(U, x, t)))) for x = 1:NX, t = 1:NT]) / 2 / π
 end

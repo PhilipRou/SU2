@@ -272,8 +272,8 @@ function cum_loop_mat(U, loops)
 end
 
 function measure_loops_bench(U, loops::Array)
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     L = length(loops) #     ⬇ no stout(U), that's the trick!
     results = [tr.(loop_mat(U, loop[1], loop[2])) for loop in loops]
     mean_vals = [sum(results[i]) for i = 1:L] ./(NT*NX)
@@ -281,8 +281,8 @@ function measure_loops_bench(U, loops::Array)
 end
 
 function measure_loops_bench(U, loops::Array, n_stout, ρ)
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     L = length(loops)
     results = [tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2])) for loop in loops]
     mean_vals = [sum(results[i]) for i = 1:L] ./(NT*NX)
@@ -340,9 +340,9 @@ end
 
 # It's not only slow, it's wrong! Let's correct that:
 
-function stout_single_bench(U, ρ)
-    NT = size(U,2)
-    NX = size(U,3)
+function stout_bench(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
     V = similar(U)
     # for i = 1:n_stout
         for μ = 1:2
@@ -362,11 +362,11 @@ function stout_single_bench(U, ρ)
     return V
 end
 
-@benchmark stout_single_bench(test_field, 0.1)  # (1.4 ± 1.1)ms
+@benchmark stout_bench(test_field, 0.1)  # (1.4 ± 1.1)ms
 
-function stout_single_2_bench(U, ρ)
-    NT = size(U,2)
-    NX = size(U,3)
+function stout_2_bench(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
     V = similar(U)
     for μ = 1:2
         for t = 1:NT
@@ -382,12 +382,12 @@ function stout_single_2_bench(U, ρ)
     return V
 end
 
-false ∈ isapprox.(stout_single_bench(test_field,0.1), stout_single_2_bench(test_field, 0.1))
+false ∈ isapprox.(stout_bench(test_field,0.1), stout_2_bench(test_field, 0.1))
 
 # Corrected stout, let's benchmark again
 function measure_loops_bench(U, loops::Array, n_stout, ρ)
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     L = length(loops)
     results = [tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2])) for loop in loops]
     mean_vals = [sum(results[i]) for i = 1:L] ./(NT*NX)

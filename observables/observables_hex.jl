@@ -8,8 +8,8 @@ include("observables_head.jl")
 # Mind the coordinates, i.e. the input of x!!!
 function hexplaq(U, t, x)
     # NX = N_x>>1     # Mind the coordinates❗
-    NT = size(U,2)
     NX = size(U,3)
+    NX = size(U,2)
     t_p = t%NT + 1
     x_p = x%NX + 1
     t_pp = (t+1)%NT + 1
@@ -27,8 +27,8 @@ end
 # plaquette once, or over every space-time point? I think it has
 # to be the former, innit?
 function action_hex(U, β)
-    NT = size(U,2)
     NX = size(U,3)
+    NX = size(U,2)
     S = 2*NT*NX    # later generalization: N_colour * NT * (NX)^d_s
     for t = 1:NT
         for x = 1:NX
@@ -39,6 +39,7 @@ function action_hex(U, β)
 end
 =#
 
+# Plaquette on a hexagonal lattice, starting point lowest left corner
 function hexplaq(U,x,t)
     NX = size(U,2)
     NT = size(U,3)
@@ -54,13 +55,13 @@ end
 function action_hex(U,β)
     NX = size(U,2)
     NT = size(U,3)
-    S = 2*NX*NT
+    S = NX*NT
     for t = 1:NT
         for x = (1+mod(t+1,2)):2:NX
             S -= real(tr(hexplaq(U,x,t)))
         end
     end
-    S *= 0.5*β
+    return β*S/2
 end
 
 
@@ -390,5 +391,15 @@ end
 
 # loop_mat_hex_mike
 
-
+function top_charge_U2_hex(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    Q = 0.0
+    for t = 1:NT
+        for x = mod1(t,2):2:NX
+            Q += imag(log(det(hexplaq(U, x, t)))) 
+        end
+    end
+    return Q / 2 / π
+end
 

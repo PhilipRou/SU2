@@ -1,5 +1,5 @@
 using LinearAlgebra
-using Statistics
+using StatsBase
 # using Plots
 using DelimitedFiles
 using BenchmarkTools

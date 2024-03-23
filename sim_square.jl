@@ -1,186 +1,229 @@
 using LinearAlgebra
-using Statistics 
-# using Plots
-# using BenchmarkTools
+using StatsBase 
 using DelimitedFiles
 
-# include("SU2_gaugefields.jl")
-# include("SU2_observables.jl")
-# include("SU2_updates.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
 
 
+
 ################################################################################
 
 
-####    Observable params   ####
-for beta in [3.0] # [2.0,4.0,6.0,8.0]
+
+####    Observable params    ####
+for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
     for L = 32:32:32
-        # beta = 8.0
-        # L = 32
-        ####    Update params   ####
-        global group    = "U2"   # For "group" choose from: "SU2" or "U2"
-        global β        = beta
-        global N_t      = L # 32
-        global N_x      = L # copy(N_t)
-        global ϵ        = 0.2
-        global hot      = true
-        global read_last_config = false
-        global N_metro  = 3                           # N_metro-many Metropolois sweeps followed by...
-        global N_over   = 1                           # ...N_over-many overrelaxation sweeps will be performed...
-        global N_therm  = Int(200/(N_metro+N_over))   # ...for N_therm times,
-        global N_meas   = Int( 100* (round(800 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
-        # N_meas    = Int(800/(N_metro+N_over))  # ...plus N_meas times,
-        #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
+        for q_start in [0,1]
 
-        ####    Measurement params    ####
-        global n_stout   = 0
-        global ρ         = 0.12
-        loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
-        # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
+            comment = "N_insta for insta_flow_update"
+            
+            ####    Update params   ####
+            global group    = "U2"  # For "group" choose from: "SU2" or "U2"
+            global β        = beta
+            global N_t      = L
+            global N_x      = L
+            global ϵ        = 0.2   # Starting value for step size in generation of random elements
+            global hot      = true  # true: hot start, false: cold start
+            global read_last_config = false
+            global N_metro  = 3                         # N_metro-many Metropolois sweeps followed by...
+            global N_over   = 0                         # ...N_over-many overrelaxation sweeps, followed by...
+            global N_insta  = 1                         # ...N_insta insta_cool updates, using...
+            global N_insta_cool = 0                     # ...N_insta_cool cooling steps
+            global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
+            global N_meas   = Int( 100* (round(1600 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+            # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
+            global N_stout_insta = 100
+            global Q_start   = q_start
+            global Q_insta   = 1
+
+            if group != "SU2" && N_over != 0
+                error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
+            end
+            if group != "U2" && N_insta != 0
+                error("Instanton updates are only implemented for U(2) yet, so please set N_insta to 0")
+            end
+
+            ####    Measurement params    ####
+            global n_stout   = 0
+            global ρ         = 0.12
+            loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+            # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
 
 
-        ####    Accpetance and Progress    ####
-        global counter  = 0
-        global acc      = [0]
-        global acc_wish = 0.9
+            ####    Accpetance and Progress    ####
+            global counter        = 0
+            global acc_metro      = [0.0]
+            global acc_over       = [0.0]
+            global acc_insta      = [0.0]
+            global acc_wish       = 0.9
+            global acc_wish_insta = 0.45
+            global cool_deg       = 3.5
 
 
-        ####    Handling directories    ####
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
-        last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
-        base_path = string(base_path, group)
-        last_base_path = string(last_base_path, group)
-        base_path = string(base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
-        last_base_path = string(last_base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+            ####    Handling directories    ####
+            base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+            last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+            base_path = string(base_path, group)
+            last_base_path = string(last_base_path, group)
+            base_path = string(base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+            last_base_path = string(last_base_path,"_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
 
-        count_path = string(base_path, "\\sim_count.txt")
+            count_path = string(base_path, "\\sim_count.txt")
 
-        # Have we already simulated with these parameters (excluding "loops")? If so,
-        # make a new directory and keep track of how often via "sim_count.txt"
-        if !isdir(base_path)    
-            mkpath(base_path)
-            writedlm(count_path, 1)
-            base_path = string(base_path, "\\sim_count_1")
-        else 
-            sim_count = Int(readdlm(count_path)[1])
-            sim_count += 1
-            writedlm(count_path, sim_count)
-            last_sim_count = sim_count -1
-            last_base_path = string(base_path, "\\sim_count_$last_sim_count")
-            base_path = string(base_path, "\\sim_count_$sim_count")
+            # Have we already simulated with these parameters (excluding "loops")? If so,
+            # make a new directory and keep track of how often via "sim_count.txt"
+            if !isdir(base_path)    
+                mkpath(base_path)
+                writedlm(count_path, 1)
+                base_path = string(base_path, "\\sim_count_1")
+            else 
+                sim_count = Int(readdlm(count_path)[1])
+                sim_count += 1
+                writedlm(count_path, sim_count)
+                last_sim_count = sim_count -1
+                last_base_path = string(base_path, "\\sim_count_$last_sim_count")
+                base_path = string(base_path, "\\sim_count_$sim_count")
+            end
+            mkdir(base_path)
+            
+            # actions_path     = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+            actions_path = string(base_path,"\\actions.txt")
+            params_path = string(base_path,"\\params.txt") #
+            acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+            last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+            top_charge_path = string(base_path,"\\top_charge.txt")
+            corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+            mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+            mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
+            edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
+            L_loop_means_path = string(base_path,"\\L_loop_means.txt")
+            last_conf_path = string(last_base_path,"\\last_config.txt")
+            rhomb_means_path = string(base_path,"\\rhomb_means.txt")
+            half_rhomb_means_path = string(base_path,"\\half_rhomb_means.txt")
+
+
+            # Write down the parameters of the simulation
+            params = "Square Simulation with:
+            N_t          = $N_t
+            N_x          = $N_x 
+            β            = $β
+            hot          = $hot
+
+            N_metro      = $N_metro
+            N_over       = $N_over
+            N_insta      = $N_insta
+            N_stout_insta = $N_stout_insta
+            N_therm      = $N_therm
+            N_meas       = $N_meas
+            acc_wish     = $acc_wish
+            Q_start      = $Q_start
+
+            n_stout      = $n_stout
+            ρ            = $ρ
+            loops        = $loops
+            
+            comment      = $comment"
+
+            bla = open(params_path, "a")
+            write(bla, params)
+            close(bla)
+
+
+
+
+            ################################################################################
+
+
+
+
+            # U = gaugefield_SU2(N_t, N_x, hot)
+            U = gaugefield(N_x, N_t, hot, group, "square")      # "lattice" manually set to "square"
+            if read_last_config 
+                U = read_last_conf(last_conf_path, N_t, N_x)    # Watch out ❗❗❗❗❗
+            end
+
+            for i = 1:N_therm
+                acc_copy = acc_metro[1]
+                for j = 1:N_metro
+                    chess_metro!(U,ϵ,β,acc_metro,group)
+                end
+                for j = 1:N_over
+                    chess_overrelax!(U,acc_over)
+                end
+                for j = 1:N_insta
+                    # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
+                    # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
+                    # insta_update_U2!(U,β,acc_insta,Q_insta)
+                    insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                end
+                # mywrite(acceptances_path, acc[1])
+                ϵ *= sqrt((acc_metro[1]-acc_copy)  /2/N_t/N_x/N_metro / acc_wish) # only update ϵ acc. to Metropolis
+                global epsilon = deepcopy(ϵ)
+                println(epsilon)
+            end
+            bla = open(params_path, "a")
+            write(bla, "\n  ϵ = $epsilon")
+            close(bla)
+
+            U = insta_U2(N_x, N_t, -round(Int, top_charge_U2(U)) + Q_start)
+            for i = 1:50 chess_metro!(U,ϵ,β,acc_metro,group) end
+
+            acc_metro    = [0.0]
+            acc_over     = [0.0]
+            acc_insta    = [0.0]
+
+            for i = 1:N_meas 
+                if i%(Int(N_meas/100)) == 1
+                    println(" ")
+                    println("We're already ", counter, "% deep in the simulation with N_t = $N_t, N_x = $N_x, β = $β and ϵ = $ϵ !")
+                    # mywrite(last_conf_path, U, N_x, N_t)
+                    # bla = open(last_conf_path, "a")
+                    # write(bla, "Progress in simulation: $counter %")
+                    # close(bla)
+                    counter += 1
+                end
+                for metro = 1:N_metro
+                    chess_metro!(U,ϵ,β,acc_metro,group)
+                end
+                for over = 1:N_over
+                    chess_overrelax!(U,acc_over)
+                end
+                for j = 1:N_insta
+                    # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
+                    # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
+                    # insta_update_U2!(U,β,acc_insta,Q_insta)
+                    insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                end
+
+
+                mywrite(acceptances_path, [acc_metro[1], acc_over[1], acc_insta[1]])
+                mywrite(actions_path, action(U,β))
+                mywrite(top_charge_path, top_charge_U2(U))
+                # mywrite(mean_vals_path, results[2])
+                # for t = 1:N_t
+                #     mywrite(corr_mat_paths[t], results[1][:,:,t])
+                # end
+
+                loop_means = measure_loops(U,loops,n_stout,ρ)
+                # loop_means_mike = measure_loops_mike(U,loops,β)
+                mywrite(mean_vals_path, loop_means)
+                # mywrite(mean_vals_mike_path, loop_means_mike)
+                # edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+                # mywrite(edge_loop_means_path, edge_loop_mean)
+                # L_loop_mean = sum([tr(L_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+                # mywrite(L_loop_means_path, L_loop_mean)
+                # rhomb_mean = sum([tr(rhomb_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+                # mywrite(rhomb_means_path, rhomb_mean)
+                # half_rhomb_mean = sum([tr(rhomb_half_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
+                # mywrite(half_rhomb_means_path, half_rhomb_mean)
+            end
+            println(" ")
+            println("We're done!")
         end
-        mkdir(base_path)
-        
-        # actions_path     = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
-        params_path = string(base_path,"\\params.txt") #
-        acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-        last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-        corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-        mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-        mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
-        edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
-        L_loop_means_path = string(base_path,"\\L_loop_means.txt")
-        last_conf_path = string(last_base_path,"\\last_config.txt")
-        rhomb_means_path = string(base_path,"\\rhomb_means.txt")
-        half_rhomb_means_path = string(base_path,"\\half_rhomb_means.txt")
-
-
-        # Write down the parameters of the simulation
-        params = "N_t     = $N_t
-        N_x     = $N_x 
-        β       = $β
-        hot     = $hot
-
-        N_metro = $N_metro
-        N_over  = $N_over
-        N_therm = $N_therm
-        N_meas  = $N_meas
-        acc_wish= $acc_wish
-
-        n_stout = $n_stout
-        ρ       = $ρ
-        loops   = $loops"
-
-        bla = open(params_path, "a")
-        write(bla, params)
-        close(bla)
-
-
-
-
-        ################################################################################
-
-
-
-
-        # U = gaugefield_SU2(N_t, N_x, hot)
-        U = gaugefield(N_x, N_t, hot, group, "square")      # "lattice" manually set to "square"
-        if read_last_config 
-            U = read_last_conf(last_conf_path, N_t, N_x)    # Watch out ❗❗❗❗❗
-        end
-
-        for i = 1:N_therm
-            acc_copy = acc[1]
-            for j = 1:N_metro
-                chess_metro!(U,ϵ,β,acc, group)
-            end
-            for j = 1:N_over
-                chess_overrelax!(U,acc, group)
-            end
-            # mywrite(acceptances_path, acc[1])
-            ϵ *= sqrt((acc[1]-acc_copy)  /2/N_t/N_x/(N_metro+N_over) / acc_wish)
-            global epsilon = deepcopy(ϵ)
-            println(epsilon)
-        end
-        bla = open(params_path, "a")
-        write(bla, "\n  ϵ = $epsilon")
-        close(bla)
-
-        for i = 1:N_meas 
-            if i%(Int(N_meas/100)) == 1
-                println(" ")
-                println("We're already ", counter, "% deep in the simulation with N_t = $N_t, N_x = $N_x, β = $β and ϵ = $ϵ !")
-                # mywrite(last_conf_path, U, N_x, N_t)
-                # bla = open(last_conf_path, "a")
-                # write(bla, "Progress in simulation: $counter %")
-                # close(bla)
-                counter += 1
-            end
-            for metro = 1:N_metro
-                chess_metro!(U,ϵ,β,acc, group)
-            end
-            for over = 1:N_over
-                chess_overrelax!(U,acc, group)
-            end
-
-
-            mywrite(acceptances_path, acc[1])
-            # mywrite(mean_vals_path, results[2])
-            # for t = 1:N_t
-            #     mywrite(corr_mat_paths[t], results[1][:,:,t])
-            # end
-
-            loop_means = measure_loops(U,loops,n_stout,ρ)
-            # loop_means_mike = measure_loops_mike(U,loops,β)
-            mywrite(mean_vals_path, loop_means)
-            # mywrite(mean_vals_mike_path, loop_means_mike)
-            # edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            # mywrite(edge_loop_means_path, edge_loop_mean)
-            # L_loop_mean = sum([tr(L_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            # mywrite(L_loop_means_path, L_loop_mean)
-            # rhomb_mean = sum([tr(rhomb_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            # mywrite(rhomb_means_path, rhomb_mean)
-            # half_rhomb_mean = sum([tr(rhomb_half_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-            # mywrite(half_rhomb_means_path, half_rhomb_mean)
-        end
-        println(" ")
-        println("We're done!")
     end
 end
-
 
 
 # acceptances = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\N_t_32.N_x_32._beta_6.0\\n_stout_0._rho_0.12\\sim_count_1\\acceptances.txt")

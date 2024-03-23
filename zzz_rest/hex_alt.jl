@@ -25,7 +25,7 @@ end
 #     return indices
 # end
 
-function chess_hex_link_coords(N_t, N_x)
+function hex_links_coords_chess(N_t, N_x)
     coords = []
     trip = 1  # Only want half the indices
     for x = 1:N_x
@@ -37,7 +37,7 @@ function chess_hex_link_coords(N_t, N_x)
     return coords
 end
 
-# chess_hex_link_coords(10,10)
+# hex_links_coords_chess(10,10)
 
 
 # test_inds = half_chess_indices(10,10)
@@ -53,7 +53,7 @@ function hexfield_SU2_alt(N_t::Int64, N_x::Int64, hot::Bool)
     U = [coeffs_SU2(NaN, NaN, NaN, NaN) for μ = 1:2, t = 1:N_t, x = 1:N_x]
     # coords = half_chess_coords(N_t, N_x)
     # other_coords = other_half_chess_coords(N_t, N_x)
-    coords = chess_hex_link_coords(N_t, N_x)
+    coords = hex_links_coords_chess(N_t, N_x)
     if hot
         for μ = 1:2
             for coord in coords
@@ -73,8 +73,8 @@ end
 
 function staple_dag_hex_alt(U, μ, t, x)
     # NX = N_x>>1
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     a = coeffs_SU2(0.0,0.0,0.0,0.0)
     b = coeffs_SU2(0.0,0.0,0.0,0.0)
     tp = mod1(t+1, NT) # t%NT +1                 
@@ -132,8 +132,8 @@ function delta_S_gauge_hex_alt(U, μ, t, x, old_coeffs::coeffs_SU2, new_coeffs::
 end
 
 function action_hex_alt(U,β)
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     S = 2*NT*NX
     for coord in half_chess_coords(NT, NX)
         t = coord[1]
@@ -153,7 +153,7 @@ end
 # β = 1.0
 # N_t = N_x = 10
 # test_hex_alt = hexfield_SU2(N_t, N_x, true)
-# link_coords = chess_hex_link_coords(N_t, N_x)
+# link_coords = hex_links_coords_chess(N_t, N_x)
 # coord = rand(link_coords)
 # # old_coord = deepcopy(coord)
 # # coord = [1,2,3]
@@ -167,8 +167,8 @@ end
 #=
 function staple_dag_hex(U, μ, t, x)
     # NX = N_x>>1
-    NT = size(U,2)
     NX = size(U,3)
+    NX = size(U,2)
     a = coeffs_SU2(0.0,0.0,0.0,0.0)
     b = coeffs_SU2(0.0,0.0,0.0,0.0)
     t_p = mod1(t+1, NT) # t%NT +1                 
@@ -248,8 +248,8 @@ end
 # metro_hex_alt!(test_hex_alt,coord...,0.1)
 
 function lexico_metro_hex_alt!(U,step)
-    NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
+    NT = size(U,3)
     for μ = 1:2
         for t = 1:NT
             for x = 1:NX
@@ -262,7 +262,7 @@ end
 
 function lexico_metro_hex!(U,step)
     NT = size(U,2)
-    NX = size(U,3)
+    NX = size(U,2)
     for μ = 1:3
         for t = 1:NT
             for x = 1:NX
@@ -286,12 +286,12 @@ test_field_hex = hexfield_SU2(N_t>>1, N_x, true)
 test_field_hex_alt = hexfield_SU2_alt(N_t, N_x, true)
 acc = [0]
 
-# coords = chess_hex_link_coords(N_t,N_x)
+# coords = hex_links_coords_chess(N_t,N_x)
 
 @benchmark lexico_metro_hex!(test_field_hex, ϵ) # (700 ± 300) μs
 @benchmark lexico_metro_hex_alt!(test_field_hex_alt, ϵ) # (950 ± 350) μs
 
-coord = rand(chess_hex_link_coords(N_t>>1,N_x))
+coord = rand(hex_links_coords_chess(N_t>>1,N_x))
 @benchmark metro_hex!(test_field_hex, coord[1],coord[2],coord[3], ϵ)  # (0.5±0.5)μs
 @benchmark metro_hex_alt!(test_field_hex_alt, coord[1],coord[2],coord[3], ϵ) # (0.5±0.5)μs
 

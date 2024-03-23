@@ -4,8 +4,8 @@ include("updates_head.jl")
 #=
 function staple_dag_hex(U, μ, t, x)
     # NX = N_x>>1
-    NT = size(U,2)
     NX = size(U,3)
+    NX = size(U,2)
     a = coeffs_SU2(0.0,0.0,0.0,0.0)
     b = coeffs_SU2(0.0,0.0,0.0,0.0)
     t_p = mod1(t+1, NT) # t%NT +1                 
@@ -155,11 +155,17 @@ function delta_S_gauge_hex(U, μ, x, t, old_coeffs::coeffs_SU2, new_coeffs::coef
     return β/2*tr((old_coeffs - new_coeffs) * staple_dag_hex(U,μ,x,t))
 end
 
-function metro_hex!(U, μ, x, t, step, β, acc)
-    new_coeffs = ran_SU2(step) * U[μ,x,t]
+function metro_hex!(U, μ, x, t, step, β, acc, group)
+    # new_coeffs = ran_SU2(step) * U[μ,x,t]
+    new_coeffs = U[μ,x,t]
+    if group == "SU2"
+        new_coeffs = ran_SU2(step) * new_coeffs
+    elseif group == "U2"
+        new_coeffs = ran_U2(step) * new_coeffs
+    end
     staple_d = staple_dag_hex(U,μ,x,t)
-    S_old = β*0.5*tr(U[μ,x,t] * staple_d)
-    S_new = β*0.5*tr(new_coeffs * staple_d)
+    S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
+    S_new = β*0.5*real(tr(new_coeffs * staple_d))
     if rand() < exp(S_new-S_old)
         U[μ,x,t] = new_coeffs
         acc[1] += 1
@@ -167,41 +173,45 @@ function metro_hex!(U, μ, x, t, step, β, acc)
     return nothing
 end
 
-function chess_metro_hex!(U, step, β, acc)
+function chess_metro_hex!(U, step, β, acc, group)
     NX = size(U,2)
     NT = size(U,3)
+    μ = 1
+    for trip = 1:2
+        for t = trip:2:NT
+            # for x = 2-mod(t,2):2:NX
+            for x = trip:2:NX
+                metro_hex!(U,μ,x,t,step,β,acc, group)
+                # println(μ, ", ", x, ", ", t)
+            end
+        end
+    end
     μ = 2
     for trip = 1:2
         for start_t = 1:2
             for t = start_t:2:NT
-                for x = (1+mod(t+trip,2)):2:NX
-                    metro_hex!(U,μ,x,t,step,β,acc)
+                # for x = (1+mod(t+trip,2)):2:NX
+                for x = trip:2:NX
+                    metro_hex!(U,μ,x,t,step,β,acc, group)
                     # println(μ, ", ", x, ", ", t)
                 end
             end
-        end
-    end
-    μ = 1
-    for t = 1:NT
-        for x = 2-mod(t,2):2:NX
-            metro_hex!(U,μ,x,t,step,β,acc)
-            # println(μ, ", ", x, ", ", t)
         end
     end
     return nothing
 end
 
 #
-function lexico_metro_hex!(U, step, β, acc)
+function lexico_metro_hex!(U, step, β, acc, group)
     NX = size(U,2)
     NT = size(U,3)
     for t = 1:NT
         for x = 1:NX
             if x in 1+mod(t+1,2):2:NX
-                metro_hex!(U,1,x,t,step,β,acc)
-                metro_hex!(U,2,x,t,step,β,acc)
+                metro_hex!(U,1,x,t,step,β,acc,group)
+                metro_hex!(U,2,x,t,step,β,acc,group)
             elseif x in 1+mod(t,2):2:NX
-                metro_hex!(U,2,x,t,step,β,acc)
+                metro_hex!(U,2,x,t,step,β,acc, group)
             end
         end
     end
@@ -209,14 +219,14 @@ function lexico_metro_hex!(U, step, β, acc)
 end
 
 # 
-function ran_metro_hex!(U, step, β, acc)
+function ran_metro_hex!(U, step, β, acc, group)
     NX = size(U,2)
     NT = size(U,3)
-    coords = chess_hex_link_coords(NX,NT)
+    coords = hex_links_coords_chess(NX,NT)
     r = rand(1:length(coords), length(coords))
     for i = 1:length(coords)
         μ, x, t = coords[r[i]]
-        metro_hex!(U,μ,x,t,step,β,acc)
+        metro_hex!(U,μ,x,t,step,β,acc, group)
     end    
     return nothing
 end
@@ -274,3 +284,79 @@ end
 #         end
 #     end
 # end
+
+#
+function insta_U2_naive_hex(N_x, N_t, Q)
+    U = [coeffs_U2(NaN*im,NaN*im,NaN*im,NaN*im) for μ = 1:2, x = 1:N_x, t = 1:N_t]
+    for t = 1:N_t
+        for x = mod1(t,2):2:N_x
+            U[1,x,t] = exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() # Note the factor 2 cf. square instantons
+        end
+    end
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
+    return U
+end
+
+function insta_U2_hex(N_x, N_t, Q)
+    U = [coeffs_U2(NaN*im,NaN*im,NaN*im,NaN*im) for μ = 1:2, x = 1:N_x, t = 1:N_t]
+    if iseven(Q)
+        for t = 1:N_t
+            for x = mod1(t,2):2:N_x
+                U[1,x,t] = exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() # Note the factor 2 cf. square instantons
+            end
+        end
+        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
+    else
+        for t = 1:N_t
+            for x = mod1(t,2):2:N_x
+                U[1,x,t] = exp(-im*Q*t*π/N_x/N_t) * (cos(t*π/N_x/N_t)*coeffs_Id_U2() - sin(t*π/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) 
+            end
+        end
+        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*π/N_x)*coeffs_Id_U2() + sin(x*π/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
+    end
+    return U
+end
+
+# function top_charge_U2_hex(U)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     Q = 0.0
+#     for t = 1:NT
+#         for x = mod1(t,2):2:NX
+#             Q += imag(log(det(hexplaq(U, x, t)))) 
+#         end
+#     end
+#     return Q / 2 / π
+# end
+
+# top_charge_U2_hex(insta_U2_hex(32,32,255))
+
+function insta_update_U2_hex!(U,β,acc)
+    NX = size(U,2)
+    NT = size(U,3)
+    U_prop = insta_U2_hex(NX,NT,rand([-1,1])) .* U
+    if rand() < exp(action_hex(U,β) - action_hex(U_prop,β)) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += NX*NT*1.5
+    end
+    return nothing
+end
+
+# insta_update() doesn't really work, but cooling the proposal
+# only a couple of times (N_insta_cool) seems to do the trick
+function insta_cool_update_U2_hex!(U, step, β, N_insta_cool, acc)
+    NX = size(U,2)
+    NT = size(U,3)
+    U_prop = insta_U2_naive(NX,NT,rand([-1,1])) .* U
+    for i = 1:N_insta_cool
+        chess_cool_hex!(U_prop,step,β,[0],"U2")
+    end
+    if rand() < exp(action_hex(U,β) - action_hex(U_prop,β)) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 2*NX*NT
+    end
+    return nothing
+end

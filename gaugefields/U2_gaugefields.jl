@@ -84,10 +84,12 @@ function ran_U2(ϵ)
     # r1 = 2 * (rand()-0.5)
     # r2 = 2 * (rand()-0.5)
     # r3 = 2 * (rand()-0.5)
-    r1, r2, r3 = 2 .* (rand(3) .- 0.5)
+    r1, r2, r3, r4 = 2 .* (rand(4) .- 0.5)
     absr = sqrt(r1^2 + r2^2 + r3^2)
-    ph_fac = exp(im*ϵ*π*rand()) # Decidedly not exp(2*im*ϵ*π*rand()), see above
+    ph_fac = exp(im*ϵ*π*r4) # Decidedly not exp(2*im*ϵ*π*r4), see above
+    # ⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕
     return coeffs_U2(ph_fac*sqrt(1-ϵ^2), ph_fac*ϵ*r1/absr, ph_fac*ϵ*r2/absr, ph_fac*ϵ*r3/absr)
+    # return sum([ph_fac*sqrt(1-ϵ^2), ph_fac*ϵ*r1/absr, ph_fac*ϵ*r2/absr, ph_fac*ϵ*r3/absr] .* Σ_im)
 end
 
 # Quickly get the coefficients of the identity element
@@ -95,11 +97,11 @@ function coeffs_Id_U2()
     return coeffs_U2(1.0+0.0*im, 0.0*im, 0.0*im, 0.0*im)
 end
 
-# Project coeffs_U2 onto U2 (since addition is allowed it may happen that
-# some coeffs_U2 do not describe a U2 element anymore)
-function proj_U2(X::coeffs_U2)
-    return X/sqrt(abs(det(X)))
-end
+# # Project coeffs_U2 onto U2 (since addition is allowed it may happen that
+# # some coeffs_U2 do not describe a U2 element anymore)
+# function proj_U2(X::coeffs_U2)
+#     return X/sqrt(abs(det(X)))
+# end
 
 # Given coeffs_U2 create the corresponding U2-matrix
 function coeffs2grp(X::coeffs_U2)
@@ -120,7 +122,8 @@ end
 # μ = 1 corresponds to the t-direction ("upwards") and 
 # μ = 2 corresponds to the x-direction ("sideways").
 function gaugefield_U2(N_x::Int64, N_t::Int64, hot::Bool)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t) # ⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕
+    # U = Array{Matrix}(undef, 2, N_x, N_t)
     if hot
         for t = 1:N_t
             for x = 1:N_x
@@ -140,6 +143,8 @@ function gaugefield_U2(N_x::Int64, N_t::Int64, hot::Bool)
     end
     return U
 end
+
+# gaugefield_U2(8, 8, true);
 
 # Apply temporal gauge onto a square config
 function temp_gauge_U2(U)
@@ -165,13 +170,13 @@ end
 
 
 
-# Construct a hexagonal gauge field. See comment on chess_hex_link_coords() in
+# Construct a hexagonal gauge field. See comment on hex_links_coords_chess() in
 # gaugefeilds.jl. Every taboo link is constructed as (coeffs_U2 of) a NaN matrix.
 function hexfield_U2(N_x::Int64, N_t::Int64, hot::Bool)
     @assert iseven(N_x)
     @assert iseven(N_t)
-    U = [coeffs_U2(NaN*(1+im),NaN*(1+im),NaN*(1+im),NaN*(1+im)) for μ = 1:2, x = 1:N_x, t = 1:N_t]
-    coords = chess_hex_link_coords(N_x, N_t)
+    U = [coeffs_U2(NaN*im,NaN*im,NaN*im,NaN*im) for μ = 1:2, x = 1:N_x, t = 1:N_t]
+    coords = hex_links_coords_chess(N_x, N_t)
     if hot
         for coord in coords
             U[coord[1], coord[2], coord[3]] = ran_U2(rand())

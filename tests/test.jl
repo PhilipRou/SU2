@@ -1,6 +1,6 @@
 ################################################################################
 # using Plots
-using Statistics
+using StatsBase
 using BenchmarkTools
 using LinearAlgebra
 using DelimitedFiles

@@ -1,43 +1,10 @@
 using LinearAlgebra
-using Statistics
-using Plots
+using StatsBase
 using DelimitedFiles
 
-# include("SU2_gaugefields.jl")
-# include("SU2_observables.jl")
-# include("SU2_observables_hex.jl")
-# include("SU2_updates.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
-
-
-# test_sq = gaugefield_SU2(N_t, N_x, true)
-# test_hex = hexfield_SU2(N_t, N_x, true)
-
-# for i = 1:100
-#     chess_metro!(test_sq,ϵ)
-#     chess_metro_hex!(test_hex,ϵ)
-# end
-
-# actions_sq = []
-# actions_hex = []
-# for i = 1:2000
-#     chess_metro!(test_sq,ϵ)
-#     chess_metro_hex!(test_hex,ϵ)
-#     push!(actions_sq, action(test_sq))
-#     push!(actions_hex, action_hex(test_hex))
-# end
-# # image = plot(actions_sq, color = :blue)
-# # image = plot(mean(actions_sq).*ones(200), ribbon = std(actions_sq).*ones(200), color = :blue)
-# # image = plot!(actions_hex, color = :orange)
-# # image = plot!(mean(actions_hex).*ones(200), ribbon = std(actions_hex).*ones(200), color = :orange)
-
-# time_sq = auto_corr_time(actions_sq)
-# time_hex = auto_corr_time(actions_hex)
-
-# jackknife(actions_sq, 13)
-# jackknife(actions_hex, 9)
 
 
 
@@ -45,42 +12,59 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 
-####    Observable params   ####
-for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]  
-    for L = 32:32:128
+####    Observable params    ####
+for beta in [12] # [2.0,4,0,6.0,8.0]  
+    for L = 32:32:32
+        #beta = 3.0
         # L = 32
         ####    Update params   ####
+        global group    = "U2"   # For "group" choose from: "SU2" or "U2"
         global β        = beta
         global N_t      = 2*L
         global N_x      = L
-        global ϵ        = 0.2
-        global hot      = true
+        global ϵ        = 0.2   # Step size for generation of random elements
+        global hot      = true  # true: hot start, false: cold start
         global read_last_config = false
-        global N_metro  = 3                           # N_metro-many Metropolois sweeps followed by...
-        global N_over   = 1                           # ...N_over-many overrelaxation sweeps will be performed...
-        global N_therm  = Int(200/(N_metro+N_over))   # ...for N_therm times,
-        global N_meas   = Int( 100* (round(1600 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
-        # N_meas    = Int(800/(N_metro+N_over))  # ...plus N_meas times,
-        #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
+        global N_metro  = 3                         # N_metro-many Metropolois sweeps followed by...
+        global N_over   = 0                         # ...N_over-many overrelaxation sweeps, followed by...
+        global N_insta  = 1                         # ...N_insta insta_cool updates, using...
+        global N_insta_cool = 1                     # ...N_insta_cool cooling steps
+        global N_therm  = Int(500/(N_metro+N_over+N_insta))   # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
+        global N_meas   = Int( 100* (round(1600 * (2*128^2/N_t/N_x) / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+        # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
+
+        if group != "SU2" && N_over != 0
+            error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
+        end
+        if group != "U2" && N_insta != 0
+            error("Instanton updates are only implemented for U(2) yet, so please set N_insta to 0")
+        end
 
         ####    Measurement params    ####
         global n_stout   = 0
         global ρ         = 0.12
-        # loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
-        loops = [[1,1]]
+        loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+        # loops = [[1,1]]
         # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
         # loops   = [[N_t, 0]]    # Polyakov
 
 
         ####    Accpetance and Progress    ####
-        global counter  = 0
-        global acc      = [0]
-        global acc_wish = 0.9
+        global counter      = 0
+        global acc_metro    = [0]
+        global acc_over     = [0]
+        global acc_insta    = [0]
+        global acc_wish     = 0.9
 
 
         ####    Handling directories    ####
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
-        last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+        last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\"
+        base_path = string(base_path, group)
+        last_base_path = string(last_base_path, group)
+        base_path = string(base_path,"_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+        last_base_path = string(last_base_path,"_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
+
         count_path = string(base_path, "\\sim_count.txt")
 
         # Have we already simulated with these parameters (excluding "loops")? If so,
@@ -100,9 +84,11 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
         mkdir(base_path)
         
         # actions_path     = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+        actions_path = string(base_path,"\\actions.txt")        
         params_path = string(base_path,"\\params.txt") #
         acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
         last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+        top_charge_path = string(base_path,"\\top_charge.txt")
         corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
         mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
         # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
@@ -113,23 +99,25 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
         # last_conf_path = string(last_base_path,"\\last_config.txt")
         
         
+        # Write down the parameters of the simulation
         params = "Hexagonal Simulation with:
-        N_t     = $N_t
-        N_x     = $N_x 
-        β       = $β
-        hot     = $hot
+        N_t          = $N_t
+        N_x          = $N_x 
+        β            = $β
+        hot          = $hot
 
-        N_metro = $N_metro
-        N_over  = $N_over
-        N_therm = $N_therm
-        N_meas  = $N_meas
+        N_metro      = $N_metro
+        N_over       = $N_over
+        N_insta      = $N_insta
+        N_insta_cool = $N_insta_cool
+        N_therm      = $N_therm
+        N_meas       = $N_meas
+        acc_wish     = $acc_wish
 
-        n_stout = $n_stout
-        ρ       = $ρ
-        loops   = $loops"
+        n_stout      = $n_stout
+        ρ            = $ρ
+        loops        = $loops"
 
-        # writedlm(params_path,params)
-        # mkpath(params_path)
         bla = open(params_path, "a")
         write(bla, params)
         close(bla)
@@ -143,26 +131,27 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
         
 
         # U = gaugefield_SU2(N_t, N_x, true)
-        H = hexfield_SU2(N_x, N_t, true)
+        H = gaugefield(N_x, N_t, hot, group, "hexagon")      # "lattice" manually set to "hexagon"
         legal_coords = half_chess_coords(N_x,N_t)
 
         for i = 1:N_therm
-            acc_copy = acc[1]
+            acc_copy = acc_metro[1]
             for j = 1:N_metro
-                # chess_metro!(U,ϵ)
-                chess_metro_hex!(H,ϵ,β,acc)
+                chess_metro_hex!(H,ϵ,β,acc_metro,group)
             end
             for j = 1:N_over
-                # chess_overrelax!(U)
-                chess_overrelax_hex!(H,acc)
+                chess_overrelax_hex!(H,acc_over)
             end
-            mywrite(acceptances_path, acc[1])
-            ϵ *= sqrt((acc[1]-acc_copy)  /2/0.75/N_t/N_x/(N_metro+N_over) / acc_wish)
-            global eps = deepcopy(ϵ)
-            println(eps)
+            for j = 1:N_insta
+                insta_cool_update_U2_hex!(H,ϵ,β,N_insta_cool,acc_insta)
+            end
+            # mywrite(acceptances_path, acc[1])
+            ϵ *= sqrt((acc_metro[1]-acc_copy)  /1.5/N_t/N_x/N_metro / acc_wish)
+            global epsilon = deepcopy(ϵ)
+            println(epsilon)
         end
         bla = open(params_path, "a")
-        write(bla, "\n  ϵ = $eps")
+        write(bla, "\n  ϵ = $epsilon")
         close(bla)
 
         # actions     = Vector{Float64}(undef, N_meas)
@@ -171,6 +160,10 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
         # means_1x2   = Vector{Float64}(undef, N_meas)
         # means_2x1   = Vector{Float64}(undef, N_meas)
         # means_2x2   = Vector{Float64}(undef, N_meas)
+
+        acc_metro    = [0]
+        acc_over     = [0]
+        acc_insta    = [0]
 
         for i = 1:N_meas
             if i%(Int(N_meas/100)) == 1
@@ -183,12 +176,13 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
                 counter += 1
             end
             for j = 1:N_metro
-                # chess_metro!(U,ϵ)
-                chess_metro_hex!(H,ϵ,β,acc)
+                chess_metro_hex!(H,ϵ,β,acc,group)
             end
             for j = 1:N_over
-                # chess_overrelax!(U)
                 chess_overrelax_hex!(H,acc)
+            end
+            for j = 1:N_insta
+                insta_cool_update_U2_hex!(H,ϵ,β,N_insta_cool,acc_insta)
             end
 
             # loops_summed_1x1 = 0.0
@@ -212,17 +206,19 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
             # actions_hex[i] = action_hex(H)
 
 
+            mywrite(acceptances_path, [acc_metro[1], acc[1]])
+            mywrite(actions_path, action_hex(H,β))
+            mywrite(top_charge_path, top_charge_U2_hex(H))
             loop_means = measure_loops_hex(H,loops,legal_coords)#,n_stout,ρ)
-            edge_loop_mean = sum([tr(edge_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
-            rhomb_half_loop_mean = sum([tr(rhomb_half_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
-            L_loop_mean = sum([tr(L_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
-            rhomb_loop_mean = sum([tr(rhomb_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
             mywrite(mean_vals_path, loop_means)
-            mywrite(edge_loop_means_path, edge_loop_mean)
-            mywrite(rhomb_half_loop_means_path, rhomb_half_loop_mean)
-            mywrite(L_loop_means_path, L_loop_mean)
-            mywrite(rhomb_loop_means_path, rhomb_loop_mean)
-            mywrite(acceptances_path, acc[1])
+            # edge_loop_mean = sum([tr(edge_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            # rhomb_half_loop_mean = sum([tr(rhomb_half_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            # L_loop_mean = sum([tr(L_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            # rhomb_loop_mean = sum([tr(rhomb_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            # mywrite(edge_loop_means_path, edge_loop_mean)
+            # mywrite(rhomb_half_loop_means_path, rhomb_half_loop_mean)
+            # mywrite(L_loop_means_path, L_loop_mean)
+            # mywrite(rhomb_loop_means_path, rhomb_loop_mean)
         end
         # push!(actions_hex, action_hex(H))
 
@@ -247,7 +243,6 @@ for β in [6.0, 8.0] # [2.0,4,0,6.0,8.0]
         # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_2x2_$N_t.txt", means_2x2)
         
         println(" ")
-
         println("We're done!")
     end
 end
@@ -267,7 +262,7 @@ end
 
 
 
-
+#=
 for L in [16,32,64,96]
 # L = 16
     N_x = L
@@ -413,7 +408,7 @@ for L in [16,32,64,96]
     # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_chess_N_t_$N_t._N_x_$N_x.txt", auto_chess)
     # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_ran_N_t_$N_t._N_x_$N_x.txt", auto_ran)
 end
-
+=#
 
 
 

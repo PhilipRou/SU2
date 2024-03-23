@@ -8,7 +8,7 @@ function delta_S_gauge_hex_test()
     # μ = rand(1:2)
     # x = rand(1:N_x)
     # t = rand(1:N_t)
-    μ, x, t = rand(chess_hex_link_coords(N_x, N_t))
+    μ, x, t = rand(hex_links_coords_chess(N_x, N_t))
     test_field_2[μ,x,t] = ran_SU2(rand())
     true_dif =  action_hex(test_field_2,β)-action_hex(test_field_1,β)
     test_dif = delta_S_gauge_hex(test_field_1, μ,x,t, test_field_1[μ,x,t], test_field_2[μ,x,t],β)
@@ -38,7 +38,7 @@ function overrelax_hex!_test()
     #     μ = rand(1:3)
     #     overrelax_hex!(test_field,μ,x,t)
     # end
-    coords = rand(chess_hex_link_coords(N_x, N_t), 10)
+    coords = rand(hex_links_coords_chess(N_x, N_t), 10)
     for coord in coords
         µ, x, t = coord
         overrelax_hex!(test_field,µ,x,t)
