@@ -258,7 +258,7 @@ image_sqrts = scatter(
 
 
 function spacing_SU2(β)
-    return 0.49 * sqrt(expect_plaq(β)/1.65)
+    return 0.49 * sqrt(analytic_plaq(β)/1.65)
 end
 
 function spacing_U1(β)
@@ -277,7 +277,7 @@ image_space = plot!(
     label = "U(1)"
 )
 spacing_SU2(1e-15)
-expect_plaq(-1e-100)
+analytic_plaq(-1e-100)
 
 bla = 500
 spacing_SU2(bla) - spacing_U1(bla)

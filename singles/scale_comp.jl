@@ -4,28 +4,29 @@ using SpecialFunctions
 using QuadGK
 using Roots
 
+# testar = Vector(1:100)
+# plot!(testar,analytic_susc_U2.(testar))
 
-
-function expect_plaq_U1(β)
+function analytic_plaq_U1(β)
     return besseli(1,β) / besseli(0,β)
 end
 
-function expect_plaq_SU2(β)
+function analytic_plaq_SU2(β)
     return (besseli(0,β) + besseli(2,β)) / (2*besseli(1,β)) - 1/β
 end
 
-function expect_plaq_U2(β)
+function analytic_plaq_U2(β)
     numer(α) = besseli(0,β*cos(α)) + besseli(2,β*cos(α))
     denom(α) = 2*besseli(1,β*cos(α))/cos(α)
     return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/β
 end
 
-function expect_susc_U1(β)
+function analytic_susc_U1(β)
     kern(ϕ) = ϕ^2 * exp(β*cos(ϕ))
     return quadgk(kern, -π, π)[1] / besseli(0,β) / (2*π)^3
 end
 
-function expect_susc_U2(β)
+function analytic_susc_U2(β)
     nasty(α)   = besseli(1,β*cos(α))/cos(α)
     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
     return quadgk(nastier,-π/2,π/2)[1] / quadgk(nasty,-π/2,π/2)[1] / π^2
@@ -35,39 +36,39 @@ end
 function LCP_beta(β_1, V_1, V_2, group)
     if group == "SU(2)"
         # function F(β_2)
-        #     return log(expect_plaq_SU2(β_2))*V_2 - log(expect_plaq_SU2(β_1))*V_1
+        #     return log(analytic_plaq_SU2(β_2))*V_2 - log(analytic_plaq_SU2(β_1))*V_1
         # end
-        return find_zero(β_2 -> log(expect_plaq_SU2(β_2))*V_2 - log(expect_plaq_SU2(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
+        return find_zero(β_2 -> log(analytic_plaq_SU2(β_2))*V_2 - log(analytic_plaq_SU2(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
     elseif group == "U(2)"
         # function F(β_2)
-        #     return log(expect_plaq_U2(β_2))*V_2 - log(expect_plaq_U2(β_1))*V_1
+        #     return log(analytic_plaq_U2(β_2))*V_2 - log(analytic_plaq_U2(β_1))*V_1
         # end
-        return find_zero(β_2 -> log(expect_plaq_U2(β_2))*V_2 - log(expect_plaq_U2(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
+        return find_zero(β_2 -> log(analytic_plaq_U2(β_2))*V_2 - log(analytic_plaq_U2(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
     elseif group == "U(1)"
         # function F(β_2)
-        #     return log(expect_plaq_U1(β_2))*V_2 - log(expect_plaq_U1(β_1))*V_1
+        #     return log(analytic_plaq_U1(β_2))*V_2 - log(analytic_plaq_U1(β_1))*V_1
         # end
-        return find_zero(β_2 -> log(expect_plaq_U1(β_2))*V_2 - log(expect_plaq_U1(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
+        return find_zero(β_2 -> log(analytic_plaq_U1(β_2))*V_2 - log(analytic_plaq_U1(β_1))*V_1, [β_1, 1.1*β_1/V_1*V_2])
     end
 end
 
 function test_F(β_1, β_2, V_1, V_2, group)
     if group == "SU(2)"
-        return log(expect_plaq_SU2(β_2))*V_2 - log(expect_plaq_SU2(β_1))*V_1
+        return log(analytic_plaq_SU2(β_2))*V_2 - log(analytic_plaq_SU2(β_1))*V_1
     elseif group == "U(2)"
-        return log(expect_plaq_U2(β_2))*V_2 - log(expect_plaq_U2(β_1))*V_1
+        return log(analytic_plaq_U2(β_2))*V_2 - log(analytic_plaq_U2(β_1))*V_1
     elseif group == "U(1)"
-        return log(expect_plaq_U1(β_2))*V_2 - log(expect_plaq_U1(β_1))*V_1
+        return log(analytic_plaq_U1(β_2))*V_2 - log(analytic_plaq_U1(β_1))*V_1
     end
 end
 
 function LCP_a(a_1, β_1, β_2, group)
     if group == "SU(2)"
-        return a_1 * sqrt(log(expect_plaq_SU2(β_2)) / log(expect_plaq_SU2(β_1)))
+        return a_1 * sqrt(log(analytic_plaq_SU2(β_2)) / log(analytic_plaq_SU2(β_1)))
     elseif group == "U(2)"
-        return a_1 * sqrt(log(expect_plaq_U2(β_2)) / log(expect_plaq_U2(β_1)))
+        return a_1 * sqrt(log(analytic_plaq_U2(β_2)) / log(analytic_plaq_U2(β_1)))
     elseif group == "U(1)"
-        return a_1 * sqrt(log(expect_plaq_U1(β_2)) / log(expect_plaq_U1(β_1)))
+        return a_1 * sqrt(log(analytic_plaq_U1(β_2)) / log(analytic_plaq_U1(β_1)))
     end
 end
 
@@ -130,15 +131,15 @@ end
 =#
 
 function LCP_a_U1(a_1, β_1, β_2)
-    return a_1 * sqrt(log(expect_plaq_U1(β_2)) / log(expect_plaq_U1(β_1)))
+    return a_1 * sqrt(log(analytic_plaq_U1(β_2)) / log(analytic_plaq_U1(β_1)))
 end
 
 function LCP_a_SU2(a_1, β_1, β_2)
-    return a_1 * sqrt(log(expect_plaq_SU2(β_2)) / log(expect_plaq_SU2(β_1)))
+    return a_1 * sqrt(log(analytic_plaq_SU2(β_2)) / log(analytic_plaq_SU2(β_1)))
 end
 
 function LCP_a_U2(a_1, β_1, β_2)
-    return a_1 * sqrt(log(expect_plaq_U2(β_2)) / log(expect_plaq_U2(β_1)))
+    return a_1 * sqrt(log(analytic_plaq_U2(β_2)) / log(analytic_plaq_U2(β_1)))
 end
 
 # test_image = plot(2:1:64, [test_F(2.0, beta_2, 32^2, 128^2, "U(2)") for beta_2 in 2:1:64])
@@ -151,15 +152,15 @@ end
 
 # a_2 = a_factor ⋅ a_1
 function LCP_beta_U1(a_factor, β_1)
-    return find_zero(β_2 -> expect_plaq_U1(β_2) - expect_plaq_U1(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
+    return find_zero(β_2 -> analytic_plaq_U1(β_2) - analytic_plaq_U1(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
 end
 
 function LCP_beta_SU2(a_factor, β_1)
-    return find_zero(β_2 -> expect_plaq_SU2(β_2) - expect_plaq_SU2(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
+    return find_zero(β_2 -> analytic_plaq_SU2(β_2) - analytic_plaq_SU2(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
 end
 
 function LCP_beta_U2(a_factor, β_1)
-    return find_zero(β_2 -> expect_plaq_U2(β_2) - expect_plaq_U2(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
+    return find_zero(β_2 -> analytic_plaq_U2(β_2) - analytic_plaq_U2(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
 end
 
 function LCP_beta_old(a_factor, β_1)
@@ -167,7 +168,7 @@ function LCP_beta_old(a_factor, β_1)
 end
 # LCP_beta_U1(0.5,2.0)
 
-# f(β_1, β_2, a_factor) = expect_plaq_U1(β_2) - expect_plaq_U1(β_1)^(a_factor^2)
+# f(β_1, β_2, a_factor) = analytic_plaq_U1(β_2) - analytic_plaq_U1(β_1)^(a_factor^2)
 # display(plot(Vector(1:0.1:16), [f(1.0, x, 0.25) for x in 1:0.1:16]))
 
 
@@ -222,12 +223,12 @@ end
 function susc_LCP_U1(β_1, lower_a_factor)
     image_susc = plot(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_susc_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_susc_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_susc_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_susc_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
@@ -237,7 +238,7 @@ function susc_LCP_U1(β_1, lower_a_factor)
     )
     image_susc = scatter!(
         [1.0, 0.0],
-        [expect_susc_U1(β_1), 0.0],
+        [analytic_susc_U1(β_1), 0.0],
         markershape = :star,
         color = :white,
         label = L"$\chi_{top}$ for $a_2/a_1 \in \{0,1\}$"
@@ -248,12 +249,12 @@ end
 function susc_LCP_U2(β_1, lower_a_factor)
     image_susc = plot(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_susc_U2(β) for β in [LCP_beta_U2(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_susc_U2(β) for β in [LCP_beta_U2(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_susc_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_susc_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
@@ -264,7 +265,7 @@ function susc_LCP_U2(β_1, lower_a_factor)
     display(image_susc)
     image_susc = scatter!(
         [1.0, 0.0],
-        [expect_susc_U2(β_1), 0.0],
+        [analytic_susc_U2(β_1), 0.0],
         markershape = :star,
         color = :white,
         label = L"$\chi_{top}$ for $a_2/a_1 \in \{0,1\}$"
@@ -274,12 +275,12 @@ end
 function plaq_LCP_U1(β_1, lower_a_factor)
     image_susc = plot(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
@@ -290,7 +291,7 @@ function plaq_LCP_U1(β_1, lower_a_factor)
     )
     image_susc = scatter!(
         [1.0, 0.0],
-        [expect_plaq_U1(β_1), 1.0],
+        [analytic_plaq_U1(β_1), 1.0],
         markershape = :star,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"
@@ -301,12 +302,12 @@ end
 function plaq_LCP_SU2(β_1, lower_a_factor)
     image_susc = plot(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_SU2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_SU2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_SU2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_SU2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
@@ -317,7 +318,7 @@ function plaq_LCP_SU2(β_1, lower_a_factor)
     )
     image_susc = scatter!(
         [1.0, 0.0],
-        [expect_plaq_SU2(β_1), 1.0],
+        [analytic_plaq_SU2(β_1), 1.0],
         markershape = :star,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"
@@ -328,12 +329,12 @@ end
 function plaq_LCP_U2(β_1, lower_a_factor)
     image_susc = plot(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_U2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_U2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
         Vector(lower_a_factor:0.01:0.999), 
-        [expect_plaq_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        [analytic_plaq_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
@@ -344,7 +345,7 @@ function plaq_LCP_U2(β_1, lower_a_factor)
     )
     image_susc = scatter!(
         [1.0, 0.0],
-        [expect_plaq_U2(β_1), 1.0],
+        [analytic_plaq_U2(β_1), 1.0],
         markershape = :star,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"

@@ -4,7 +4,7 @@ function creutz(means::Vector, a, b, c, d)
     return means[a]*means[d]/(means[b]*means[c])
 end
 
-function expect_plaq(β)
+function analytic_plaq(β)
     return (besseli(0,β) + besseli(2,β)) / (2*besseli(1,β)) - 1/β
 end
 
@@ -269,7 +269,7 @@ for L = 32:32:128
         
 
         loop_sizes = [1, 2, 2, 4, 6, 6, 9, 12, 12, 16, 3, 4, 3, 4]
-        jack_means_anal = [2*expect_plaq(β)^l for l in loop_sizes]
+        jack_means_anal = [2*analytic_plaq(β)^l for l in loop_sizes]
 
         image = scatter!(
             x_lab, 
@@ -481,7 +481,7 @@ for β in [2.0, 4.0, 6.0, 8.0]
         markerstrokecolor = :auto,
         markershape = :hexagon)
 
-    image = hline!([expect_plaq(β)], label = "Analytic", color = :red)
+    image = hline!([analytic_plaq(β)], label = "Analytic", color = :red)
     
     image = plot!(title = "Creutz Ratios with β = $β,
     Sq.: N_t = N_x = $L, Hex.: N_t = 2⋅N_x = 2⋅$L", 
@@ -520,7 +520,7 @@ image_creutz_compare = scatter!(
 betas_plot = Array(first(betas):0.01:last(betas)) 
 image_creutz_compare = plot!(
     betas_plot,
-    expect_plaq.(betas_plot),
+    analytic_plaq.(betas_plot),
     label = "Analytic",
     # markerstrokecolor = :auto,
     # markershape = :hline,
@@ -631,7 +631,7 @@ image_strings = scatter!(
 betas_plot = Array(first(betas)-0.2:0.01:last(betas)+0.2) 
 image_strings = plot!(
     betas_plot,
-    -log.(expect_plaq.(betas_plot)),
+    -log.(analytic_plaq.(betas_plot)),
     label = "Analytic",
     # markerstrokecolor = :auto,
     # markershape = :hline,
@@ -646,7 +646,7 @@ image_strings = plot!(
 display(image_strings)
 
 
-anals = [-log(expect_plaq(betas[i])) for i = 1:4]
+anals = [-log(analytic_plaq(betas[i])) for i = 1:4]
 # abs_distances_sq = [minimum([abs(strings[i]+string_errs[i]-anals[i]), abs(strings[i]-string_errs[i]-anals[i])]) for i = 1:4]
 # abs_distances_hex = [minimum([abs(strings_hex[i]+string_hex_errs[i]-anals[i]), abs(strings_hex[i]-string_hex_errs[i]-anals[i])]) for i = 1:4]
 sigmas_sq = [round(abs((anals[i]-strings[i])/string_errs[i]), digits = 3) for i = 1:4 ]
@@ -776,7 +776,7 @@ image_spaces = scatter!(
 betas_plot = Array(first(betas)-0.2:0.01:last(betas)+0.2) 
 image_spaces = plot!(
     betas_plot,
-    sp_fac .* sqrt.( -log.(expect_plaq.(betas_plot))),
+    sp_fac .* sqrt.( -log.(analytic_plaq.(betas_plot))),
     label = "Analytic",
     # markerstrokecolor = :auto,
     # markershape = :hline,
@@ -837,7 +837,7 @@ display(image_spaces)
 # betas_plot = Array(first(betas)-0.2:0.01:last(betas)+0.2) 
 # image_spacing = plot!(
 #     betas_plot,
-#     sp_fac .* sqrt.(-log.(expect_plaq.(betas_plot))),
+#     sp_fac .* sqrt.(-log.(analytic_plaq.(betas_plot))),
 #     label = "Analytic",
 #     # markerstrokecolor = :auto,
 #     # markershape = :hline,
@@ -854,11 +854,11 @@ display(image_spaces)
 #=
 println("1st Square String: ", strings[1], " ± ", string_errs[1])
 println("1st Hexag. String: ", strings_hex[1], " ± ", string_hex_errs[1])
-println("1st Anal. String:  ", -log(expect_plaq(betas[1])))
+println("1st Anal. String:  ", -log(analytic_plaq(betas[1])))
 println(" ")
 println("2nd Square string: ", strings[2], " ± ", string_errs[2])
 println("2nd Hexag. string: ", strings_hex[2], " ± ", string_hex_errs[2])
-println("2nd Anal. string:  ", -log(expect_plaq(betas[2])))
+println("2nd Anal. string:  ", -log(analytic_plaq(betas[2])))
 println(" ")
 println(" ")
 =#

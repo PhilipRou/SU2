@@ -5,13 +5,13 @@ using QuadGK
 
 
 # Note: test the upper bound of error E, quadgk(f,a,b) = (I,E)
-function expect_plaq_U2(β)
+function analytic_plaq_U2(β)
     numer(α) = besseli(0,β*cos(α)) + besseli(2,β*cos(α))
     denom(α) = 2*besseli(1,β*cos(α))/cos(α)
     return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/β
 end
 
-function expect_susc_U2(β)
+function analytic_susc_U2(β)
     nasty(α)   = besseli(1,β*cos(α))/cos(α)
     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
     return quadgk(nastier,-π/2,π/2)[1] / quadgk(nasty,-π/2,π/2)[1] / π^2
@@ -29,7 +29,7 @@ function creutz(means::Vector, a, b, c, d)
     return means[a]*means[d]/(means[b]*means[c])
 end
 
-function expect_plaq(β)
+function analytic_plaq(β)
     return (besseli(0,β) + besseli(2,β)) / (2*besseli(1,β)) - 1/β
 end
 
@@ -162,7 +162,7 @@ println("β: ", β, ", block size for Q:  ",  b_size_Q)
 
 b_size = Int(round(2*auto_corr_time(susc)+1, RoundUp))
 χ_mean, χ_err = round.(jackknife(susc, b_size), digits = 4)
-χ_anal = round.(expect_susc_U2(β), digits = 4)
+χ_anal = round.(analytic_susc_U2(β), digits = 4)
 println("        block size for Q²: ",  b_size)
 
 skew = round(skewness(charges), digits = 3)
@@ -238,7 +238,7 @@ println("β: ", β, ", block size for Q:  ",  b_size_Q)
 
 b_size = Int(round(2*auto_corr_time(susc)+1, RoundUp))
 χ_mean, χ_err = round.(jackknife(susc, b_size), digits = 4)
-χ_anal = round.(expect_susc_U2(β), digits = 4)
+χ_anal = round.(analytic_susc_U2(β), digits = 4)
 println("        block size for Q²: ",  b_size)
 
 skew = round(skewness(charges), digits = 3)

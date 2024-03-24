@@ -176,11 +176,11 @@ for L in [16,32,64,96]
 
 # using SpecialFunctions
 
-# function expect_plaq(β)
+# function analytic_plaq(β)
 #     return (besseli(0,β) + besseli(2,β)) / (2*besseli(1,β)) - 1/β
 # end
 
-# expect_plaq(8.0)
+# analytic_plaq(8.0)
 
 # betas = [2.0, 4.0, 6.0, 8.0]
 # plaq_means = []
@@ -193,11 +193,11 @@ for L in [16,32,64,96]
 #     b_size = Int(round(2*auto_corr_time(plaqs) + 1, RoundUp))    
 #     push!(plaq_means,  mean(plaqs))
 #     push!(plaq_errs, jackknife(plaqs, b_size)[2])
-#     # push!(plaq_exps, 2*expect_plaq(β))
+#     # push!(plaq_exps, 2*analytic_plaq(β))
 # end
 
 # x_vals = Array(1.0:0.01:9.0)
-# plaq_exps = [expect_plaq(β) for β in x_vals]
+# plaq_exps = [analytic_plaq(β) for β in x_vals]
 # image_plaqs = scatter(betas, plaq_means, yerror = plaq_errs, label = "Measurements: 32²-lattice")
 # image_plaqs = plot!(x_vals, plaq_exps, label = "Analytic")
 # image_plaqs = plot!(
