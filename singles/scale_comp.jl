@@ -185,6 +185,7 @@ function plot_LCP_a(β1,β2)
         xlabel = L"\beta_2",
         ylabel = L"a_2/a_1",
         xaxis = :log2,
+        yaxis = :log,
         # xticks = β1:bla:β2
         xticks = [2^n for n = 1:2:9]
         # foreground_color_legend = nothing
@@ -221,19 +222,20 @@ end
 # plot_LCP_a(2.0, 512)
 
 function susc_LCP_U1(β_1, lower_a_factor)
+    x_vals = Vector(lower_a_factor:0.01:0.999)
     image_susc = plot(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_susc_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_susc_U1(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_susc_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_susc_U1(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
         title = "Cont. Limit of Topological Susc. \n in 2D U(1) with β₁ = $β_1",
-        xlabel = L"$a_2 / a_1$",
+        xlabel = L"$(a_2 / a_1)^2$",
         foreground_color_legend = nothing
     )
     image_susc = scatter!(
@@ -247,19 +249,20 @@ function susc_LCP_U1(β_1, lower_a_factor)
 end
 
 function susc_LCP_U2(β_1, lower_a_factor)
+    x_vals = Vector(lower_a_factor:0.01:0.999)
     image_susc = plot(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_susc_U2(β) for β in [LCP_beta_U2(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_susc_U2(β) for β in [LCP_beta_U2(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_susc_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_susc_U2(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
         title = "Cont. Limit of Topological Susc. \n in 2D U(2) with β₁ = $β_1",
-        xlabel = L"$a_2 / a_1$",
+        xlabel = L"$(a_2 / a_1)^2$",
         foreground_color_legend = nothing
     )
     display(image_susc)
@@ -273,19 +276,20 @@ function susc_LCP_U2(β_1, lower_a_factor)
 end
 
 function plaq_LCP_U1(β_1, lower_a_factor)
+    x_vals = Vector(lower_a_factor:0.01:0.999)
     image_susc = plot(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_U1(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_U1(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_U1(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_U1(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
         title = "Cont. Limit of the Plaquette \n in 2D U(1) with β₁ = $β_1",
-        xlabel = L"$a_2 / a_1$",
+        xlabel = L"$(a_2 / a_1)^2$",
         legend = :bottomleft,
         foreground_color_legend = nothing
     )
@@ -300,20 +304,21 @@ function plaq_LCP_U1(β_1, lower_a_factor)
 end
 
 function plaq_LCP_SU2(β_1, lower_a_factor)
+    x_vals = Vector(lower_a_factor:0.01:0.999)
     image_susc = plot(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_SU2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_SU2(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_SU2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_SU2(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
         title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
-        xlabel = L"$a_2 / a_1$",
-        legend = :bottomleft,
+        xlabel = L"$(a_2 / a_1)^2$",
+        legend = :topright,
         foreground_color_legend = nothing
     )
     image_susc = scatter!(
@@ -327,20 +332,21 @@ function plaq_LCP_SU2(β_1, lower_a_factor)
 end
 
 function plaq_LCP_U2(β_1, lower_a_factor)
+    x_vals = Vector(lower_a_factor:0.01:0.999)
     image_susc = plot(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_U2(β) for β in [LCP_beta_U1(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_U2(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
     image_susc = plot!(
-        Vector(lower_a_factor:0.01:0.999), 
-        [analytic_plaq_U2(β) for β in [LCP_beta_old(a,β_1) for a in Vector(lower_a_factor:0.01:0.999)]],
+        x_vals.^2, 
+        [analytic_plaq_U2(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
         title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
-        xlabel = L"$a_2 / a_1$",
-        legend = :bottomleft,
+        xlabel = L"$(a_2 / a_1)^2$",
+        legend = :topright,
         foreground_color_legend = nothing
     )
     image_susc = scatter!(

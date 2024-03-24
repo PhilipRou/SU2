@@ -13,11 +13,11 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params    ####
-for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
+for beta in [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
     for L = 32:32:32
         for q_start in [0,1]
 
-            comment = "N_insta for insta_flow_update"
+            comment = "N_insta for conventional insta update"
             
             ####    Update params   ####
             global group    = "U2"  # For "group" choose from: "SU2" or "U2"
@@ -36,7 +36,7 @@ for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
             global N_stout_insta = 100
             global Q_start   = q_start
-            global Q_insta   = 1
+            global Q_insta   = 2
 
             if group != "SU2" && N_over != 0
                 error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
@@ -119,6 +119,7 @@ for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
             N_meas       = $N_meas
             acc_wish     = $acc_wish
             Q_start      = $Q_start
+            Q_insta      = $Q_insta
 
             n_stout      = $n_stout
             ρ            = $ρ
@@ -155,8 +156,8 @@ for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
                 for j = 1:N_insta
                     # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
                     # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
-                    # insta_update_U2!(U,β,acc_insta,Q_insta)
-                    insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                    insta_update_U2!(U,β,acc_insta,Q_insta)
+                    # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
                 end
                 # mywrite(acceptances_path, acc[1])
                 ϵ *= sqrt((acc_metro[1]-acc_copy)  /2/N_t/N_x/N_metro / acc_wish) # only update ϵ acc. to Metropolis
@@ -167,7 +168,7 @@ for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
             write(bla, "\n  ϵ = $epsilon")
             close(bla)
 
-            U = insta_U2(N_x, N_t, -round(Int, top_charge_U2(U)) + Q_start)
+            U = insta_U2(N_x, N_t, -round(Int, top_charge_U2(U)) + Q_start) .* U
             for i = 1:50 chess_metro!(U,ϵ,β,acc_metro,group) end
 
             acc_metro    = [0.0]
@@ -193,8 +194,8 @@ for beta in  [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
                 for j = 1:N_insta
                     # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
                     # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
-                    # insta_update_U2!(U,β,acc_insta,Q_insta)
-                    insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                    insta_update_U2!(U,β,acc_insta,Q_insta)
+                    # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
                 end
 
 

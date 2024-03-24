@@ -133,15 +133,15 @@ display(image)
 
 
 L = 32
-# for β in [12.0] # [2.0,4.0,6.0,8.0]
-β = 12.0
+for β in [12.0] # [2.0,4.0,6.0,8.0] #[12.0]
+# β = 12.0
 N_t = L #+ i*16
 N_x = L #+ i*16
 hot = true
 # ϵ   = 0.2 
 n_stout = 0
 ρ   = 0.12
-sim_count = 16
+sim_count = 18
 loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 num_loops = length(loops)
 
@@ -186,6 +186,7 @@ plot(charges)
 # plot(Qs)
 
 println(" ")
+end
 
 # Qs = vcat(Qs, charges)
 
@@ -214,56 +215,56 @@ last(acc[:,3])/32^2/2/6400
 
 L = 32
 for β in [2.0,4.0,6.0,8.0]
-N_t = 2*L #+ i*16
-N_x = L #+ i*16
-hot = true
-# ϵ   = 0.2 
-n_stout = 0
-ρ   = 0.12
-sim_count = 2
-loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
-num_loops = length(loops)
+    N_t = 2*L #+ i*16
+    N_x = L #+ i*16
+    hot = true
+    # ϵ   = 0.2 
+    n_stout = 0
+    ρ   = 0.12
+    sim_count = 2
+    loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+    num_loops = length(loops)
 
-# base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
-# base_path = string(base_base_path, "\\sim_count_$sim_count")
-base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
-Q_path = string(base_path, "\\top_charge.txt")
+    # base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
+    # base_path = string(base_base_path, "\\sim_count_$sim_count")
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    Q_path = string(base_path, "\\top_charge.txt")
 
-charges = readdlm(Q_path)
-susc = charges.^2 ./ L^2
+    charges = readdlm(Q_path)
+    susc = charges.^2 ./ L^2
 
-b_size_Q = Int(round(2*auto_corr_time(charges)+1, RoundUp))
-Q_mean, Q_err = round.(jackknife(charges, b_size_Q), digits = 4)
-println("β: ", β, ", block size for Q:  ",  b_size_Q)
+    b_size_Q = Int(round(2*auto_corr_time(charges)+1, RoundUp))
+    Q_mean, Q_err = round.(jackknife(charges, b_size_Q), digits = 4)
+    println("β: ", β, ", block size for Q:  ",  b_size_Q)
 
-b_size = Int(round(2*auto_corr_time(susc)+1, RoundUp))
-χ_mean, χ_err = round.(jackknife(susc, b_size), digits = 4)
-χ_anal = round.(analytic_susc_U2(β), digits = 4)
-println("        block size for Q²: ",  b_size)
+    b_size = Int(round(2*auto_corr_time(susc)+1, RoundUp))
+    χ_mean, χ_err = round.(jackknife(susc, b_size), digits = 4)
+    χ_anal = round.(analytic_susc_U2(β), digits = 4)
+    println("        block size for Q²: ",  b_size)
 
-skew = round(skewness(charges), digits = 3)
-kurt = round(kurtosis(charges), digits = 3)
+    skew = round(skewness(charges), digits = 3)
+    kurt = round(kurtosis(charges), digits = 3)
 
-bin_width = 2
-hist_charges = round.(Int,charges)
-image_Q = histogram(
-    hist_charges, 
-    label = "⟨Q⟩ = $Q_mean ± $Q_err \n χ = $χ_mean ± $χ_err \n χ_anal = $χ_anal \n skew = $skew \n kurt = $kurt",
-    # bins = 150,
-    # bins = minimum(charges)-bin_width/2:bin_width:maximum(charges)-bin_width/2,
-    normalize = :true,
-    legend = :topleft,
-    foreground_color_legend = nothing,
-    background_color_legend = nothing,
-    title = "Topological charge in HEX. 2D U(2)
-β = $β, N_t = 2⋅N_x = 2⋅$L, insta-update")
-display(image_Q)
+    bin_width = 2
+    hist_charges = round.(Int,charges)
+    image_Q = histogram(
+        hist_charges, 
+        label = "⟨Q⟩ = $Q_mean ± $Q_err \n χ = $χ_mean ± $χ_err \n χ_anal = $χ_anal \n skew = $skew \n kurt = $kurt",
+        # bins = 150,
+        # bins = minimum(charges)-bin_width/2:bin_width:maximum(charges)-bin_width/2,
+        normalize = :true,
+        legend = :topleft,
+        foreground_color_legend = nothing,
+        background_color_legend = nothing,
+        title = "Topological charge in HEX. 2D U(2)
+    β = $β, N_t = 2⋅N_x = 2⋅$L, insta-update")
+    display(image_Q)
 
 end
 
+
+
 std(charges)
-
-
 
 Q_uw=uwreal(vec(charges),"daten")
 uwerr(Q_uw)
