@@ -182,7 +182,7 @@ image_Q = histogram(
     title = "Topological charge in SQUARE 2D U(2)
 β = $β, N_t = N_x = $L, insta-update")
 display(image_Q)
-plot(charges)
+display(plot(charges))
 # plot(Qs)
 
 println(" ")

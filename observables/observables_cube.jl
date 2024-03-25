@@ -123,7 +123,7 @@ end
 # A function which measures everything one can measure (yet) using Wilson loops.
 # The loops are specified in the array 'loops' in which tuples of [n_t, n_x] 
 # are specified, i.e. loops = [[1,1], [1,2], [1,4], [3,4], ...]
-function measure_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
+function measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
     NX = size(U,2)
     NT = size(U,4)
     L = length(loops)
@@ -186,7 +186,7 @@ function measure_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
     # return corrs_t, corrs_x, corrs_y, mean_vals_t, mean_vals_x, mean_vals_y
     return corrs_t, mean_vals_t
 end
-# So the result of measure_loops is an array containing corrs and mean_vals:
+# So the result of measure_RT_loops is an array containing corrs and mean_vals:
 #   corrs[:,:,t] is the correlation matrix at phys. time t
 #   mean_vals[i] is the mean value of the i-th loop (average of the lattice)
 

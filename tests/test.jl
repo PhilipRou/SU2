@@ -253,9 +253,9 @@ end
 
 loop_mat_test()
 
-# Still need to test measure_loops_corrs...
+# Still need to test measure_RT_loops_corrs...
 
-function measure_loops_test()
+function measure_RT_loops_test()
     N_t = N_x = 32
     test_field = gaugefield_SU2(N_t, N_x, true)
     T1 = rand(1:N_t)
@@ -263,11 +263,11 @@ function measure_loops_test()
     R1 = rand(1:N_t)
     R2 = rand(1:N_t)
     loops = [[T1,R1], [T2,R2]]
-    @assert isapprox(measure_loops_corrs(test_field, loops, 0, 0.0)[2], measure_loops(test_field, loops, 0, 0.0))
+    @assert isapprox(measure_RT_loops_corrs(test_field, loops, 0, 0.0)[2], measure_RT_loops(test_field, loops, 0, 0.0))
     return true
 end
 
-measure_loops_test()
+measure_RT_loops_test()
 
 
 

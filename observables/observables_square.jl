@@ -116,46 +116,8 @@ function RT_loop(U, R, T, x, t)
     return loop
 end
 
-
-#=
-# Returns an (Nₓ × Nₜ)-matrix whose entries carry the rectangular (R×T)-loop 
-# at the respective (x,t)-points of the lattice. 
-function loop_mat(U, R, T)
-    NX = size(U,2)
-    NT = size(U,3)
-
-    res = [coeffs_Id_SU2() for x = 1:NX, t = 1:NT] # coeffs of the identity in (NT×NX)-matrix
-    x_arr = collect(1:NX)
-    t_arr = collect(1:NT)
-    for i = 1:R
-        res = res .* U[1,x_arr,t_arr]
-        circshift!(x_arr,-1)    # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-    end
-    for i = 1:T
-        res = res .* U[2,x_arr,t_arr]
-        circshift!(t_arr,-1)   
-    end
-    for i = 1:R
-        circshift!(x_arr,1)
-        res = res .* adjoint.(U[1,x_arr,t_arr])
-    end
-    for i = 1:T
-        circshift!(t_arr,1)
-        res = res .* adjoint.(U[2,x_arr,t_arr])
-    end
-    return res
-end
-=#
-
-# Returns an (Nₓ × Nₜ)-matrix whose entries carry the rectangular (R×T)-loop 
-# at the respective (x,t)-points of the lattice. 
-function loop_mat(U, R, T)
-    NX = size(U,2)
-    NT = size(U,3)
-    return [RT_loop(U,R,T,x,t) for x = 1:NX, t = 1:NT]
-end
-
-#
+# Same as RT_loop(), but uses 
+# C.Michael, NPB 259, 58, eq.(6)
 function RT_loop_mike(U, R, T, x, t, avg_U)
     NX = size(U,2)
     NT = size(U,3)
@@ -199,6 +161,44 @@ function RT_loop_mike(U, R, T, x, t, avg_U)
     return res
 end
 
+#=
+# Returns an (Nₓ × Nₜ)-matrix whose entries carry the rectangular (R×T)-loop 
+# at the respective (x,t)-points of the lattice. 
+function loop_mat(U, R, T)
+    NX = size(U,2)
+    NT = size(U,3)
+
+    res = [coeffs_Id_SU2() for x = 1:NX, t = 1:NT] # coeffs of the identity in (NT×NX)-matrix
+    x_arr = collect(1:NX)
+    t_arr = collect(1:NT)
+    for i = 1:R
+        res = res .* U[1,x_arr,t_arr]
+        circshift!(x_arr,-1)    # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
+    end
+    for i = 1:T
+        res = res .* U[2,x_arr,t_arr]
+        circshift!(t_arr,-1)   
+    end
+    for i = 1:R
+        circshift!(x_arr,1)
+        res = res .* adjoint.(U[1,x_arr,t_arr])
+    end
+    for i = 1:T
+        circshift!(t_arr,1)
+        res = res .* adjoint.(U[2,x_arr,t_arr])
+    end
+    return res
+end
+=#
+
+# Returns an (Nₓ × Nₜ)-matrix whose entries carry the rectangular (R×T)-loop 
+# at the respective (x,t)-points of the lattice. 
+function loop_mat(U, R, T)
+    NX = size(U,2)
+    NT = size(U,3)
+    return [RT_loop(U,R,T,x,t) for x = 1:NX, t = 1:NT]
+end
+
 # Returns an (Nₜ × Nₓ)-matrix just like loop_mat(), but uses 
 # C.Michael, NPB 259, 58, eq.(6)
 # for noise reduction. This can only be done for those links
@@ -224,71 +224,56 @@ function loop_mat_mike(U, R, T, β)
     return [RT_loop_mike(U,R,T,x,t,avg_U) for x = 1:NX, t = 1:NT]
 end
 
+# A function just to get the mean values 'cause it's faster
+function measure_RT_loops(U, loops::Array, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    # L = length(loops)
+    results = [real.(tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2]))) for loop in loops]
+    mean_vals = [sum(results[i]) for i = 1:length(loops)] ./(NX*NT)
+    return mean_vals
+end
+
+# Same as measure_RT_loops(), but using loop_mat_mike() instead of loop_mat()
+function measure_RT_loops_mike(U, loops::Array, β)
+    NT = size(U,3)
+    NX = size(U,2)
+    # L = length(loops)
+    results = [real.(tr.(loop_mat_mike(U, loops[i][1], loops[i][2], β))) for i in loops]
+    mean_vals = [sum(results[i]) for i = 1:length(loops)] ./(NX*NT)
+    return mean_vals
+end
 
 # A function which measures everything one can measure (yet) using Wilson loops.
 # The loops are specified in the array 'loops' in which tuples of [n_t, n_x] 
 # are specified, i.e. loops = [[1,1], [1,2], [1,4], [3,4], ...]
-function measure_loops_corrs(U, loops::Array, n_stout, ρ)
+function measure_RT_loops_corrs(U, loops::Array, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops)
-    t_arr = collect(1:NT)
-    # Transpose loop_mat because Julia is columnn-major, see below
-    results = Vector{Matrix{Float64}}(undef,L)
-    for i = 1:L
-        # "results" conatins matrices corresponding to different resp. loops;
-        # these matrices contain the trace (2× first entry of quaternion array) of
-        # the loop at the resp. space-time point
-        mat = loop_mat(stout(U,n_stout,ρ),loops[i][1],loops[i][2])
-        results[i] = tr.(mat)
-    end
+    
+    # "results" conatins matrices corresponding to different resp. loops;
+    # these matrices contain the trace of the loop at the resp. 
+    # space-time point
+    results = [real.(tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2]))) for loop in loops]
+    
     # Now for each loop we want to obtain a column in "summed":
     # the position in that column is equal to the t-index of the time slice 
     # over which we sum our loop-observable
-    summed = Matrix{Float64}(undef,NT,L)
-    for i = 1:L
-        summed[:,i] = [sum(results[i][:,t]) for t = 1:NT] 
-    end
+    summed = [sum(results[i][:,t]) for t = 1:NT, i = 1:L]
+    
+    # Construct 'corrs', a vector containing correlation matrices
+    t_arr = collect(1:NT)
+    corrs = [sum(summed[:,i] .* summed[circshift(t_arr,-τ),j]) for i = 1:L, j = 1:L, τ = 1:NT] ./ (NX^2*NT) # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
 
-    # A vector containing correlation matrices
-    corrs = Array{Float64}(undef,L,L,NT)
-    for τ = 1:NT
-        corrs[:,:,τ] = [sum(summed[:,i] .* summed[circshift(t_arr,-τ),j]) for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-    end
-    corrs ./= NX^2*NT
-
-    mean_vals = Vector{Float64}(undef,L)
-    for i = 1:L
-        mean_vals[i] = sum(summed[:,i])
-    end
-    mean_vals ./= (NX*NT)
+    mean_vals = [sum(summed[:,i]) for i = 1:L] ./ (NX*NT)
 
     return corrs, mean_vals
 end
-# So the result of measure_loops is an array containing corrs and mean_vals:
+
+# So the result of measure_RT_loops is an array containing corrs and mean_vals:
 #   corrs[:,:,t] is the correlation matrix at phys. time t
 #   mean_vals[i] is the mean value of the i-th loop (average of the lattice)
-
-
-# A function just to get the mean values 'cause it's faster
-function measure_loops(U, loops::Array, n_stout, ρ)
-    NX = size(U,2)
-    NT = size(U,3)
-    L = length(loops)
-    results = [real.(tr.(loop_mat(stout(U,n_stout,ρ), loop[1], loop[2]))) for loop in loops]
-    mean_vals = [sum(results[i]) for i = 1:L] ./(NX*NT)
-    return mean_vals
-end
-
-# Same as measure_loops(), but using loop_mat_mike() instead of loop_mat()
-function measure_loops_mike(U, loops::Array, β)
-    NT = size(U,3)
-    NX = size(U,2)
-    L = length(loops)
-    results = [tr.(loop_mat_mike(U, loops[i][1], loops[i][2], β)) for i = 1:L]
-    mean_vals = [sum(results[i]) for i = 1:L] ./(NX*NT)
-    return mean_vals
-end
 
 # By edge we mean Wilson loops of the shape below (uncomment the shape for more clearness)
 #   _

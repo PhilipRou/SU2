@@ -13,9 +13,9 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params    ####
-for beta in [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
+for beta in [2.0,4.0,6.0,8.0] #,12.0]
     for L = 32:32:32
-        for q_start in [0,1]
+        for q_start in [0]
 
             comment = "N_insta for conventional insta update"
             
@@ -29,8 +29,7 @@ for beta in [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
             global read_last_config = false
             global N_metro  = 3                         # N_metro-many Metropolois sweeps followed by...
             global N_over   = 0                         # ...N_over-many overrelaxation sweeps, followed by...
-            global N_insta  = 1                         # ...N_insta insta_cool updates, using...
-            global N_insta_cool = 0                     # ...N_insta_cool cooling steps
+            global N_insta  = 1                         # ...N_insta instanton updates
             global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
             global N_meas   = Int( 100* (round(1600 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
@@ -202,14 +201,15 @@ for beta in [12.0] # [2.0,4.0,6.0,8.0]#,12.0]
                 mywrite(acceptances_path, [acc_metro[1], acc_over[1], acc_insta[1]])
                 mywrite(actions_path, action(U,β))
                 mywrite(top_charge_path, top_charge_U2(U))
-                # mywrite(mean_vals_path, results[2])
-                # for t = 1:N_t
-                #     mywrite(corr_mat_paths[t], results[1][:,:,t])
-                # end
+                results = measure_RT_loops_corrs(U,loops,n_stout,ρ)
+                mywrite(mean_vals_path, results[2])
+                for t = 1:N_t
+                    mywrite(corr_mat_paths[t], results[1][:,:,t])
+                end
 
-                loop_means = measure_loops(U,loops,n_stout,ρ)
-                # loop_means_mike = measure_loops_mike(U,loops,β)
-                mywrite(mean_vals_path, loop_means)
+                # loop_means = measure_RT_loops(U,loops,n_stout,ρ)
+                # mywrite(mean_vals_path, loop_means)
+                # loop_means_mike = measure_RT_loops_mike(U,loops,β)
                 # mywrite(mean_vals_mike_path, loop_means_mike)
                 # edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
                 # mywrite(edge_loop_means_path, edge_loop_mean)
@@ -427,8 +427,8 @@ end
 #     for j = 1:N_over
 #         chess_overrelax!(U,acc)
 #     end
-#     push!(loops_norm, measure_loops(U,loops,0,0.0))
-#     push!(loops_mike, measure_loops_mike(U,loops))
+#     push!(loops_norm, measure_RT_loops(U,loops,0,0.0))
+#     push!(loops_mike, measure_RT_loops_mike(U,loops))
 #     push!(loops_hand, mean(tr.([loop_2x3_square(U,x,t) for x = 1:N_x, t = 1:N_t])))
 # end
 

@@ -281,7 +281,7 @@ end
 
 # ⭕ Revisit when stout implemented! ⭕
 #
-function measure_loops_hex(U, loops::Array, coords)#, n_stout, ρ)
+function measure_RT_loops_hex(U, loops::Array, coords)#, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops)

@@ -153,7 +153,7 @@ for β in [4.0]
             chess_overrelax_3d!(U,acc)
         end
 
-        results = measure_loops_corrs_3d(U, loops)
+        results = measure_RT_loops_corrs_3d(U, loops)
         corr_mats = (results[1] .+ results[2] .+ results[3]) ./ 3 # Only possible if N_t = N_x
         mean_vals = (results[4] .+ results[5] .+ results[6]) ./ 3 # Only possible if N_t = N_x
         mywrite(acceptances_path, acc[1])

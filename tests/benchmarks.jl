@@ -225,14 +225,14 @@ function test_measure_func()
     β = 6.0
     acc = [0]
     test_field = gaugefield_SU2(64,64,true)
-    measure_loops(test_field, [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]], 0, 0)
+    measure_RT_loops(test_field, [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]], 0, 0)
 end
 
 @benchmark test_measure_func()      # (20±2)ms for [[1,1]]
 #                                   # (213±4)ms for [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]
 
 test_field = gaugefield_SU2(64,64,true)
-@benchmark measure_loops(test_field, [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]], 0, 0) # (202 ± 7)ms
+@benchmark measure_RT_loops(test_field, [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]], 0, 0) # (202 ± 7)ms
 
 function ran_SU2(ϵ)
     r1 = 2 * (rand()-0.5)
@@ -262,7 +262,7 @@ end
 @benchmark ran_SU2_proposed(0.5)    # (127±189)ns, median 103ns
 
 
-########    why does measure_loops() take so long compared to chess_metro()    ########
+########    why does measure_RT_loops() take so long compared to chess_metro()    ########
 
 
 function cum_loop_mat(U, loops)
@@ -271,7 +271,7 @@ function cum_loop_mat(U, loops)
     end
 end
 
-function measure_loops_bench(U, loops::Array)
+function measure_RT_loops_bench(U, loops::Array)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops) #     ⬇ no stout(U), that's the trick!
@@ -280,7 +280,7 @@ function measure_loops_bench(U, loops::Array)
     return mean_vals
 end
 
-function measure_loops_bench(U, loops::Array, n_stout, ρ)
+function measure_RT_loops_bench(U, loops::Array, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops)
@@ -296,8 +296,8 @@ acc = [0]
 
 @benchmark chess_metro!(test_field,0.2) # (21 ± 2)ms
 @benchmark cum_loop_mat(test_field,loops) #(1.9 ± 1.3) ms
-@benchmark measure_loops_bench(test_field, loops, 0, 0.0)    # (63 ± 6)ms
-@benchmark measure_loops_bench(test_field, loops)   # (1.8 ± 1.0)ms
+@benchmark measure_RT_loops_bench(test_field, loops, 0, 0.0)    # (63 ± 6)ms
+@benchmark measure_RT_loops_bench(test_field, loops)   # (1.8 ± 1.0)ms
 
 
 #### ⇒ It's the hecking Stout smearing! Even if n_stout = 0
@@ -385,7 +385,7 @@ end
 false ∈ isapprox.(stout_bench(test_field,0.1), stout_2_bench(test_field, 0.1))
 
 # Corrected stout, let's benchmark again
-function measure_loops_bench(U, loops::Array, n_stout, ρ)
+function measure_RT_loops_bench(U, loops::Array, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     L = length(loops)
@@ -394,9 +394,9 @@ function measure_loops_bench(U, loops::Array, n_stout, ρ)
     return mean_vals
 end
 
-measure_loops_bench(test_field,loops,0,0.0)
+measure_RT_loops_bench(test_field,loops,0,0.0)
 
-@benchmark measure_loops_bench(test_field, loops, 0, 0.0)   # (1.5 ± 0.8)ms
+@benchmark measure_RT_loops_bench(test_field, loops, 0, 0.0)   # (1.5 ± 0.8)ms
 
 test_hex = hexfield_SU2(64, 64, true)
 @benchmark loop_mat_hex(test_hex, 1, 2) # (0.9 ± 1.0)ms
