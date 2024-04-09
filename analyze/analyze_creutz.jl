@@ -46,7 +46,7 @@ end
 
 
 
-for L = 32:32:128
+for L = 32:32:32
     for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
         # L = 32
         # β   = 2.0 #N_t*N_x/128
@@ -62,7 +62,7 @@ for L = 32:32:128
 
         # base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
         # base_path = string(base_base_path, "\\sim_count_$sim_count")
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
         # mean_vals_path = string(base_path,"\\mean_vals.txt")
         mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
         L_loop_means_path = string(base_path,"\\L_loop_means.txt")
@@ -148,7 +148,7 @@ for L = 32:32:128
 
         sim_count = 3
         N_t = 2*L
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
         mean_vals_path = string(base_path,"\\mean_vals.txt")
         L_loop_means_path = string(base_path,"\\L_loop_means.txt")
         edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
@@ -397,7 +397,7 @@ square_best_err = []
 
 L = 32
 # for L in [32] # 32:32:128
-for β in [2.0, 4.0, 6.0, 8.0]
+for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
     # L = 32
     N_t = L #+ i*16
     N_x = L #+ i*16
@@ -407,7 +407,7 @@ for β in [2.0, 4.0, 6.0, 8.0]
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
     means = readdlm(mean_vals_mike_path)
@@ -452,7 +452,7 @@ for β in [2.0, 4.0, 6.0, 8.0]
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_hex_path = string(base_path,"\\mean_vals.txt")
 
     means_hex = readdlm(mean_vals_hex_path)

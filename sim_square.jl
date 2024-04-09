@@ -13,7 +13,7 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params    ####
-for beta in [2.0,4.0,6.0,8.0] #,12.0]
+for beta in [8.0] #,12.0]
     for L = 32:32:32
         for q_start in [0]
 

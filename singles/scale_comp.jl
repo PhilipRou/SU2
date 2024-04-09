@@ -3,6 +3,7 @@ using Plots
 using SpecialFunctions
 using QuadGK
 using Roots
+using Polylogarithms
 
 # testar = Vector(1:100)
 # plot!(testar,analytic_susc_U2.(testar))
@@ -31,6 +32,25 @@ function analytic_susc_U2(β)
     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
     return quadgk(nastier,-π/2,π/2)[1] / quadgk(nasty,-π/2,π/2)[1] / π^2
 end
+
+function a(k,ν)
+    return prod([4*ν^2-(2*i-1)^2 for i = 1:k])/(factorial(big(k))*8^k)
+end
+
+function analytic_plaq_U1_largebeta(β)
+    # return polylog(1,a(1,0)/β) - polylog(1,a(1,1)/β)
+    return (1-a(1,1)/β) / (1-a(1,0)/β)
+end
+
+function analytic_plaq_SU2_largebeta(β)
+    return (2 - (a(1,0)+a(1,2))/β )/(1-a(1,1)/β)/2 #- 2/β
+end
+function log_plaq_SU2_largebeta(β)
+    # return (2 - (a(1,0)+a(1,2))/β )/(1-a(1,1)/β)/2 #- 2/β
+    return (a(1,0)-a(1,2))/(2*β) #- (1-a(1,1)/β)/(2-(a(1,0)+a(1,2))/β)*2/β
+end
+
+# plot(1:500, [log(analytic_plaq_SU2(b)) - log_plaq_SU2_largebeta(b) for b = 1:500])
 
 #=
 function LCP_beta(β_1, V_1, V_2, group)
@@ -150,6 +170,7 @@ end
 # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_U1.pdf")
 
 
+
 # a_2 = a_factor ⋅ a_1
 function LCP_beta_U1(a_factor, β_1)
     return find_zero(β_2 -> analytic_plaq_U1(β_2) - analytic_plaq_U1(β_1)^(a_factor^2), [β_1, 1.1*β_1/a_factor^2])
@@ -172,6 +193,12 @@ end
 # display(plot(Vector(1:0.1:16), [f(1.0, x, 0.25) for x in 1:0.1:16]))
 
 
+
+# function LCP_a_U1_largebeta(a_1, β_1, β_2)
+
+
+
+
 function plot_LCP_a(β1,β2)
     sepa = 0.1
     a1 = 1.0
@@ -192,29 +219,30 @@ function plot_LCP_a(β1,β2)
     )
     image_LCP = plot!(
         Vector(β1:sepa:β2), 
-        [LCP_a_U1(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/64) .- LCP_a_U1(a1,β1,64),
+        [LCP_a_U1(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/256) .- LCP_a_U1(a1,β1,256),
         label = L"$a_2$ from $\sigma$ in U(1)",
         color = palette(:default)[1]
     )
     image_LCP = plot!(
         Vector(β1:sepa:β2), 
-        [LCP_a_SU2(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/64) .- LCP_a_SU2(a1,β1,64),
+        [LCP_a_SU2(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/256) .- LCP_a_SU2(a1,β1,256),
         label = L"$a_2$ from $\sigma$ in SU(2)",
         color = palette(:default)[2]
     )
     image_LCP = plot!(
         Vector(β1:sepa:β2), 
-        [LCP_a_U2(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/64) .- LCP_a_U2(a1,β1,64),
+        [LCP_a_U2(a1,β1,beta) for beta in β1:sepa:β2] .+ sqrt(β1/256) .- LCP_a_U2(a1,β1,256),
         label = L"$a_2$ from $\sigma$ in U(2)",
         color = palette(:default)[3]
     )
     image_LCP = plot!(
-        [64],
+        [256],
         seriestype = :vline,
         color = :red,
         linestyle = :dashdot,
-        label = "LCPs laid on top of \n each other at β₂ = 64",
-        foreground_color_legend = nothing
+        label = "LCPs laid on top of \n each other at β₂ = 256",
+        foreground_color_legend = nothing,
+        legend = :bottomleft
     )
     return image_LCP
 end
@@ -366,7 +394,7 @@ end
 β_1 = 2.0
 
 plot_LCP_a(β_1, 2^9)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_1_$β_1.later.pdf")
 
 plaq_LCP_U2(β_1, 0.0561)
 # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_plaq_LCP_beta_1_$β_1.pdf")
