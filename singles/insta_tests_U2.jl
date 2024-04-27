@@ -129,7 +129,7 @@ end
 # println("Difference after another 10'000 cooling steps: ", -S + action(config,β))
 
 
-
+#=
 β = 12.0
 ϵ = 0.03
 N_x = 32
@@ -182,7 +182,7 @@ display(image_actions)
 # display(histogram2d(round.(Int,charges), round.(Int,charges_naive), normalize = :true))
 
 # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\insta_update_actions_2_U2_N_t_$N_t.pdf")
-
+=#
 
 #=
 N_x = N_t = 32
@@ -464,38 +464,45 @@ action(bla,12) - action(bla_prop,12)
 
 N_x = N_t = 32
 
-function insta_U3(N_x, N_t, Q)
-    U = Array{Matrix}(undef, 2, N_x, N_t)
-    if Q%3 == 0
-        U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * λ0 for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * λ0 for x = 1:N_x]
-    elseif (Q-1)%3 == 0
-        U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(3*N_x*N_t) * λ3) for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(3*N_x) * λ3) for x = 1:N_x]
-    elseif (Q-2)%3 == 0
-        U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(3*N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(3*N_x) * λ8) for x = 1:N_x]
-    end
-    return U
-end
-
-function ran_U3(N_x, N_t, ϵ)
-    return [exp(ϵ * im * rand()) * exp(ϵ * im * sum(rand(8).*Λ)) for μ = 1:2, x = 1:N_x, t = 1:N_t]
-end
-function ran_U3(ϵ)
-    return exp(ϵ * im * sum(rand(8).*Λ))
-end
-
-
-
-# function top_charge_U3(U)
-#     NX = size(U,2)
-#     NT = size(U,3)
-#     return sum([imag(log(det(plaq(U, x, t)))) for x = 1:NX, t = 1:NT]) / 2 / π
+# function insta_U3(N_x, N_t, Q)
+#     U = Array{Matrix}(undef, 2, N_x, N_t)
+#     if Q%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * λ0 for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * λ0 for x = 1:N_x]
+#     elseif (Q-1)%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(3*N_x*N_t) * λ3) for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(3*N_x) * λ3) for x = 1:N_x]
+#     elseif (Q-2)%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(3*N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(3*N_x) * λ8) for x = 1:N_x]
+#     end
+#     return U
 # end
+
+# function insta_U3_try(N_x, N_t, Q, ind_gen_1, ind_gen_2, divisor_1, divisor_2)
+#     U = Array{Matrix}(undef, 2, N_x, N_t)
+#     if Q%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * λ0 for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * λ0 for x = 1:N_x]
+#     elseif (Q-1)%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(divisor_1*N_x*N_t) * Λ[ind_gen_1]) for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(divisor_1*N_x) * Λ[ind_gen_1]) for x = 1:N_x]
+#     elseif (Q-2)%3 == 0
+#         U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp(-(im*t*2*π)/(divisor_2*N_x*N_t) * Λ[ind_gen_2]) for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(im*x*2*π/(divisor_2*N_x) * Λ[ind_gen_2]) for x = 1:N_x]
+#     end
+#     return U
+# end
+
+function ran_U3(ϵ)
+    return exp(ϵ * im * sum((rand(8) .- 0.5).*Λ))
+end
 
 function action_U3(U, β)
     NX = size(U,2)
@@ -509,24 +516,36 @@ function action_U3(U, β)
     return β*S/3    # later generalization: β*S/N_colour
 end
 
-# Q_bound = 6
-# scatter(
-#     -Q_bound:Q_bound, 
-#     [action_U3(insta_U3(N_x, N_t, q), 1) for q = -Q_bound:Q_bound],
-#     xticks = -Q_bound:Q_bound
-# )
+function insta_U3_attempt(N_x, N_t, Q)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((im*Q*t*2*π)/(sqrt(3)*N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(-(im*Q*x*2*π)/(sqrt(3)*N_x) * λ8) for x = 1:N_x]
+    return U
+    # if Q%3 == 0
+    #     U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * λ0 for x = 1:N_x, t = 1:N_t]
+    #     U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    #     U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * λ0 for x = 1:N_x]
+    # elseif (Q-1)%3 == 0
+    #     U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((im*t*2*π)/(sqrt(3)*N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    #     U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    #     U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(-im*x*2*π/(sqrt(3)*N_x) * λ8) for x = 1:N_x]
+    # elseif (Q-2)%3 == 0
+    #     U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((im*2*t*2*π)/(sqrt(3)*N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    #     U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    #     U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp(-im*2*x*2*π/(sqrt(3)*N_x) * λ8) for x = 1:N_x]
+    # end
+    return U
+end
 
-# top_charge_U2(insta_U3(N_x, N_t, 0))
-
-
-
-# action_U3(insta_U3(N_x, N_t, 1),1)
-# action_U3(ran_U3(N_x, N_t, 0.01) .* insta_U3(N_x, N_t, 1), 1)
-
-# bla = insta_U3(N_x, N_t, 2);
-# action_U3(bla,1)
-# bla[rand(1:2), rand(1:N_x), rand(1:N_t)] *= ran_U3(0.01)
-# action_U3(bla, 1)
+function insta_U3_w(N_x, N_t, Q, z)
+    w = sqrt(3) * 2 * pi * (z-Q/3)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
+    return U
+end
 
 function cool!(U, μ, x, t, step, β, acc, group)
     new_coeffs = U[μ,x,t]
@@ -538,8 +557,8 @@ function cool!(U, μ, x, t, step, β, acc, group)
         new_coeffs = ran_U3(step) * new_coeffs
     end
     staple_d = staple_dag(U,μ,x,t)
-    S_old = real(tr(U[μ,x,t] * staple_d))
-    S_new = real(tr(new_coeffs * staple_d))
+    S_old = real(tr(U[μ,x,t] * staple_d)) # ❗ technically missing global factors like β,
+    S_new = real(tr(new_coeffs * staple_d)) # but we don't need them here
     if S_old < S_new
         U[μ,x,t] = new_coeffs
         acc[1] += 1
@@ -547,16 +566,361 @@ function cool!(U, μ, x, t, step, β, acc, group)
     return nothing
 end
 
-bla1 = insta_U3(N_x, N_t, 1)
-bla2 = insta_U3(N_x, N_t, 2)
+function insta_U2_w(N_x, N_t, Q, z)
+    w = π*(2*z-Q)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*w/N_x/N_t)*coeffs_Id_U2() - sin(t*w/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*w/N_x)*coeffs_Id_U2() + sin(x*w/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
+    return U
+end
+
+function insta_U2_opt(N_x, N_t, Q)
+    w = π*(2*mod(Q,2)*π -Q)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*w/N_x/N_t)*coeffs_Id_U2() - sin(t*w/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*w/N_x)*coeffs_Id_U2() + sin(x*w/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
+    return U
+end
+
+function insta_action(β, N_c, N_x, N_t, Q, z)
+    ReTrP = (N_c-1)*cos(2*π*z/N_x/N_t) + cos(2*π*(Q - (N_c-1)*z)/N_x/N_t ) 
+    return β*N_x*N_t*(1 - ReTrP/N_c)
+end
+
+function insta_U3(N_x, N_t, Q)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    w = 0.0
+    if mod(Q%3,3) == 1
+        w = -2*π/sqrt(3)
+    elseif mod(Q%3,3) == 2
+        w = 2*π/sqrt(3)
+    end
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
+    return U
+end
+
+function insta_action_min_U3(β, N_x, N_t, Q, q_plot)
+    ReTrP = 0.0
+    if mod(Q%3,3) == 0
+        ReTrP = 3*cos(2*π/N_x/N_t * q_plot/3)
+    elseif mod(Q%3,3) == 1
+        ReTrP = 2*cos(2*π/N_x/N_t * (q_plot-1)/3) + cos(2*π/N_x/N_t * (q_plot+2)/3)
+    elseif mod(Q%3,3) == 2
+        ReTrP = 2*cos(2*π/N_x/N_t * (q_plot+1)/3) + cos(2*π/N_x/N_t * (q_plot-2)/3)
+    end
+    return β*N_x*N_t*(1 - ReTrP/3)
+end
+
+function insta_action_min(β, N_c, N_x, N_t, Q, q_plot)
+    m = N_c*(round(Q/N_c, RoundNearestTiesAway) - Q/N_c)
+    ReTrP = (N_c-1)*cos(2*π/N_x/N_t * (q_plot+m)/N_c) + cos(2*π/N_x/N_t *(q_plot - (N_c-1)*m)/N_c ) 
+    return β*N_x*N_t*(1 - ReTrP/N_c)
+end
+
+function insta_action_min_U2(β, N_x, N_t, Q)
+    ReTrP = 2*cos(Q*π/N_x/N_t)*cos(π/N_x/N_t)
+    return β*N_x*N_t*(1-ReTrP/2)
+end
+# plot(-6:0.01:6, [insta_action_min_U3(1,N_x,N_t,0,q) for q = -6:0.01:6])
+
+# plot(-6:0.01:6, [insta_action_min(1,4,N_x,N_t,0,q) for q = -6:0.01:6])
+# plot!(-6:0.01:6, [insta_action_min(1,4,N_x,N_t,4,q) for q = -6:0.01:6])
+
+
+
+
+
+
+Q_lower = 0
+Q_upper = 20
+z_lower = 0
+z_upper = 10
+image_insta = plot(
+    title = L"$S/\beta$ for Local Minimum Solutions of 2D U(3)",
+    xlabel = L"Top. Charge $Q$",
+    legend = :top,
+    xticks = Q_lower:Q_upper
+)
+for z = z_lower:z_upper
+    image_insta = plot!(
+        Q_lower:0.01:Q_upper, 
+        [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
+        label = :false,
+        color = palette(:default)[1+z-z_lower],
+    )
+    if (z-z_lower)%3 == 0
+        image_insta = scatter!(
+            Q_lower:Q_upper, 
+            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+            label = "z = $z",
+            markershape = :circle,
+            alpha = 0.6,
+            color = palette(:default)[1+z-z_lower],
+        )
+    elseif (z-z_lower)%3 == 1
+        image_insta = scatter!(
+            Q_lower:Q_upper, 
+            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+            label = "z = $z",
+            markershape = :diamond,
+            alpha = 0.6,
+            color = palette(:default)[1+z-z_lower],
+        )
+    elseif (z-z_lower) %3 == 2
+        image_insta = scatter!(
+            Q_lower:Q_upper, 
+            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+            label = "z = $z",
+            markershape = :star4,
+            alpha = 0.6,
+            color = palette(:default)[1+z-z_lower],
+        )
+    end
+end
+display(image_insta)
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_right.pdf")
+
+
+
+Q_lower = 0
+Q_upper = 20
+z_lower = 0
+z_upper = 10
+image_insta = plot(
+    title = L"$S/\beta$ for Local Minimum Solutions of 2D U(2)",
+    xlabel = L"Top. Charge $Q$",
+    legend = :top,
+    xticks = Q_lower:Q_upper
+)
+for z = z_lower:z_upper
+    image_insta = plot!(
+        Q_lower:0.01:Q_upper, 
+        [insta_action(1, 2, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
+        label = :false,
+        color = palette(:default)[1+z-z_lower],
+    )
+    if (z-z_lower)%2 == 0
+        image_insta = scatter!(
+            Q_lower:Q_upper, 
+            [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+            label = "z = $z",
+            markershape = :rect,
+            alpha = 0.6,
+            color = palette(:default)[1+z-z_lower],
+        )
+    elseif (z-z_lower)%2 == 1
+        image_insta = scatter!(
+            Q_lower:Q_upper, 
+            [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+            label = "z = $z",
+            markershape = :diamond,
+            alpha = 0.6,
+            color = palette(:default)[1+z-z_lower],
+        )
+    end
+end
+display(image_insta)
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_right.pdf")
+
+
+
+Q_bound = 10
+image_insta = plot(
+    title = "S/β for Local Minimum Solutions of 2D U(2) \n Q Taken as Continuous",
+    xlabel = L"Top. Charge $Q$",
+    legend = :top,
+    xticks = -Q_bound:Q_bound
+)
+for z = -2:2
+    image_insta = plot!(
+        -Q_bound:0.01:Q_bound, 
+        [action(insta_U2_w(N_x, N_t, q, z), 1) for q = -Q_bound:0.01:Q_bound],
+        label = "z = $z",
+    )
+end
+display(image_insta)
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_Q_cont.pdf")
+
+
+
+let
+    q_low = -9
+    q_up = 9
+    versatz = 0.02
+    image_einh = plot(
+        title = "S/β for Q-sector-global Minimum Solutions in 2D U(3)",
+        xticks = q_low:q_up,
+        xlabel = "Top. Charge Q",
+        legend = :top
+    )
+    image_einh = plot!(
+        q_low:0.01:q_up, 
+        [insta_action_min_U3(1,N_x,N_t,0,q) for q = q_low:0.01:q_up], 
+        color = palette(:default)[1],
+        label = :false
+    )
+    image_einh = plot!(
+        q_low:0.01:q_up, 
+        [insta_action_min_U3(1,N_x,N_t,1,q) for q = q_low:0.01:q_up], 
+        color = palette(:default)[2],
+        linestyle = :dot,
+        label = :false
+    )
+    image_einh = plot!(
+        q_low+versatz:0.01:q_up, 
+        [insta_action_min_U3(1,N_x,N_t,2,q) for q = q_low+versatz:0.01:q_up], 
+        color = palette(:default)[3],
+        linestyle = :dot,
+        label = :false
+    )
+    image_einh = scatter!(
+        q_low:3:q_up, 
+        [action_U3(insta_U3(N_x, N_t, q),1) for q = q_low:3:q_up], 
+        color = palette(:default)[1],
+        markershape = :circle,
+        label = L"$Q = 3\cdot z$"
+    )
+    image_einh = scatter!(
+        q_low+1:3:q_up, 
+        [action_U3(insta_U3(N_x, N_t, q),1) for q = q_low+1:3:q_up], 
+        color = palette(:default)[2],
+        markershape = :diamond,
+        label = L"$Q = 3\cdot z + 1$"
+    )
+    image_einh = scatter!(
+        q_low+2:3:q_up, 
+        [action_U3(insta_U3(N_x, N_t, q),1) for q = q_low+2:3:q_up], 
+        color = palette(:default)[3],
+        markershape = :star4,
+        label = L"$Q = 3\cdot z - 1$"
+    )
+    display(image_einh)
+end
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\global_minima_2D_U3.pdf")
+
+
+function insta_action_min_U2(β, N_x, N_t, Q, q_plot)
+    ReTrP = 2*cos(q_plot*π/N_x/N_t) 
+    if isodd(Q)
+        ReTrP *= cos(π/N_x/N_t)
+    end
+    return β*N_x*N_t*(1-ReTrP/2)
+end
+
+let
+    q_low = -6
+    q_up = 6
+    versatz = 0.02
+    image_einh = plot(
+        title = "S/β for Q-sector-global Minimum Solutions in 2D U(2)",
+        xticks = q_low:q_up,
+        xlabel = "Top. Charge Q",
+        legend = :top
+    )
+    image_einh = plot!(
+        q_low:0.01:q_up, 
+        [insta_action_min_U2(1,N_x,N_t,0,q) for q = q_low:0.01:q_up], 
+        color = palette(:default)[1],
+        label = :false
+    )
+    image_einh = plot!(
+        q_low:0.01:q_up, 
+        [insta_action_min_U2(1,N_x,N_t,1,q) for q = q_low:0.01:q_up], 
+        color = palette(:default)[2],
+        linestyle = :dot,
+        label = :false
+    )
+    image_einh = scatter!(
+        q_low:2:q_up, 
+        [action(insta_U2(N_x, N_t, q),1) for q = q_low:2:q_up], 
+        color = palette(:default)[1],
+        markershape = :circle,
+        label = L"$Q = 2\cdot z$"
+    )
+    image_einh = scatter!(
+        q_low+1:2:q_up, 
+        [action(insta_U2(N_x, N_t, q),1) for q = q_low+1:2:q_up], 
+        color = palette(:default)[2],
+        markershape = :diamond,
+        label = L"$Q = 2\cdot z + 1$"
+    )
+    display(image_einh)
+end
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\global_minima_2D_U2.pdf")
+
+
+
+
+
+# for k = -5:5
+#     for q = -6:6
+#         bla = insta_U3_w(N_x, N_t, 3, 1);
+#         S = action_U3(bla,1)
+#         bla .*= ran_U3(N_x, N_t, 0.001);
+#         # S = action_U3(bla,1)
+#         for i = 1:100 chess_cool!(bla, 0.001, 1.0, [0], "U3") end
+#         if action_U3(bla,1) < S
+#             println("Problem at k = $k, q = $q: ΔS = ", action_U3(bla,1)-S)
+#         end
+#         # println("k = $k, q = $q, ΔS = ", action_U3(bla,1)-S)
+#     end
+# end
+
+action_U3(insta_U3_attempt(N_x, N_t, -2),1)
+
+Q_bound = 6
+ind_gen_1 = 3
+ind_gen_2 = 8
+div_1 = 2-0.2
+div_2 = sqrt(3)
+scatter!(
+    -Q_bound:Q_bound, 
+    [action_U3(insta_U3_try(N_x, N_t, q, ind_gen_1, ind_gen_2, div_1, div_2), 1) for q = -Q_bound:Q_bound],
+    xticks = -Q_bound:Q_bound,
+    # label = "Q=1: λ$ind_gen_1, Q=2: λ$ind_gen_2",
+    legend = :topleft
+)
+
+plot(
+    0.7:0.01:1.0,
+    [action_U3(insta_U3_try(N_x,N_t,1,8,8,div_1,sqrt(3)),1) for div_1 = 0.7:0.01:1.0]
+)
+# scatter!([sqrt(3)],[action_U3(insta_U3_try(N_x,N_t,2,3,8,2,sqrt(3)),1)] )
+
+argmin([action_U3(insta_U3_try(N_x,N_t,1,8,8,div_1,sqrt(3)),1) for div_1 = 0.8660253:0.0000000005:0.8660255])
+Array(0.8660253:0.0000000005:0.8660255)[144]
+eps(action_U3(insta_U3_try(N_x,N_t,1,8,8,sqrt(3)/2,sqrt(3)),1) - action_U3(insta_U3_try(N_x,N_t,1,8,8,0.8660253715,sqrt(3)),1))
+
+# top_charge_U2(insta_U3_try(N_x, N_t, 1, 3, 8))
+# log(det(plaq(insta_U3_try(N_x,N_t,9,3,8),N_x,N_t)))
+
+# action_U3(insta_U3(N_x, N_t, 1),1)
+# action_U3(ran_U3(N_x, N_t, 0.01) .* insta_U3(N_x, N_t, 1), 1)
+
+# bla = insta_U3(N_x, N_t, 2);
+# action_U3(bla,1)
+# bla[rand(1:2), rand(1:N_x), rand(1:N_t)] *= ran_U3(0.01)
+# action_U3(bla, 1)
+
+# bla1 = insta_U3(N_x, N_t, 1)
+# bla2 = insta_U3(N_x, N_t, 2)
 acc1 = [0]
 acc2 = [0]
 
-N_cool = 1000
+N_cool = 100000
 count = [0]
 for i = 1:N_cool
-    chess_cool!(bla1, 0.01, 1.0, acc1, "U3")
-    chess_cool!(bla2, 0.01, 1.0, acc2, "U3")
+    chess_cool!(blub1, 0.005, 1.0, acc1, "U2")
+    chess_cool!(blub2, 0.005, 1.0, acc2, "U2")
     if Int(i%(N_cool/100)) == 1
         println("Cooling progress: ", count[1], "%" )
         count[1] += 1
@@ -587,5 +951,30 @@ end
 
 heatmap([real(tr(plaq(insta_U2(N_x, N_t, 2), x, t)))/2 for t = 1:N_t, x = 1:N_x])
 heatmap([real(tr(plaq(insta_U3(N_x, N_t, 0), x, t)))/3 for t = 1:N_t, x = 1:N_x])
-heatmap([real(tr(plaq(bla2, x, t)))/3 for t = 1:N_t, x = 1:N_x])
+heatmap([real(tr(plaq(blub2, x, t)))/2 for t = 1:N_t, x = 1:N_x], 
+    xticks = vcat([1],Array(8:8:32)), 
+    yticks = vcat([1],Array(8:8:32)),
+    aspect_ratio = :equal,
+    size = (600,600), 
+    xlabel = L"$x$-coordinate",
+    ylabel = L"$t$-coordinate",
+    title = L"$\mathfrak{Re} Tr P_{xt}(n) / N$ of a cooled 2D U(2) config with $Q=2$",
+    rightmargin=8Plots.mm
+)
+heatmap([real(tr(plaq(bla1, x, t)))/3 for t = 1:N_t, x = 1:N_x], 
+    xticks = vcat([1],Array(8:8:32)), 
+    yticks = vcat([1],Array(8:8:32)),
+    aspect_ratio = :equal,
+    size = (600,600), 
+    xlabel = L"$x$-coordinate",
+    ylabel = L"$t$-coordinate",
+    title = L"$\mathfrak{Re} Tr P_{xt}(n) / N$ of a cooled 2D U(3) config with $Q=1$",
+    rightmargin=8Plots.mm
+)
 
+blub1 = insta_U2(N_x, N_t, 1)
+blub2 = insta_U2(N_x, N_t, 2)
+chess_metro!(blub2, 0.05, 1.0, [0], "U2")
+
+# blub2 = read_config_U3("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\conf2.txt");
+# write_conf_U3(bla2, "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\conf2.txt")

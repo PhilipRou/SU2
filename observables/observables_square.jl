@@ -48,7 +48,7 @@ function read_last_conf(path, N_x, N_t)
     return reshape([coeffs_SU2(V1[i,1], V1[i,2], V1[i,3], V1[i,4]) for i = 1:size(V1,1)], (2,N_x,N_t))
 end
 
-
+#
 function plaq(U, x, t)
     NX = size(U,2)
     NT = size(U,3)
