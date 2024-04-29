@@ -1,5 +1,7 @@
 using Statistics
 using DelimitedFiles
+using LinearAlgebra
+using Plots
 
 λ1 = Complex.([0 1 0; 1 0 0; 0 0 0])
 λ2 = Complex.([0 -im 0; im 0 0; 0 0 0])
@@ -196,13 +198,13 @@ N_t     = N_x
 β       = 16.0
 hot     = true
 
-N_therm = 300
-N_up    = 500
+N_therm = 500
+N_up    = 1000
 N_metro = 1
 N_insta = 1
 ϵ       = 0.05
 acc_wish = 0.8
-ΔQ      = 1
+ΔQ      = 2
 
 
 actions = []
@@ -287,13 +289,15 @@ let
     display(hist_charges)
 end
 
+
+#=
 top_charge(U)
 action_U3(U,β)
 action_U3(insta_U3_tryout(N_x,N_t,false).*U,β)
 
 
-for i = 1:10000
-    chess_cool_U3!(U, ϵ/20, [0])
+for i = 1:100000
+    chess_cool_U3!(U, ϵ/50, [0])
 end
 action_U3(U,β)
 
@@ -324,10 +328,12 @@ end
 # bla = read_config_U3("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\conf3.txt");
 # # U == bla # true
 
-#=
+
 top_charge(bla)
+action_U3(bla, 1)
+action_U3(insta_U3(N_x,N_t,3),1)
 mean([plaq(bla,x,t) for x = 1:N_x, t = 1:N_t])
-std([plaq(bla,x,t) for x = 1:N_x, t = 1:N_t])
+std([imag.(plaq(bla,x,t)) for x = 1:N_x, t = 1:N_t])
 
 mean([real(tr(plaq(bla,x,t))) for x = 1:N_x, t = 1:N_t])
 std([real(tr(plaq(bla,x,t))) for x = 1:N_x, t = 1:N_t])
@@ -335,7 +341,34 @@ heatmap([real(tr(plaq(bla,x,t))) for x = 1:N_x, t = 1:N_t])
 
 maximum([real(tr(plaq(bla,x,t))) for x = 1:N_x, t = 1:N_t])
 minimum([real(tr(plaq(bla,x,t))) for x = 1:N_x, t = 1:N_t])
-=#
+
 # action_U3(U,β)
 # insta_action_min_U3(β, N_x, N_t, 3, 3)
 # insta_action_min(β, 3, N_x, N_t, 3, 3)
+
+
+function insta_U3_tryout(N_x, N_t, up)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    w = 4*π/sqrt(3)
+    Q = -1
+    if up
+        w = -4*π/sqrt(3)
+        Q = 1
+    end
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
+    return U
+end
+
+bla1 = insta_U3(N_x,N_t,1);
+bla2 = insta_U3(N_x,N_t,2);
+bla3 = insta_U3(N_x,N_t,3);
+top_charge(bla3)
+top_charge(bla1 .* insta_U3_tryout(N_x,N_t,true))
+action_U3(bla2,1)
+action_U3(insta_U3_tryout(N_x,N_t,true) .*bla1 , 1)
+
+plaq(insta_U3(N_x,N_t,3),rand(1:N_x),rand(1:N_t))
+plaq(bla,rand(1:N_x),rand(1:N_t))
+=#
