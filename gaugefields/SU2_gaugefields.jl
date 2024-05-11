@@ -103,6 +103,13 @@ function LinearAlgebra.adjoint(X::coeffs_SU2)
     return coeffs_SU2(X.a, -X.b, -X.c, -X.d)
 end
 
+# Take the matrix logarithm of coeffs_SU2
+# (note: staying in matrix-form or even returning a matrix
+# is significantly less efficient)
+function log_SU2(X::coeffs_SU2)
+    return acos(X.a)/sqrt(1-X.a^2) * coeffs_SU2(0.0, X.b, X.c, X.d)
+end
+
 # ❗ Very inefficient, only for debugging purposes ❗
 function get_array(X::coeffs_SU2)
     return [X.a, X.b, X.c, X.d]

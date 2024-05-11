@@ -72,6 +72,17 @@ function LinearAlgebra.adjoint(X::coeffs_U2)
     return coeffs_U2(adjoint(X.a), -adjoint(X.b), -adjoint(X.c), -adjoint(X.d))
 end
 
+# Take the matrix logarithm of coeffs_U2
+# (note: staying in matrix-form or even returning a matrix
+# is significantly less efficient)
+function log_U2(Y::coeffs_U2)
+    z = sqrt(det(Y))
+    X = Y/z
+    ϕ = imag(log(z))
+    res = acos(X.a)/sqrt(1-X.a^2) * coeffs_U2(0.0*im, X.b, X.c, X.d)
+    return res + coeffs_U2(im*ϕ, 0.0*im, 0.0*im, 0.0*im)
+end
+
 # ❗ Very inefficient, only for debugging purposes ❗
 function get_array(X::coeffs_U2)
     return [X.a, X.b, X.c, X.d]

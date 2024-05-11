@@ -853,40 +853,6 @@ end
 # )
 
 
-function logm_SU2(X::coeffs_SU2)
-    return acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
-end
-
-bla = ran_SU2(rand())
-# logm_SU2(bla)
-# log(coeffs2grp(bla))
-false in isapprox.(logm_SU2(bla), log(coeffs2grp(bla)))
-
-function logm_U2(Y::coeffs_U2)
-    z = sqrt(det(Y))
-    X = Y/z
-    ϕ = imag(log(z))
-    return acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
-end
-
-function logm_U2(Y::coeffs_U2)
-    z = sqrt(det(Y))
-    X = Y/z
-    ϕ = imag(log(z))
-    res = acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
-    res += im*ϕ*σ0
-end
-
-bli = ran_U2(rand())
-# logm_U2(bli)
-# log(coeffs2grp(bli))
-false in isapprox.(logm_U2(bli), log(coeffs2grp(bli)))
-
-Bli = coeffs2grp(bli)
-# @benchmark log(Bli)     # (17 ± 18) μs
-# @benchmark logm_U2(bli) # (580 ± 390) ns
-
-
 
 function insta_update_U2!(U,β,acc,Q)
     NX = size(U,2)

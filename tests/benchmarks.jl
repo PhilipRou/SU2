@@ -669,3 +669,18 @@ c2 = ran_U2(rand())
 
 
 @benchmark c1*c2               # (45±60) ns
+
+
+function logm_U2(Y::coeffs_U2)
+    z = sqrt(det(Y))
+    X = Y/z
+    ϕ = imag(log(z))
+    res = acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
+    return res + im*ϕ*σ0
+end
+
+bli = ran_U2(rand())
+Bli = coeffs2grp(bli)
+@benchmark log(Bli)     # (17 ± 18) μs
+@benchmark logm_U2(bli) # (580 ± 390) ns
+@benchmark log_U2(bli)  # (300 ± 280) ns

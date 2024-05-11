@@ -49,6 +49,13 @@ end
 
 proj_U2_test()
 
+function log_U2_test()
+    bla = ran_U2(rand())
+    @assert true in isapprox(log_U2(bla), grp2coeffs(log(coeffs2grp(bla))))
+end
+
+log_SU2_test()
+
 function coeffs2grp_test()
     coeffs = ran_U2(rand())
     @assert is_U2(coeffs2grp(coeffs)) "Something went wrong while testing coeffs2grp"
