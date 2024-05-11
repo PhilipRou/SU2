@@ -125,17 +125,9 @@ function coeffs_Id_SU2()
     return coeffs_SU2(1.0, 0.0, 0.0, 0.0)
 end
 
-# function proj_SU2(X::coeffs_SU2)
-#     return sqrt(1/(X.a^2+X.b^2+X.c^2+X.d^2)) * X
-# end
-
-# function proj_SU2_alt(X::coeffs_SU2)
-#     return sqrt(1/det(X)) * X
-# end
-
 # Project coeffs_SU2 onto SU2 (since addition is allowed it may happen that
 # some coeffs_SU2 do not describe an SU2 element anymore)
-function proj_SU2(X::coeffs_SU2)
+function proj2man(X::coeffs_SU2)
     return X/sqrt(det(X))
 end
 

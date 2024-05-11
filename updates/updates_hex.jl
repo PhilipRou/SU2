@@ -232,7 +232,7 @@ function ran_metro_hex!(U, step, β, acc, group)
 end
 
 function overrelax_hex!(U, μ, x, t)
-    v = proj_SU2(staple_dag_hex(U,μ,x,t))
+    v = proj2man(staple_dag_hex(U,μ,x,t))
     U[μ,x,t] = adjoint(v *  U[μ,x,t] * v)
     return nothing
 end

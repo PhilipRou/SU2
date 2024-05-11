@@ -166,14 +166,14 @@ end
 
 # # overrelax!, but in D dimensions (D arbitrary)
 # function overrelax_D!(U, μ, coord::Vector)
-#     v = proj_SU2!(staple_dag_D(U,μ,coord))
+#     v = proj2man!(staple_dag_D(U,μ,coord))
 #     U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
 #     return nothing
 # end
 
 # overrelax!, but in D dimensions (D arbitrary)
 function overrelax_D!(U, μ, coord::Vector)
-    v = proj_SU2!(staple_dag_D(U,μ,coord))
+    v = proj2man!(staple_dag_D(U,μ,coord))
     U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
     return nothing
 end

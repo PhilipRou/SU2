@@ -97,15 +97,21 @@ function coeffs_Id_U2()
     return coeffs_U2(1.0+0.0*im, 0.0*im, 0.0*im, 0.0*im)
 end
 
-# # Project coeffs_U2 onto U2 (since addition is allowed it may happen that
-# # some coeffs_U2 do not describe a U2 element anymore)
-# function proj_U2(X::coeffs_U2)
-#     return X/sqrt(abs(det(X)))
-# end
-
 # Given coeffs_U2 create the corresponding U2-matrix
 function coeffs2grp(X::coeffs_U2)
     return X.a*σ0 + im*X.b*σ1 + im*X.c*σ2 + im*X.d*σ3
+end
+
+# function proj_U2(A::Matrix)
+#     SVD = svd(A)
+#     return SVD.U * SVD.Vt / sqrt(det(A))
+# end
+
+function proj2man(U::coeffs_U2)
+    A = coeffs2grp(U)
+    SVD = svd(A)
+    A = SVD.U * SVD.Vt 
+    return grp2coeffs_U2(A)
 end
 
 # Given a U2-matrix return the corresponding coeffs_U2

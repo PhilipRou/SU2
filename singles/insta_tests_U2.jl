@@ -266,99 +266,108 @@ end
 
 
 
-
-Q_lower = 0
-Q_upper = 20
-z_lower = 0
-z_upper = 10
-image_insta = plot(
-    title = L"$S/\beta$ for Local Minimum Solutions of 2D U(3)",
-    xlabel = L"Top. Charge $Q$",
-    legend = :top,
-    xticks = Q_lower:Q_upper
-)
-for z = z_lower:z_upper
-    image_insta = plot!(
-        Q_lower:0.01:Q_upper, 
-        [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
-        label = :false,
-        color = palette(:default)[1+z-z_lower],
+let
+    Q_lower = -11
+    Q_upper = 11
+    z_lower = -4
+    z_upper = 4
+    image_insta = plot(
+        title = L"$S/\beta$ for Local Minimum Solutions of 2D U(3)",
+        xlabel = L"Top. Charge $Q$",
+        legend = :top,
+        xticks = Q_lower:Q_upper,
+        # foreground_color_legend = :false
+        # ylims = [-0.1,1.0]
     )
-    if (z-z_lower)%3 == 0
-        image_insta = scatter!(
-            Q_lower:Q_upper, 
-            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
-            label = "z = $z",
-            markershape = :circle,
-            alpha = 0.6,
+    for z = z_lower:z_upper
+        image_insta = plot!(
+            Q_lower:0.01:Q_upper, 
+            [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
+            label = :false,
             color = palette(:default)[1+z-z_lower],
         )
-    elseif (z-z_lower)%3 == 1
-        image_insta = scatter!(
-            Q_lower:Q_upper, 
-            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
-            label = "z = $z",
-            markershape = :diamond,
-            alpha = 0.6,
-            color = palette(:default)[1+z-z_lower],
-        )
-    elseif (z-z_lower) %3 == 2
-        image_insta = scatter!(
-            Q_lower:Q_upper, 
-            [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
-            label = "z = $z",
-            markershape = :star4,
-            alpha = 0.6,
-            color = palette(:default)[1+z-z_lower],
-        )
+        if (z-z_lower)%3 == 0
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                markershape = :circle,
+                alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        elseif (z-z_lower)%3 == 1
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                markershape = :diamond,
+                alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        elseif (z-z_lower) %3 == 2
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [action_U3(insta_U3_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                markershape = :star4,
+                alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        end
     end
+    display(image_insta)
 end
-display(image_insta)
+image_insta = plot!(xlims = [-10.5, 10.5], ylims = [0.01,0.5], legend = :bottomleft, background_color_legend = "rgba(100%,100%,100%,60%)", foreground_color_legend = :false)
+image_insta = plot!(yaxis = :log)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_right.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_zoom.pdf")
 
 
-
-Q_lower = 0
-Q_upper = 20
-z_lower = 0
-z_upper = 10
-image_insta = plot(
-    title = L"$S/\beta$ for Local Minimum Solutions of 2D U(2)",
-    xlabel = L"Top. Charge $Q$",
-    legend = :top,
-    xticks = Q_lower:Q_upper
-)
-for z = z_lower:z_upper
-    image_insta = plot!(
-        Q_lower:0.01:Q_upper, 
-        [insta_action(1, 2, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
-        label = :false,
-        color = palette(:default)[1+z-z_lower],
+let
+    Q_lower = -10
+    Q_upper = 10
+    z_lower = -4
+    z_upper = 4
+    image_insta = plot(
+        title = L"$S/\beta$ for Local Minimum Solutions of 2D U(2)",
+        xlabel = L"Top. Charge $Q$",
+        legend = :top,
+        xticks = Q_lower:Q_upper,
+        # ylims = 
     )
-    if (z-z_lower)%2 == 0
-        image_insta = scatter!(
-            Q_lower:Q_upper, 
-            [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
-            label = "z = $z",
-            markershape = :rect,
-            alpha = 0.6,
+    for z = z_lower:z_upper
+        image_insta = plot!(
+            Q_lower:0.01:Q_upper, 
+            [insta_action(1, 2, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
+            label = :false,
             color = palette(:default)[1+z-z_lower],
         )
-    elseif (z-z_lower)%2 == 1
-        image_insta = scatter!(
-            Q_lower:Q_upper, 
-            [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
-            label = "z = $z",
-            markershape = :diamond,
-            alpha = 0.6,
-            color = palette(:default)[1+z-z_lower],
-        )
+        if (z-z_lower)%2 == 0
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                markershape = :rect,
+                alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        elseif (z-z_lower)%2 == 1
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [action(insta_U2_w(N_x, N_t, q, z), 1) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                markershape = :diamond,
+                alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        end
     end
+    display(image_insta)
 end
-display(image_insta)
+image_insta = plot!(xlims = [-10.5, 10.5], ylims = [-0.03,0.5], legend = :bottomleft, background_color_legend = "rgba(100%,100%,100%,60%)", foreground_color_legend = :false)
+image_insta = plot!(yaxis = :log)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_right.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_zoom.pdf")
 
 
 
@@ -383,14 +392,15 @@ display(image_insta)
 
 
 let
-    q_low = -9
-    q_up = 9
+    q_low = -6
+    q_up = 6
     versatz = 0.02
     image_einh = plot(
         title = "S/β for Q-sector-global Minimum Solutions in 2D U(3)",
         xticks = q_low:q_up,
         xlabel = "Top. Charge Q",
-        legend = :top
+        legend = :top,
+        # ylims = [0.0,0.5]
     )
     image_einh = plot!(
         q_low:0.01:q_up, 
@@ -441,8 +451,8 @@ end
 
 
 let
-    q_low = -6
-    q_up = 6
+    q_low = -4
+    q_up = 4
     versatz = 0.02
     image_einh = plot(
         title = "S/β for Q-sector-global Minimum Solutions in 2D U(2)",
@@ -559,6 +569,230 @@ end
 
 
 
+let 
+    N_c   = 2
+    q_low = 0
+    q_up  = 7
+    z_low = -10
+    z_up  = 10
+    x_low = z_low - 0.2
+    x_up  = z_up + 0.2
+    y_frame = 0.02
+
+    action_max = 0.0
+
+    image_action_z = plot(
+        title = "S/β for Local Minimum Solutions in 2D U($N_c)",
+        x_ticks = z_low:z_up,
+        xlabel = L"Integer $z$",
+        legend = :top,
+    )
+    for q = q_low:q_up
+        actions = [insta_action(1,N_c,N_x,N_t,q,z) for z = z_low:z_up]
+        if mod(q,N_c) == 0
+            image_action_z = scatter!(
+                z_low:z_up,
+                actions,
+                label = latexstring("\$ Q = $q \$"),
+                # label = :false,
+                markershape = :circ,
+                # markersize = 6,
+                color = palette(:default)[1+q-q_low],
+                alpha = 0.6,
+            )
+        elseif mod(q,N_c) == 1
+            image_action_z = scatter!(
+                z_low:z_up,
+                actions,
+                label = latexstring("\$ Q = $q \$"),
+                # label = :false,
+                markershape = :diamond,
+                # markersize = 6,
+                color = palette(:default)[1+q-q_low],
+                alpha = 0.6,
+            )
+        elseif mod(q,N_c) == 2
+            image_action_z = scatter!(
+                z_low:z_up,
+                actions,
+                label = latexstring("\$ Q = $q \$"),
+                # label = :false,
+                markershape = :star4,
+                # markersize = 6,
+                color = palette(:default)[1+q-q_low],
+                alpha = 0.6,
+            )
+        elseif mod(q,N_c) == 3
+            image_action_z = scatter!(
+                z_low:z_up,
+                actions,
+                label = latexstring("\$ Q = $q \$"),
+                # label = :false,
+                markershape = :rect,
+                # markersize = 6,
+                color = palette(:default)[1+q-q_low],
+                alpha = 0.6,
+            )
+        end
+    end
+    for q = q_low:q_up
+        actions = [insta_action(1,N_c,N_x,N_t,q,z) for z = x_low:0.01:x_up]
+        if mod(q,N_c) == 0
+            image_action_z = plot!(
+                x_low:0.01:x_up,
+                actions,
+                color = palette(:default)[1+q-q_low],
+                label = :false,
+                # label = latexstring("\$ Q = $q \$"),
+                alpha = 1
+            )
+        elseif mod(q,N_c) == 1
+            image_action_z = plot!(
+                x_low:0.01:x_up,
+                actions,
+                color = palette(:default)[1+q-q_low],
+                label = :false,
+                # label = latexstring("\$ Q = $q \$"),
+                alpha = 1,
+                # linestyle = :dash
+            )
+        elseif mod(q,N_c) == 2
+            image_action_z = plot!(
+                x_low:0.01:x_up,
+                actions,
+                color = palette(:default)[1+q-q_low],
+                label = :false,
+                # label = latexstring("\$ Q = $q \$"),
+                alpha = 1,
+                # linestyle = :dot,
+                linewidth = 1.0
+            )
+        elseif mod(q,N_c) == 3
+            image_action_z = plot!(
+                x_low:0.01:x_up,
+                actions,
+                color = palette(:default)[1+q-q_low],
+                label = :false,
+                # label = latexstring("\$ Q = $q \$"),
+                alpha = 1,
+                # linestyle = :dashdot
+            )
+        end
+
+        action_max = max(action_max, maximum(actions))
+    end
+    image_action_z = plot!(
+        xlims = [x_low, x_up],
+        ylims = [-y_frame, action_max+y_frame]
+        # ylims = [-y_frame, 0.2]
+    )
+    display(image_action_z)
+end
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\insta_actions_z_U2_zoomout.pdf")
+
+
+
+let
+    Q_lower = 0
+    Q_upper = 7
+    z_lower = -4
+    z_upper = 4
+    image_insta = plot(
+        title = L"$S/\beta$ for Local Minimum Solutions of 2D U(3)",
+        xlabel = L"Top. Charge $Q$",
+        legend = :topleft,
+        xticks = Q_lower:Q_upper,
+        background_color_legend = "rgba(100%,100%,100%,60%)", 
+        # foreground_color_legend = :false
+        # foreground_color_legend = :false
+        # ylims = [-0.1,1.0]
+    )
+    for z = z_lower:z_upper
+        image_insta = plot!(
+            Q_lower:0.01:Q_upper, 
+            [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:0.01:Q_upper],
+            label = :false,
+            color = palette(:default)[1+z-z_lower],
+            alpha = 0.3
+        )
+        if (z-z_lower)%3 == 0
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                # markershape = :circle,
+                markershape = :hline,
+                markersize = 15,
+                markerstrokewidth = 2,
+                # alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        elseif (z-z_lower)%3 == 1
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                # markershape = :diamond,
+                markershape = :hline,
+                markersize = 15,
+                markerstrokewidth = 2,
+                # alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        elseif (z-z_lower) %3 == 2
+            image_insta = scatter!(
+                Q_lower:Q_upper, 
+                [insta_action(1, 3, N_x, N_t, q, z) for q = Q_lower:Q_upper],
+                label = "z = $z",
+                # markershape = :star4,
+                markershape = :hline,
+                markersize = 15,
+                markerstrokewidth = 2,
+                # alpha = 0.6,
+                color = palette(:default)[1+z-z_lower],
+            )
+        end
+    end
+    display(image_insta)
+end
+
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_spec.pdf")
+
+
+let 
+    N_c = 2
+    q_low = 0
+    q_up  = 7
+    z_length = 4
+    actions = zeros(2*z_length+1, length(q_low:q_up))
+    for q = q_low:q_up
+        z_min = floor(q/N_c)
+        zs = Array(z_min-z_length:z_min+z_length)
+        actions[:,1+q-q_low] = [insta_action(1,N_c,N_x,N_t,q,z) for z in zs]
+        # println(q)
+    end
+    image_spec = plot(
+        title = latexstring(" \$ S / \\beta \$ for Local Minimum Solutions of 2D U($N_c)\n The $(2*z_length+1) Lowest Actions per Sector"),
+        xticks = q_low:q_up,
+        xlabel = L"Top. Charge $Q$",
+        legend = :false,
+        background_color_legend = "rgba(100%,100%,100%,60%)"
+    )
+    for z = -z_length:z_length
+        image_spec = scatter!(
+            q_low:q_up,
+            actions[1+z+z_length,:],
+            markershape = :hline,
+            markersize = 10,
+            markerstrokewidth = 2,
+            label = :false,
+            # alpha = 0.5
+        )
+    end
+    display(image_spec)
+end
+
 # for k = -5:5
 #     for q = -6:6
 #         bla = insta_U3_w(N_x, N_t, 3, 1);
@@ -618,3 +852,74 @@ end
 #     rightmargin=8Plots.mm
 # )
 
+
+function logm_SU2(X::coeffs_SU2)
+    return acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
+end
+
+bla = ran_SU2(rand())
+# logm_SU2(bla)
+# log(coeffs2grp(bla))
+false in isapprox.(logm_SU2(bla), log(coeffs2grp(bla)))
+
+function logm_U2(Y::coeffs_U2)
+    z = sqrt(det(Y))
+    X = Y/z
+    ϕ = imag(log(z))
+    return acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
+end
+
+function logm_U2(Y::coeffs_U2)
+    z = sqrt(det(Y))
+    X = Y/z
+    ϕ = imag(log(z))
+    res = acos(X.a)/sqrt(1-X.a^2) .* [[im*X.d, -X.c+im*X.b] [X.c+im*X.b, -im*X.d]]
+    res += im*ϕ*σ0
+end
+
+bli = ran_U2(rand())
+# logm_U2(bli)
+# log(coeffs2grp(bli))
+false in isapprox.(logm_U2(bli), log(coeffs2grp(bli)))
+
+Bli = coeffs2grp(bli)
+# @benchmark log(Bli)     # (17 ± 18) μs
+# @benchmark logm_U2(bli) # (580 ± 390) ns
+
+
+
+function insta_update_U2!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    U_prop = insta_U2(NX,NT,rand([-Q,Q])) .* U
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 2*NX*NT
+    end
+    return nothing
+end
+
+function insta_update_U2_log!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    U_prop = exp.(logm_U2.(U) .+ logm_U2.(insta_U2(N_x,N_t,rand([-Q,Q]))))
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 2*NX*NT
+    end
+    return nothing
+end
+
+
+
+# A = ran_U2(rand());
+# B = coeffs2grp(A);
+# @benchmark proj_U2(B)
+# @benchmark proj_U2(A)
+# @benchmark 
+
+
+# A = rand(2,2);
+# SVD = svd(A)
+# fieldnames(LinearAlgebra.SVD)
+# isapprox(SVD.U* [[SVD.S[1], 0] [0, SVD.S[2]]] *SVD.Vt, A)

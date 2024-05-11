@@ -330,7 +330,7 @@ function rhomb_half_loop_square(U, x, t)
     b = adjoint(U[1,x,tp])*U[2,x,tp] + U[2,xp,tp]*adjoint(U[1,x,tpp])
     # c = a*b/det(a*b)
     # return c*adjoint(U[2,x,tp])*adjoint(U[2,x,t])
-    return proj_SU2(a*b*adjoint(U[2,x,tp])*adjoint(U[2,x,t]))
+    return proj2man(a*b*adjoint(U[2,x,tp])*adjoint(U[2,x,t]))
 end
 
 #
@@ -346,7 +346,7 @@ function rhomb_loop_square(U, x, t)
     c = adjoint(U[1,xp,tp])*U[2,xp,tp] + U[2,xpp,tp]*adjoint(U[1,xp,tpp])
     d = adjoint(U[2,xp,tp])*adjoint(U[1,x,tp]) + adjoint(U[1,x,tpp])*adjoint(U[2,x,tp])
     # return a*b*c*d/det(a*b*c*d)
-    return proj_SU2(a*b*c*d)
+    return proj2man(a*b*c*d)
 end
 
 

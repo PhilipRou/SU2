@@ -110,13 +110,13 @@ end
 
 det_test()
 
-function proj_SU2!_test()
+function proj2man!_test()
     coeffs = rand() * ran_SU2(rand())
-    @assert is_SU2(proj_SU2!(coeffs))
+    @assert is_SU2(proj2man!(coeffs))
     return true
 end
 
-proj_SU2!_test()
+proj2man!_test()
 
 function coeffs2grp_test()
     coeffs = ran_SU2(rand())

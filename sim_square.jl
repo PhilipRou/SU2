@@ -17,7 +17,7 @@ for beta in [8.0] #,12.0]
     for L = 32:32:32
         for q_start in [0]
 
-            comment = "N_insta for conventional insta update"
+            comment = "Trying overrelaxation for U(2)"
             
             ####    Update params   ####
             global group    = "U2"  # For "group" choose from: "SU2" or "U2"
@@ -28,18 +28,18 @@ for beta in [8.0] #,12.0]
             global hot      = true  # true: hot start, false: cold start
             global read_last_config = false
             global N_metro  = 3                         # N_metro-many Metropolois sweeps followed by...
-            global N_over   = 0                         # ...N_over-many overrelaxation sweeps, followed by...
-            global N_insta  = 1                         # ...N_insta instanton updates
+            global N_over   = 1                         # ...N_over-many overrelaxation sweeps, followed by...
+            global N_insta  = 0                         # ...N_insta instanton updates
             global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
-            global N_meas   = Int( 100* (round(1600 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+            global N_meas   = Int( 100* (round(160 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
             global N_stout_insta = 100
             global Q_start   = q_start
             global Q_insta   = 2
 
-            if group != "SU2" && N_over != 0
-                error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
-            end
+            # if group != "SU2" && N_over != 0
+            #     error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
+            # end
             if group != "U2" && N_insta != 0
                 error("Instanton updates are only implemented for U(2) yet, so please set N_insta to 0")
             end
@@ -56,9 +56,9 @@ for beta in [8.0] #,12.0]
             global acc_metro      = [0.0]
             global acc_over       = [0.0]
             global acc_insta      = [0.0]
-            global acc_wish       = 0.9
-            global acc_wish_insta = 0.45
-            global cool_deg       = 3.5
+            global acc_wish       = 0.85
+            # global acc_wish_insta = 0.45
+            # global cool_deg       = 3.5
 
 
             ####    Handling directories    ####
@@ -145,23 +145,26 @@ for beta in [8.0] #,12.0]
             end
 
             for i = 1:N_therm
-                acc_copy = acc_metro[1]
-                for j = 1:N_metro
-                    chess_metro!(U,ϵ,β,acc_metro,group)
-                end
-                for j = 1:N_over
-                    chess_overrelax!(U,acc_over)
-                end
-                for j = 1:N_insta
-                    # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
-                    # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
-                    insta_update_U2!(U,β,acc_insta,Q_insta)
-                    # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
-                end
-                # mywrite(acceptances_path, acc[1])
-                ϵ *= sqrt((acc_metro[1]-acc_copy)  /2/N_t/N_x/N_metro / acc_wish) # only update ϵ acc. to Metropolis
+                # acc_copy = acc_metro[1]
+                # for j = 1:N_metro
+                #     chess_metro!(U,ϵ,β,acc_metro,group)
+                # end
+                # for j = 1:N_over
+                #     chess_overrelax!(U,acc_over)
+                # end
+                # for j = 1:N_insta
+                #     # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
+                #     # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
+                #     insta_update_U2!(U,β,acc_insta,Q_insta)
+                #     # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                # end
+                # # mywrite(acceptances_path, acc[1])
+                chess_metro!(U,ϵ,β,acc_metro,group)
+                ϵ *= sqrt(acc_metro[1] / acc_wish) # only update ϵ acc. to Metropolis
                 global epsilon = deepcopy(ϵ)
-                println(epsilon)
+                # println(epsilon)
+                # println(acc_metro[1])
+                println("Acceptance: $(round(acc_metro[1],digits = 3)), ϵ: $epsilon ")
             end
             bla = open(params_path, "a")
             write(bla, "\n  ϵ = $epsilon")

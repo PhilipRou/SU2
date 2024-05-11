@@ -42,7 +42,7 @@ function metro!(U, μ, t, x, step, β, acc)
 end
 
 function overrelax!(U, μ, t, x)
-    v = proj_SU2!(staple_dag(U,μ,t,x))
+    v = proj2man!(staple_dag(U,μ,t,x))
     U[μ,t,x] = adjoint(v *  U[μ,t,x] * v)
     return nothing
 end
@@ -329,7 +329,7 @@ end
 
 
 function overrelax_hex!(U, μ, t, x)
-    v = proj_SU2!(staple_dag_hex(U,μ,t,x))
+    v = proj2man!(staple_dag_hex(U,μ,t,x))
     U[μ,t,x] = adjoint(v *  U[μ,t,x] * v)
     return nothing
 end

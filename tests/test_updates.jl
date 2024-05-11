@@ -82,7 +82,7 @@ end
 
 chess_indices_test()
 
-function overrelax!_test()
+function overrelax!_test_SU2()
     test_field = gaugefield_SU2(N_t,N_x,true)
     old_field = deepcopy(test_field)
     old_action = action(test_field,β)
@@ -90,14 +90,31 @@ function overrelax!_test()
         t = rand(1:8)
         x = rand(1:8)
         μ = rand(1:2)
-        overrelax!(test_field,μ,t,x)
+        overrelax!(test_field,μ,t,x,[0.0])
     end
     @assert old_field != test_field "There was no update in overrelax!, might wanna redo that test"
     @assert isapprox(old_action, action(test_field,β)) "overrelax! didn't leave the action invariant"
     return true
 end
 
-overrelax!_test()
+overrelax!_test_SU2()
+
+function overrelax!_test_U2()
+    test_field = gaugefield_U2(N_t,N_x,true)
+    old_field = deepcopy(test_field)
+    old_action = action(test_field,β)
+    for i = 1:10
+        t = rand(1:8)
+        x = rand(1:8)
+        μ = rand(1:2)
+        overrelax!(test_field,μ,t,x,[0.0])
+    end
+    @assert old_field != test_field "There was no update in overrelax!, might wanna redo that test"
+    @assert isapprox(old_action, action(test_field,β)) "overrelax! didn't leave the action invariant"
+    return true
+end
+
+overrelax!_test_U2()
 
 acc = [0]
 function lexico_overrelax!_test()
