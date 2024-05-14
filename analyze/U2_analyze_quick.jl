@@ -141,7 +141,7 @@ hot = true
 # ϵ   = 0.2 
 n_stout = 0
 ρ   = 0.12
-sim_count = 20
+sim_count = 24
 loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 num_loops = length(loops)
 
@@ -269,3 +269,26 @@ std(charges)
 Q_uw=uwreal(vec(charges),"daten")
 uwerr(Q_uw)
 Q_uw
+
+
+let
+    L = 16
+    N_t = L 
+    N_x = L 
+    β = 6.0
+    n_stout = 0
+    ρ   = 0.12
+    sim_count = 1
+
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    mean_vals_path = string(base_path,"\\mean_vals.txt")
+
+    means = readdlm(mean_vals_path)./2
+
+    b_size = Int(round(2*auto_corr_time(means[:,1]) + 1, RoundUp))    
+    bla = round.(jackknife(means[:,1], b_size), digits = 6)
+    P_anal = round(analytic_plaq_U2(β), digits = 6)
+
+    println("For n_stout = $n_stout, L = $L, we have ⟨P_xt⟩ = $(bla[1]) ± $(bla[2])")
+    println("Cf. analytical result (no Stout smearing): $P_anal ")
+end

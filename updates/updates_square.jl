@@ -214,6 +214,42 @@ function insta_update_U2!(U,β,acc,Q)
     return nothing
 end
 
+# Take the logarithm of each link, then link-wise add
+# the logarithm of an instanton config. onto it,
+# then project back onto the manifold. In other words, an 
+# instanton-update in the Lie algebra.
+# bf stands for brute force!
+function insta_update_U2_log_bf!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    U_prop = grp2coeffs_U2.(exp.(log.(coeffs2grp.(U)) .+ log.(coeffs2grp.(insta_U2(N_x,N_t,rand([-Q,Q]))))))
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+        # println("Here we are")
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 1.0
+    end
+    return nothing
+end
+
+# Take the logarithm of each link, then link-wise add
+# the logarithm of an instanton config. onto it,
+# then project back onto the manifold. In other words, an 
+# instanton-update in the Lie algebra.
+# No more brute force, but improved versions of log & exp.
+function insta_update_U2_log!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    U_prop = exp_u2.(log_U2.(U) .+ log_U2.(insta_U2(NX, NT, rand([-Q,Q])))) 
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+        # println("Here we are")
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 1.0
+    end
+    return nothing
+end
+
 # 🚧👷 Under construction! 👷🚧
 # function insta_flow_update_U2!(U, N_stout_insta, acc, Q)
 #     NX = size(U,2)

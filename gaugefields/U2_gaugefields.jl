@@ -83,6 +83,15 @@ function log_U2(Y::coeffs_U2)
     return res + coeffs_U2(im*ϕ, 0.0*im, 0.0*im, 0.0*im)
 end
 
+# Map a u(2)-element (from the Lie-algebra) onto the
+# manifold U(2) via the exponential function
+function exp_u2(Y::coeffs_U2)
+    # X = coeffs_U2(Y.a, im*Y.b, im*Y.c, im*Y.d)
+    A = exp(Y.a) * cos(sqrt(Y.b^2+Y.c^2+Y.d^2))
+    B = exp(Y.a) * sin(sqrt(Y.b^2+Y.c^2+Y.d^2)) / sqrt(Y.b^2+Y.c^2+Y.d^2)
+    return coeffs_U2(A, B*Y.b, B*Y.c, B*Y.d)
+end
+
 # ❗ Very inefficient, only for debugging purposes ❗
 function get_array(X::coeffs_U2)
     return [X.a, X.b, X.c, X.d]
@@ -123,6 +132,11 @@ function proj2man(U::coeffs_U2)
     SVD = svd(A)
     A = SVD.U * SVD.Vt 
     return grp2coeffs_U2(A)
+end
+
+function proj2man_mat_U2(A)
+    SVD = svd(A)
+    return SVD.U * SVD.Vt 
 end
 
 # Given a U2-matrix return the corresponding coeffs_U2

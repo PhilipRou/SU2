@@ -110,6 +110,15 @@ function log_SU2(X::coeffs_SU2)
     return acos(X.a)/sqrt(1-X.a^2) * coeffs_SU2(0.0, X.b, X.c, X.d)
 end
 
+# Map an su(2)-element (from the Lie-algebra) onto the
+# manifold SU(2) via the exponential function
+function exp_su2(X::coeffs_SU2)
+    absX = sqrt(X.b^2+X.c^2+X.d^2)
+    A = cos(absX)
+    B = sin(absX) / absX
+    return coeffs_SU2(A, B*X.b, B*X.c, B*X.d)
+end
+
 # ❗ Very inefficient, only for debugging purposes ❗
 function get_array(X::coeffs_SU2)
     return [X.a, X.b, X.c, X.d]

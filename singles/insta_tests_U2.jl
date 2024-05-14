@@ -854,38 +854,43 @@ end
 
 
 
-function insta_update_U2!(U,β,acc,Q)
-    NX = size(U,2)
-    NT = size(U,3)
-    U_prop = insta_U2(NX,NT,rand([-Q,Q])) .* U
-    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
-        U[:,:,:] = U_prop[:,:,:]
-        acc[1] += 2*NX*NT
-    end
-    return nothing
+
+
+
+
+N_t = 32
+N_x = 32
+β = 8.0
+U = gaugefield_U2(N_t, N_x, true)
+actions = []
+for i = 1:300 chess_metro!(U, 0.05, β, [0.0], "U2"); push!(actions, action(U,β)) end
+Q = round(Int, top_charge_U2(U))
+U = U.*insta_U2(N_x, N_t, 1-Q)
+for i = 1:20 chess_metro!(U, 0.05, β, [0.0], "U2"); push!(actions, action(U,β)) end
+display(plot(actions))
+Q = round(Int, top_charge_U2(U))
+println("Q = $Q")
+
+
+
+ρ = 0.01
+N_smear = 10^3
+smeared_actions = [action(U,1.0)/N_x/N_t]
+V = stout(U,ρ);
+for i = 1:N_smear
+    push!(smeared_actions, action(V,1.0)/N_x/N_t)
+    V = stout(V,ρ)
 end
 
-function insta_update_U2_log!(U,β,acc,Q)
-    NX = size(U,2)
-    NT = size(U,3)
-    U_prop = exp.(logm_U2.(U) .+ logm_U2.(insta_U2(N_x,N_t,rand([-Q,Q]))))
-    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
-        U[:,:,:] = U_prop[:,:,:]
-        acc[1] += 2*NX*NT
-    end
-    return nothing
-end
+image_smeared_actions = plot(
+    ρ .* Array(1:N_smear+1),
+    smeared_actions,
+    title = latexstring("\$ S/\\beta V \$ for a smeared 2D U(2) field of top. charge \$ q = $Q\$"),
+    xlabel = latexstring("Smearing time \$\\tau\$"),
+    label = latexstring("Smeared action, \$\\rho = $ρ\$")
+)
+image_smeared_actions = hline!([action(insta_U2(N_x,N_t,Q),1.0)/N_x/N_t], label = "Instanton action")
+image_smeared_action = plot!(xaxis = :log, xticks = [10.0^i for i = -2:1] )
+# action(insta_U2(N_x,N_t,Q),1.0)/N_x/N_t
 
-
-
-# A = ran_U2(rand());
-# B = coeffs2grp(A);
-# @benchmark proj_U2(B)
-# @benchmark proj_U2(A)
-# @benchmark 
-
-
-# A = rand(2,2);
-# SVD = svd(A)
-# fieldnames(LinearAlgebra.SVD)
-# isapprox(SVD.U* [[SVD.S[1], 0] [0, SVD.S[2]]] *SVD.Vt, A)
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_actions_q_$Q.1.log.pdf")

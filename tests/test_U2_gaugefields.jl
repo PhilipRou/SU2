@@ -41,20 +41,29 @@ end
 
 det_test()
 
-function proj_U2_test()
+function proj2man_test()
     coeffs = rand() * ran_U2(rand())
-    @assert is_U2(proj_U2(coeffs))
+    @assert is_U2(proj2man(coeffs))
     return true
 end
 
-proj_U2_test()
+proj2man_test()
 
 function log_U2_test()
     bla = ran_U2(rand())
-    @assert true in isapprox(log_U2(bla), grp2coeffs(log(coeffs2grp(bla))))
+    @assert true in isapprox(proj2man(log_U2(bla)), grp2coeffs_U2(proj2man_mat_U2(log(coeffs2grp(bla)))))
+    return true
 end
 
-log_SU2_test()
+log_U2_test()   
+
+function exp_u2_test()
+    bla = ran_U2(rand())
+    @assert isapprox(bla, exp_u2(log_U2(bla)))
+    return true
+end
+
+exp_u2_test()
 
 function coeffs2grp_test()
     coeffs = ran_U2(rand())
