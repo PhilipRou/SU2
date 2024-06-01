@@ -13,13 +13,13 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params    ####
-for beta in [8.0,12.0]
-    for L = 32:32:32
-        for q_insta in [1,2]
+for beta in [3.0]
+    for L in [16]
+        for q_insta in [1]
 
             # @assert 1==0 "Do you really want L = $L?"
 
-            comment = "Trying the log method"
+            comment = "Maybe this time the efficient log-method is correct?"
             
             ####    Update params   ####
             global group    = "U2"  # For "group" choose from: "SU2" or "U2"
@@ -29,11 +29,12 @@ for beta in [8.0,12.0]
             global ϵ        = 0.2   # Starting value for step size in generation of random elements
             global hot      = true  # true: hot start, false: cold start
             global read_last_config = false
-            global N_metro  = 3                         # N_metro-many Metropolois sweeps followed by...
-            global N_over   = 0                         # ...N_over-many overrelaxation sweeps, followed by...
+            global N_metro  = 1                         # N_metro-many Metropolois sweeps followed by...
+            global N_over   = 3                         # ...N_over-many overrelaxation sweeps, followed by...
             global N_insta  = 1                         # ...N_insta instanton updates
+            global N_sepa   = 20
             global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
-            global N_meas   = Int( 100* (round(400 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+            global N_meas   = Int( 100* (round(300 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
             global N_stout_insta = 100
             global Q_start   = 0
@@ -73,6 +74,7 @@ for beta in [8.0,12.0]
 
             count_path = string(base_path, "\\sim_count.txt")
 
+
             # Have we already simulated with these parameters (excluding "loops")? If so,
             # make a new directory and keep track of how often via "sim_count.txt"
             if !isdir(base_path)    
@@ -90,6 +92,8 @@ for beta in [8.0,12.0]
             mkdir(base_path)
             
             # actions_path     = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+            insta_delta_s_plus_path = string(base_path, "\\insta_delta_s_plus.txt") #⭕⭕⭕⭕⭕
+
             actions_path = string(base_path,"\\actions.txt")
             params_path = string(base_path,"\\params.txt") #
             acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
@@ -179,6 +183,8 @@ for beta in [8.0,12.0]
             acc_over     = [0.0]
             acc_insta    = [0.0]
 
+            insta_delta_s_plus = [0.0] #⭕⭕⭕⭕⭕
+
             for i = 1:N_meas 
                 if i%(Int(N_meas/100)) == 1
                     println(" ")
@@ -189,20 +195,25 @@ for beta in [8.0,12.0]
                     # close(bla)
                     counter += 1
                 end
-                for metro = 1:N_metro
-                    chess_metro!(U,ϵ,β,acc_metro,group)
-                end
-                for over = 1:N_over
-                    chess_overrelax!(U,acc_over)
-                end
-                for j = 1:N_insta
-                    # # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
-                    # # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
-                    # insta_update_U2!(U,β,acc_insta,Q_insta)
-                    insta_update_U2_log!(U,β,acc_insta,Q_insta)
-                    # # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                for sepa = 1:N_sepa
+                    for metro = 1:N_metro
+                        chess_metro!(U,ϵ,β,acc_metro,group)
+                    end
+                    for over = 1:N_over
+                        chess_overrelax!(U,acc_over)
+                    end
+                    for j = 1:N_insta
+                        # # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
+                        # # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
+                        # insta_delta_s_plus[1] = insta_update_U2_log!(U,β,acc_insta,Q_insta)
+                        insta_delta_s_plus[1] = insta_update_U2_log_bf_quick!(U,β,acc_insta,Q_insta) # ⭕⭕⭕⭕⭕
+                        # # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
+                    end
                 end
 
+                U = proj2man.(U)
+
+                mywrite(insta_delta_s_plus_path, insta_delta_s_plus) # ⭕⭕⭕⭕⭕
 
                 mywrite(acceptances_path, [acc_metro[1], acc_over[1], acc_insta[1]])
                 mywrite(actions_path, action(U,β))

@@ -1,9 +1,9 @@
-include("test_SU2_gaugefields.jl")
-include("test_hex.jl")
-include("test_observables_square.jl")
-include("test_observables_hex.jl")
-include("test_smearing.jl")
-include("test_updates.jl")
+# include("test_SU2_gaugefields.jl")
+# include("test_hex.jl")
+# include("test_observables_square.jl")
+# include("test_observables_hex.jl")
+# include("test_smearing.jl")
+# include("test_updates.jl")
 using BenchmarkTools
 
 # benchmark two possibilities: alternative is mine, original according to Stephan
@@ -684,3 +684,13 @@ Bli = coeffs2grp(bli)
 @benchmark log(Bli)     # (17 ± 18) μs
 @benchmark logm_U2(bli) # (580 ± 390) ns
 @benchmark log_U2(bli)  # (300 ± 280) ns
+
+N_x = 32
+N_t = 32
+β   = 8.0
+U = gaugefield_U2(N_x, N_t, true);
+@benchmark insta_update_U2_log_bf!(U, β, [0.0], 1) # (256±13)ms
+@benchmark insta_update_U2_log!(U, β, [0.0], 1) # (1.7±1.0)ms
+@benchmark insta_update_U2!(U, β, [0.0], 1) # (0.7±0.9)ms
+@benchmark chess_metro!(U, 0.1, β, [0.0], "U2") #(2.4±1.6)ms
+@benchmark chess_overrelax!(U, [0.0]) #(13±3)ms

@@ -51,7 +51,7 @@ proj2man_test()
 
 function log_U2_test()
     bla = ran_U2(rand())
-    @assert true in isapprox(proj2man(log_U2(bla)), grp2coeffs_U2(proj2man_mat_U2(log(coeffs2grp(bla)))))
+    @assert isapprox(proj2man(log_U2(bla)), grp2coeffs_U2(proj2man_mat_U2(log(coeffs2grp(bla)))))
     return true
 end
 

@@ -60,7 +60,7 @@ proj2man_test()
 
 function log_SU2_test()
     bla = ran_SU2(rand())
-    @assert true in isapprox(log_SU2(bla), grp2coeffs(log(coeffs2grp(bla))))
+    @assert isapprox(log_SU2(bla), grp2coeffs(log(coeffs2grp(bla))))
     # Note: I really don't know why this works, it really should not.
     # The Log takes us out of the SU(2) manifold, so grp2coeffs is
     # technically wrong. Too lazy to check it out atm though.

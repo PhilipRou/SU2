@@ -171,35 +171,6 @@ function chess_overrelax!(U, acc)
     return nothing
 end
 
-# Create a minimum of the gauge action in the topological
-# sector of charge Q. Unfortunately the link values of the 
-# odd-Q-instantons are not elements of the center of U(2)
-# (i.e. ∉ U(1)), so that 
-function insta_U2(N_x, N_t, Q)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    if iseven(Q)
-        U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
-    else
-        U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*π/N_x/N_t)*coeffs_Id_U2() - sin(t*π/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*π/N_x)*coeffs_Id_U2() + sin(x*π/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
-    end
-    return U
-end
-
-# Create a naive (N_x × N_t)-Q-instanton configuration, in
-# the sense that it is not an actual minimum of the gauge
-# action for odd Q (see insta_U2() below)
-function insta_U2_naive(N_x, N_t, Q)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
-    return U
-end
-
 # Multiply a ±1-instanton config. onto U and accept/reject
 # that update with the Metropolis condition
 function insta_update_U2!(U,β,acc,Q)
@@ -207,47 +178,126 @@ function insta_update_U2!(U,β,acc,Q)
     NT = size(U,3)
     acc[1] = 0.0
     U_prop = insta_U2(NX,NT,rand([-Q,Q])) .* U
-    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    ΔS = action(U_prop,β) - action(U,β)
+    # if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    if rand() < exp(-ΔS) # Definitely old minus new!!
         U[:,:,:] = U_prop[:,:,:]
         acc[1] += 1
     end
-    return nothing
+    # return nothing
+    return action(U_prop, β)
+end
+
+# Multiply a ±1-instanton config. onto U and accept/reject
+# that update with the Metropolis condition
+function insta_update_U2_cheat!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    U_prop = insta_U2_naive(NX,NT,rand([-Q,Q])) .* U
+    ΔS = action(U_prop,β) - action(U,β)
+    # if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    if rand() < exp(-ΔS) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 1
+    end
+    # return nothing
+    return action(U_prop, β)
 end
 
 # Take the logarithm of each link, then link-wise add
 # the logarithm of an instanton config. onto it,
 # then project back onto the manifold. In other words, an 
 # instanton-update in the Lie algebra.
-# bf stands for brute force!
+# "bf" stands for brute force!
 function insta_update_U2_log_bf!(U,β,acc,Q)
     NX = size(U,2)
     NT = size(U,3)
     acc[1] = 0.0
     U_prop = grp2coeffs_U2.(exp.(log.(coeffs2grp.(U)) .+ log.(coeffs2grp.(insta_U2(N_x,N_t,rand([-Q,Q]))))))
+    # ΔS = action(U_prop,β) - action(U,β)
     if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    # if rand() < exp(-ΔS) # Definitely old minus new!!
         # println("Here we are")
         U[:,:,:] = U_prop[:,:,:]
         acc[1] += 1.0
     end
-    return nothing
+    # return nothing
+    return action(U_prop, β)
 end
 
-# Take the logarithm of each link, then link-wise add
-# the logarithm of an instanton config. onto it,
-# then project back onto the manifold. In other words, an 
-# instanton-update in the Lie algebra.
-# No more brute force, but improved versions of log & exp.
+function log_quick(X::coeffs_U2)
+    M = coeffs2grp(X)
+    E = eigen(M)
+    A = E.vectors
+    A_inv = adjoint(E.vectors)
+    V = diagm(log.(E.values))
+    return A * V * A_inv
+end
+
+function insta_update_U2_log_bf_quick!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    U_prop = grp2coeffs_U2.(exp.(log_quick.(U) .+ log_quick.(insta_U2(N_x,N_t,rand([-Q,Q])))))
+    # ΔS = action(U_prop,β) - action(U,β)
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    # if rand() < exp(-ΔS) # Definitely old minus new!!
+        # println("Here we are")
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 1.0
+    end
+    # return nothing
+    return action(U_prop, β)
+end
+
+# # Take the logarithm of each link, then link-wise add
+# # the logarithm of an instanton config. onto it,
+# # then project back onto the manifold. In other words, an 
+# # instanton-update in the Lie algebra.
+# # No more brute force, but improved versions of log & exp.
+# function insta_update_U2_log!(U,β,acc,Q)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     acc[1] = 0.0
+#     U_prop = exp_u2.(log_U2.(U) .+  insta_U2_log(NX,NT,rand([-Q,Q]))) 
+#     # ΔS = action(U_prop,β) - action(U,β)
+#     if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+#     # if rand() < exp(-ΔS) # Definitely old minus new!!
+#         U[:,:,:] = U_prop[:,:,:]
+#         acc[1] += 1.0
+#     end
+#     # return nothing
+#     return action(U_prop,β)
+# end
 function insta_update_U2_log!(U,β,acc,Q)
     NX = size(U,2)
     NT = size(U,3)
     acc[1] = 0.0
-    U_prop = exp_u2.(log_U2.(U) .+ log_U2.(insta_U2(NX, NT, rand([-Q,Q])))) 
+    U_prop = exp_u2.(log_U2.(U) .+  insta_U2_log(NX,NT,rand([-Q,Q]))) 
+    # ΔS = action(U_prop,β) - action(U,β)
     if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
-        # println("Here we are")
+    # if rand() < exp(-ΔS) # Definitely old minus new!!
         U[:,:,:] = U_prop[:,:,:]
         acc[1] += 1.0
     end
-    return nothing
+    # return nothing
+    return action(U_prop,β)
+end
+
+function insta_update_U2_log_cheat!(U,β,acc,Q)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    U_prop = exp_u2.(log_U2.(U) .+  insta_U2_log_cheat(NX,NT,rand([-Q,Q]))) 
+    # ΔS = action(U_prop,β) - action(U,β)
+    if rand() < exp(action(U,β) - action(U_prop,β)) # Definitely old minus new!!
+    # if rand() < exp(-ΔS) # Definitely old minus new!!
+        U[:,:,:] = U_prop[:,:,:]
+        acc[1] += 1.0
+    end
+    # return nothing
+    return action(U_prop, β)
 end
 
 # 🚧👷 Under construction! 👷🚧
@@ -269,3 +319,28 @@ end
 #     end
 #     return nothing
 # end
+
+
+# U = gaugefield_U2(N_x, N_t, true);
+# U_prop_bf = grp2coeffs_U2.(exp.(log.(coeffs2grp.(U)) .+ log.(coeffs2grp.(insta_U2(N_x,N_t,1)))));
+# U_prop_ez = exp_u2.(log_U2.(U) .+  insta_U2_log(N_x,N_t,1)) ;
+# bla = isapprox.(U_prop_bf, U_prop_ez)
+# # for b in bla
+# #     if b == false
+# #         bla_count[1] += 1
+# #     end
+# # end
+# # bla_count
+# for t = 1:N_t
+#     for x = 1:N_x
+#         for μ = 1:2
+#             if bla[μ,x,t] == false
+#                 println(μ, ", ", x, ", ", t )
+#                 println(U_prop_bf[μ,x,t])
+#                 println(U_prop_ez[μ,x,t])
+#                 println(" ")
+#             end
+#         end
+#     end
+# end
+

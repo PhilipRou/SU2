@@ -136,6 +136,13 @@ function ran_SU2(ϵ)
     return coeffs_SU2(sqrt(1-ϵ^2), ϵ*r1/absr, ϵ*r2/absr, ϵ*r3/absr)
 end
 
+# Create a random element of su(2), i.e. the Lie algebra (mind the
+# lower case letters!)
+function ran_su2(ϵ)
+    r = ϵ .* (2 .* rand(3) .- 1)
+    return coeffs_SU2(0.0, r[1], r[2], r[3])
+end
+
 # Quickly get the coefficients of the identity element
 function coeffs_Id_SU2()
     return coeffs_SU2(1.0, 0.0, 0.0, 0.0)

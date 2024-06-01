@@ -42,7 +42,7 @@ function Base.:*(X::coeffs_U2, Y::coeffs_U2)
     return coeffs_U2(a,b,c,d)
 end
 
-function Base.:*(α, X::coeffs_U2)
+function Base.:*(α::Number, X::coeffs_U2)
     return coeffs_U2(α*X.a, α*X.b, α*X.c, α*X.d)
 end
 
@@ -72,18 +72,35 @@ function LinearAlgebra.adjoint(X::coeffs_U2)
     return coeffs_U2(adjoint(X.a), -adjoint(X.b), -adjoint(X.c), -adjoint(X.d))
 end
 
-# Take the matrix logarithm of coeffs_U2
-# (note: staying in matrix-form or even returning a matrix
-# is significantly less efficient)
-function log_U2(Y::coeffs_U2)
-    z = sqrt(det(Y))
-    X = Y/z
-    ϕ = imag(log(z))
-    res = acos(X.a)/sqrt(1-X.a^2) * coeffs_U2(0.0*im, X.b, X.c, X.d)
-    return res + coeffs_U2(im*ϕ, 0.0*im, 0.0*im, 0.0*im)
+# # Take the matrix logarithm of coeffs_U2
+# # (note: staying in matrix-form or even returning a matrix
+# # is significantly less efficient)
+# function log_U2(Y::coeffs_U2)
+#     z = sqrt(det(Y))
+#     X = Y/z
+#     ϕ = imag(log(z))
+#     res = acos(X.a)/sqrt(1-X.a^2) * coeffs_U2(0.0*im, X.b, X.c, X.d)
+#     return res + coeffs_U2(im*ϕ, 0.0*im, 0.0*im, 0.0*im)
+# end
+
+function grp2coeffs_u2(M::Matrix)
+    x0 = im*imag(M[1,1]+M[2,2])/2
+    x1 = Complex(imag(M[1,2]))
+    x2 = Complex(real(M[1,2]))
+    x3 = Complex(imag(M[1,1]-M[2,2])/2)
+    return coeffs_U2(x0, x1, x2, x3)
 end
 
-# Map a u(2)-element (from the Lie-algebra) onto the
+function log_U2(X::coeffs_U2)
+    M = coeffs2grp(X)
+    E = eigen(M)
+    A = E.vectors
+    A_inv = adjoint(E.vectors)
+    V = diagm(log.(E.values))
+    return grp2coeffs_u2(A * V * A_inv)
+end 
+
+# Map a u(2)-element (from the physicists' Lie-algebra) onto the
 # manifold U(2) via the exponential function
 function exp_u2(Y::coeffs_U2)
     # X = coeffs_U2(Y.a, im*Y.b, im*Y.c, im*Y.d)
@@ -108,8 +125,16 @@ function ran_U2(ϵ)
     absr = sqrt(r1^2 + r2^2 + r3^2)
     ph_fac = exp(im*ϵ*π*r4) # Decidedly not exp(2*im*ϵ*π*r4), see above
     # ⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕
-    return coeffs_U2(ph_fac*sqrt(1-ϵ^2), ph_fac*ϵ*r1/absr, ph_fac*ϵ*r2/absr, ph_fac*ϵ*r3/absr)
+    return ph_fac*coeffs_U2(sqrt(1-ϵ^2), ϵ*r1/absr, ϵ*r2/absr, ϵ*r3/absr)
     # return sum([ph_fac*sqrt(1-ϵ^2), ph_fac*ϵ*r1/absr, ph_fac*ϵ*r2/absr, ph_fac*ϵ*r3/absr] .* Σ_im)
+end
+
+# Create a random element of u(2), i.e. the Lie algebra (mind the
+# lower case letter!)
+function ran_u2(ϵ)
+    r = ϵ .* (2 .* rand(4) .- 1) .+ 0.0im
+    r[1] = im*r[1]
+    return coeffs_U2(r[1], r[2], r[3], r[4])
 end
 
 # Quickly get the coefficients of the identity element
@@ -118,7 +143,7 @@ function coeffs_Id_U2()
 end
 
 # Given coeffs_U2 create the corresponding U2-matrix
-function coeffs2grp(X::coeffs_U2)
+function coeffs2grp(X::coeffs_U2)::Matrix{ComplexF64}
     return X.a*σ0 + im*X.b*σ1 + im*X.c*σ2 + im*X.d*σ3
 end
 

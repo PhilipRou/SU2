@@ -20,14 +20,23 @@ end
 
 traceless_test()
 
-function exp_traceless_test()
+function exp_stout_test_SU2()
     coeffs = ran_SU2(rand())
     coeffs_tr_less = coeffs - adjoint(coeffs)
-    @assert isapprox(exp_traceless(coeffs), grp2coeffs(exp(coeffs2grp(coeffs_tr_less))))
+    @assert isapprox(exp_stout(coeffs), grp2coeffs(exp(coeffs2grp(coeffs_tr_less))))
     return true
 end
 
-exp_traceless_test()
+exp_stout_test_SU2()
+
+function exp_stout_test_U2()
+    coeffs = ran_U2(rand())
+    coeffs_tr_less = -1/2*( adjoint(coeffs) - coeffs - tr(adjoint(coeffs) - coeffs)/2 * coeffs_Id_U2() )
+    @assert isapprox(exp_stout(coeffs), grp2coeffs_U2(exp(coeffs2grp(coeffs_tr_less))))
+    return true
+end
+
+exp_stout_test_U2()
 
 #=
 function old_VS_new_stout_test()

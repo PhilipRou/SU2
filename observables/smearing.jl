@@ -91,12 +91,19 @@ function exp_stout(X::coeffs_SU2)
     return coeffs_SU2(cos(w), s*Y.b, s*Y.c, s*Y.d)
 end
 
+# # WRONG!!!
+# function exp_stout_old(X::coeffs_U2)
+#     Q_μ = -1/2*( adjoint(X) - X - tr(adjoint(X) - X)/2 * coeffs_Id_U2() )
+#     w = real(sqrt(Q_μ.b^2 + Q_μ.c^2 + Q_μ.d^2))
+#     s = sin(w)/w
+#     return coeffs_U2(cos(w)+0.0*im, s*Q_μ.b, s*Q_μ.c, s*Q_μ.d)
+# end
+
 function exp_stout(X::coeffs_U2)
-    Q_μ = -1/2*( adjoint(X) - X - tr(adjoint(X) - X)/2 * coeffs_Id_U2() )
-    w = real(sqrt(Q_μ.b^2 + Q_μ.c^2 + Q_μ.d^2))
-    s = sin(w)/w
-    return coeffs_U2(cos(w)+0.0*im, s*Q_μ.b, s*Q_μ.c, s*Q_μ.d)
+    Q_μ = -1/2*(adjoint(X) - X)
+    return exp_u2(Q_μ)
 end
+
 # X = ran_U2(rand()) + ran_U2(rand());
 # Q_μ = -1/2*( adjoint(X) - X - tr(adjoint(X) - X)/2 * coeffs_Id_U2() );
 # ble = grp2coeffs_U2(exp(coeffs2grp(Q_μ))) - exp_traceless_b(X);

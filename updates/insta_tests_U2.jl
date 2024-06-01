@@ -7,53 +7,10 @@ using Plots
 using LsqFit
 using LaTeXStrings
 using LinearAlgebra
+using Roots
+using DelimitedFiles
+using Statistics
 
-
-# Create a minimum of the gauge action in the topological
-# sector of charge Q. Unfortunately the link values of the 
-# odd-Q-instantons are not elements of the center of U(2)
-# (i.e. ∉ U(1)), so that 
-function insta_U2(N_x, N_t, Q)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    if iseven(Q)
-        U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
-    else
-        U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*π/N_x/N_t)*coeffs_Id_U2() - sin(t*π/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
-        U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-        U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*π/N_x)*coeffs_Id_U2() + sin(x*π/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
-    end
-    return U
-end
-
-# Create a naive (N_x × N_t)-Q-instanton configuration, in
-# the sense that it is not an actual minimum of the gauge
-# action for odd Q (see insta_U2() below)
-function insta_U2_naive(N_x, N_t, Q)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
-    return U
-end
-
-function def_not_insta_U2(N_x, N_t, Q)
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*π/N_x/N_t)*coeffs_Id_U2() - sin(t*π/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*π/N_x)*coeffs_Id_U2() + sin(x*π/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
-    return U
-end
-
-function insta_U2_split(N_x, N_t, Q, v)
-    # M = grp2coeffs_U2(exp(sum(im .* v .* [σ1,σ2,σ3])))
-    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
-    U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * grp2coeffs_U2(exp(sum(-(im*t*π/N_x/N_t) .* v .* [σ1,σ2,σ3]))) for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * grp2coeffs_U2(exp(sum((im*x*π/N_x) .* v .* [σ1,σ2,σ3]))) for x = 1:N_x]
-    return U
-end
 
 # insta_update() doesn't really work, but cooling the proposal
 # only a couple of times (N_insta_cool) seems to do the trick
@@ -858,39 +815,4 @@ end
 
 
 
-N_t = 32
-N_x = 32
-β = 8.0
-U = gaugefield_U2(N_t, N_x, true)
-actions = []
-for i = 1:300 chess_metro!(U, 0.05, β, [0.0], "U2"); push!(actions, action(U,β)) end
-Q = round(Int, top_charge_U2(U))
-U = U.*insta_U2(N_x, N_t, 1-Q)
-for i = 1:20 chess_metro!(U, 0.05, β, [0.0], "U2"); push!(actions, action(U,β)) end
-display(plot(actions))
-Q = round(Int, top_charge_U2(U))
-println("Q = $Q")
 
-
-
-ρ = 0.01
-N_smear = 10^3
-smeared_actions = [action(U,1.0)/N_x/N_t]
-V = stout(U,ρ);
-for i = 1:N_smear
-    push!(smeared_actions, action(V,1.0)/N_x/N_t)
-    V = stout(V,ρ)
-end
-
-image_smeared_actions = plot(
-    ρ .* Array(1:N_smear+1),
-    smeared_actions,
-    title = latexstring("\$ S/\\beta V \$ for a smeared 2D U(2) field of top. charge \$ q = $Q\$"),
-    xlabel = latexstring("Smearing time \$\\tau\$"),
-    label = latexstring("Smeared action, \$\\rho = $ρ\$")
-)
-image_smeared_actions = hline!([action(insta_U2(N_x,N_t,Q),1.0)/N_x/N_t], label = "Instanton action")
-image_smeared_action = plot!(xaxis = :log, xticks = [10.0^i for i = -2:1] )
-# action(insta_U2(N_x,N_t,Q),1.0)/N_x/N_t
-
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_actions_q_$Q.1.log.pdf")

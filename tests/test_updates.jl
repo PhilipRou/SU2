@@ -27,12 +27,12 @@ delta_S_gauge_test()
 
 # staple_dag_D_test()
 
-acc = [0]
+acc = [0.0]
 function local_metro!_test()
     test_field = gaugefield_SU2(N_t,N_x,true)
     test_test_field = deepcopy(test_field)
     for i = 1:50
-        metro!(test_field, 1,1,1,0.1,β,acc)
+        metro!(test_field, 1,1,1,0.1,β,acc,"SU2")
     end
     @assert test_test_field != test_field "local_metro! didn't change the config it was given"
     @assert acc[1] != 0 "local_metro! didn't increment the acceptance"
@@ -86,9 +86,9 @@ function overrelax!_test_SU2()
     test_field = gaugefield_SU2(N_t,N_x,true)
     old_field = deepcopy(test_field)
     old_action = action(test_field,β)
-    for i = 1:10
-        t = rand(1:8)
-        x = rand(1:8)
+    for i = 1:100
+        t = rand(1:N_t)
+        x = rand(1:N_x)
         μ = rand(1:2)
         overrelax!(test_field,μ,t,x,[0.0])
     end
@@ -103,9 +103,9 @@ function overrelax!_test_U2()
     test_field = gaugefield_U2(N_t,N_x,true)
     old_field = deepcopy(test_field)
     old_action = action(test_field,β)
-    for i = 1:10
-        t = rand(1:8)
-        x = rand(1:8)
+    for i = 1:100
+        t = rand(1:N_t)
+        x = rand(1:N_x)
         μ = rand(1:2)
         overrelax!(test_field,μ,t,x,[0.0])
     end
@@ -140,3 +140,15 @@ function chess_overrelax!_test()
 end
 
 lexico_overrelax!_test()
+
+function insta_U2_log_test()
+    for i = 1:100
+        q = rand(Vector(Int(-N_x*N_t/2):Int(N_x*N_t/2)))
+        @assert !(false in isapprox.(exp_u2.(insta_U2_log(N_x,N_t,q)), insta_U2(N_x,N_t,q)))
+        @assert round(Int,top_charge_U2(exp_u2.(insta_U2_log(N_x,N_t,q)))) == q "We have $q VS $(round(Int,top_charge_U2(exp_u2.(insta_U2_log(N_x,N_t,q)))))"
+        @assert action(exp_u2.(insta_U2_log(N_x,N_t,q)),1) - action(insta_U2(N_x, N_t, q),1) < 1.0e-12 "For q = $q there's ΔS = $(action(exp_u2.(insta_U2_log(N_x,N_t,q)),1) - action(insta_U2(N_x, N_t, q),1))"
+    end
+    return true
+end
+
+insta_U2_log_test()

@@ -132,8 +132,8 @@ display(image)
 
 
 
-L = 32
-for β in [12.0] # [2.0,4.0,6.0,8.0] #[12.0]
+for β in [3.0] # [2.0,4.0,6.0,8.0] #[12.0]
+L = 16
 # β = 12.0
 N_t = L #+ i*16
 N_x = L #+ i*16
@@ -141,7 +141,7 @@ hot = true
 # ϵ   = 0.2 
 n_stout = 0
 ρ   = 0.12
-sim_count = 24
+sim_count = 1
 loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 num_loops = length(loops)
 
@@ -150,6 +150,17 @@ num_loops = length(loops)
 base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
 Q_path = string(base_path, "\\top_charge.txt")
 acc_path = string(base_path, "\\acceptances.txt")
+insta_delta_s_path = string(base_path, "\\insta_delta_s_plus.txt")
+s_path = string(base_path, "\\actions.txt")
+
+delta_ses = readdlm(insta_delta_s_path)./( N_x*N_t)
+b_size_delta = round(Int,2*auto_corr_time(delta_ses) + 1)
+println(jackknife(delta_ses,b_size_delta), " Block size: ", b_size_delta)
+# println(std(delta_ses))
+
+actions = readdlm(s_path)./( N_x*N_t)
+b_size_actions = round(Int,2*auto_corr_time(actions) + 1)
+println(jackknife(actions,b_size_actions))
 
 charges = readdlm(Q_path)
 # Qs = copy(charges)
@@ -184,6 +195,15 @@ image_Q = histogram(
 display(image_Q)
 display(plot(charges))
 # plot(Qs)
+
+acc = readdlm(acc_path)
+b_size_metro = Int(round(2*auto_corr_time(acc[:,1])+1, RoundUp))
+# b_size_OR = Int(round(2*auto_corr_time(acc[:,2])+1, RoundUp))
+b_size_insta = Int(round(2*auto_corr_time(acc[:,3])+1, RoundUp))
+println("Acceptance rate Metro: $(jackknife(acc[:,1],b_size_metro))")
+# println("Acceptance rate OR:    $(jackknife(acc[:,1],b_size_OR))")
+println("Acceptance rate OR:    $(mean(acc[:,2])), $(std(acc[:,2]))")
+println("Acceptance rate insta: $(jackknife(acc[:,3],b_size_insta))")
 
 println(" ")
 end
@@ -292,3 +312,6 @@ let
     println("For n_stout = $n_stout, L = $L, we have ⟨P_xt⟩ = $(bla[1]) ± $(bla[2])")
     println("Cf. analytical result (no Stout smearing): $P_anal ")
 end
+
+12*(1-analytic_plaq_U2(12))
+
