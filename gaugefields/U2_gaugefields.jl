@@ -100,12 +100,14 @@ function log_U2(X::coeffs_U2)
     return grp2coeffs_u2(A * V * A_inv)
 end 
 
+const ϵ_for_exp = 10^(-15) # for exp_u2() below
 # Map a u(2)-element (from the physicists' Lie-algebra) onto the
 # manifold U(2) via the exponential function
 function exp_u2(Y::coeffs_U2)
     # X = coeffs_U2(Y.a, im*Y.b, im*Y.c, im*Y.d)
+    ϵ = 10^(-15)
     A = exp(Y.a) * cos(sqrt(Y.b^2+Y.c^2+Y.d^2))
-    B = exp(Y.a) * sin(sqrt(Y.b^2+Y.c^2+Y.d^2)) / sqrt(Y.b^2+Y.c^2+Y.d^2)
+    B = exp(Y.a) * sin(sqrt(Y.b^2+Y.c^2+Y.d^2 + ϵ)) / sqrt(Y.b^2+Y.c^2+Y.d^2 + ϵ)
     return coeffs_U2(A, B*Y.b, B*Y.c, B*Y.d)
 end
 

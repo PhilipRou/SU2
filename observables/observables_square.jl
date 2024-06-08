@@ -70,6 +70,29 @@ function action(U, β)
     return β*S/2    # later generalization: β*S/N_colour
 end
 
+# A method to calculate the action using the clover instead
+# of the plaquette
+function action_clover(U,β)
+    NX = size(U,2)
+    NT = size(U,3)
+    S = 0
+    for t = 1:NT
+        t_p = mod1(t+1,NT)
+        t_m = mod1(t-1,NT)
+        for x = 1:NX
+            x_p = mod1(x+1,NX)
+            x_m = mod1(x-1,NX)
+            tmq =  U[1,x,t] * U[2,x_p,t] * adjoint(U[1,x,t_p]) * adjoint(U[2,x,t])
+            tmq += U[2,x,t] * adjoint(U[1,x_m,t_p]) * adjoint(U[2,x_m,t]) * U[1,x_m,t]
+            tmq += adjoint(U[1,x_m,t]) * adjoint(U[2,x_m,t_m]) * U[1,x_m,t_m] * U[2,x,t_m]
+            tmq += adjoint(U[2,x,t_m]) * U[1,x,t_m] * U[2,x_p,t_m] * adjoint(U[1,x,t])
+            tmq = (tmq-adjoint(tmq)) / (8*im)
+            S += β * real(tr(tmq*tmq)) / 4
+        end
+    end
+    return S
+end
+
 # A (2×3)-Wilson loop written by hand for debugging purposes
 function loop_2x3_square(U, x, t)
     NX = size(U,2)
@@ -365,8 +388,31 @@ end
 
 
 
+# A neat definition of the topological charge utilizing the
+# geometrical features of 2D QFT, yielding an integer-valued
+# topological charge (which is not necessarily more 
+# correct than the field theoretic definition below)
 function top_charge_U2(U)
     NX = size(U,2)
     NT = size(U,3)
     return sum([imag(log(det(plaq(U, x, t)))) for x = 1:NX, t = 1:NT]) / 2 / π
 end
+
+# The field theoretic definition of the topological charge
+function top_charge_U2_wil(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    q = 0
+    for t = 1:NT
+        t_p = mod1(t+1,NT)
+        # t_m = mod1(t-1,NT)
+        for x = 1:NX
+            x_p = mod1(x+1,NX)
+            # x_m = mod1(x-1,NX)
+            plaq =  U[1,x,t] * U[2,x_p,t] * adjoint(U[1,x,t_p]) * adjoint(U[2,x,t])
+            q += imag(tr(plaq))
+        end
+    end
+    return q/2/π
+end
+

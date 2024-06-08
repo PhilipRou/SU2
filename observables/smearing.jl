@@ -100,8 +100,13 @@ end
 # end
 
 function exp_stout(X::coeffs_U2)
-    Q_μ = -1/2*(adjoint(X) - X)
+    Q_μ = -1/2*(adjoint(X) - X) # Not traceless, but intended! It's the Lie algebra of U(2), after all
     return exp_u2(Q_μ)
+end
+
+function exp_stout_slow(X::coeffs_U2)
+    Q_μ = -1/2*(adjoint(X) - X) 
+    return grp2coeffs_U2(exp(coeffs2grp(Q_μ)))
 end
 
 # X = ran_U2(rand()) + ran_U2(rand());
@@ -131,19 +136,51 @@ function stout(U, ρ)
     return V
 end
 
-function stout(U, n_stout, ρ)
+# Single stout smearing of a given config U with parameter ρ
+function stout_slow(U, ρ)
     NX = size(U,2)
     NT = size(U,3)
-    if n_stout > 0
-        V = stout(U,ρ)
-        for i = 1:n_stout-1
-            V = stout(V,ρ)
+    V = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # stap_link = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
+                V[μ,x,t] = exp_stout_slow(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
+            end
         end
-        return V
-    else
-        return U
     end
+    return V
 end
+
+function stout_midpoint(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                stap = staple(U,μ,x,t)
+                temp = exp_stout(ρ/2 * stap * adjoint(U[μ,x,t])) * U[μ,x,t]
+                V[μ,x,t] = exp_stout(ρ * stap * adjoint(temp)) * U[μ,x,t]
+            end
+        end
+    end
+    return V
+end
+
+# function stout(U, n_stout, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     if n_stout > 0
+#         V = stout(U,ρ)
+#         for i = 1:n_stout-1
+#             V = stout(V,ρ)
+#         end
+#         return V
+#     else
+#         return U
+#     end
+# end
 
         
 

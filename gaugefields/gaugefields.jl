@@ -38,3 +38,28 @@ function gaugefield(N_x::Int64, N_t::Int64, hot::Bool, group::String, lattice::S
 end
 
 # test_field = gaugefield(32, 32, true, "U2", "pentagon")
+
+# Apply temporal gauge onto a square config
+function temp_gauge(U, group)
+    NX = size(U,2)
+    NT = size(U,3)
+    if group == "SU2"
+        V = gaugefield_SU2(NX, NT, false)
+        Ω_slice = [coeffs_Id_SU2() for x = 1:NX] 
+        for t = 1:NT
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
+            Ω_slice = Ω_slice .* U[2,:,t]
+        end
+        V[2,:,NT] = Ω_slice
+        return V
+    elseif group == "U2"
+        V = gaugefield_U2(NX, NT, false)
+        Ω_slice = [coeffs_Id_U2() for x = 1:NX] 
+        for t = 1:NT
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
+            Ω_slice = Ω_slice .* U[2,:,t]
+        end
+        V[2,:,NT] = Ω_slice
+        return V
+    end
+end
