@@ -63,3 +63,39 @@ function temp_gauge(U, group)
         return V
     end
 end
+
+function max_gauge(U, group)
+    NX = size(U,2)
+    NT = size(U,3)
+    if group == "U2"
+        V  = gaugefield_U2(NX, NT, false)
+        Ω_slice = [coeffs_Id_U2()]
+        for x = 1:NX-1
+            next_el = last(Ω_slice) * U[1,x,1]
+            push!(Ω_slice, next_el)
+        end
+        Ω_slice_copy = Ω_slice
+        V[1,NX,1] = last(Ω_slice) * U[1,NX,1]
+        for t = 2:NT
+            Ω_slice = Ω_slice .* U[2,:,t-1]
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
+        end
+        V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
+        return V
+    elseif group == "SU2"
+        V  = gaugefield_SU2(NX, NT, false)
+        Ω_slice = [coeffs_Id_SU2()]
+        for x = 1:NX-1
+            next_el = last(Ω_slice) * U[1,x,1]
+            push!(Ω_slice, next_el)
+        end
+        Ω_slice_copy = Ω_slice
+        V[1,NX,1] = last(Ω_slice) * U[1,NX,1]
+        for t = 2:NT
+            Ω_slice = Ω_slice .* U[2,:,t-1]
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
+        end
+        V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
+        return V
+    end
+end

@@ -25,9 +25,9 @@ function cool!(U, μ, x, t, step, β, acc, group)
         new_coeffs = ran_U2(step) * new_coeffs
     end
     staple_d = staple_dag(U,μ,x,t)
-    S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
-    S_new = β*0.5*real(tr(new_coeffs * staple_d))
-    if S_old < S_new
+    S_old_neg = β*0.5*real(tr(U[μ,x,t] * staple_d))
+    S_new_neg = β*0.5*real(tr(new_coeffs * staple_d))
+    if S_old_neg < S_new_neg
         U[μ,x,t] = new_coeffs
         acc[1] += 1
     end
@@ -129,6 +129,9 @@ function stout(U, ρ)
         for x = 1:NX
             for μ = 1:2
                 # stap_link = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
+                # Ω0 = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
+                # Z0 = -1/2*(adjoint(Ω0) - Ω0)
+                # V[μ,x,t] = exp_u2(Z0) * U[μ,x,t]
                 V[μ,x,t] = exp_stout(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
             end
         end
@@ -137,44 +140,59 @@ function stout(U, ρ)
 end
 
 # Single stout smearing of a given config U with parameter ρ
-function stout_slow(U, ρ)
+# function stout_slow(U, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     V = similar(U)
+#     for t = 1:NT
+#         for x = 1:NX
+#             for μ = 1:2
+#                 # stap_link = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
+#                 V[μ,x,t] = exp_stout_slow(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
+#             end
+#         end
+#     end
+#     return V
+# end
+
+function stout(U, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
-    V = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                # stap_link = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
-                V[μ,x,t] = exp_stout_slow(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
-            end
+    if n_stout > 0
+        V = stout(U,ρ)
+        for i = 1:n_stout-1
+            V = stout(V,ρ)
         end
+        return V
+    else
+        return U
     end
-    return V
 end
 
-function stout_midpoint(U, ρ)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                stap = staple(U,μ,x,t)
-                temp = exp_stout(ρ/2 * stap * adjoint(U[μ,x,t])) * U[μ,x,t]
-                V[μ,x,t] = exp_stout(ρ * stap * adjoint(temp)) * U[μ,x,t]
-            end
-        end
-    end
-    return V
-end
+# function stout_midpoint_old(U, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     V = similar(U)
+#     for t = 1:NT
+#         for x = 1:NX
+#             for μ = 1:2
+#                 stap = staple(U,μ,x,t)
+#                 X1 = exp_stout(ρ/2 * stap * adjoint(U[μ,x,t])) * U[μ,x,t]
+#                 V[μ,x,t] = exp_stout(ρ * stap * adjoint(X1)) * U[μ,x,t]
+#                 # besser: exp(Z1 - Z0/2) * X1  ̂=  
+#             end
+#         end
+#     end
+#     return V
+# end
 
-# function stout(U, n_stout, ρ)
+# function stout_midpoint_old(U, n_stout, ρ)
 #     NX = size(U,2)
 #     NT = size(U,3)
 #     if n_stout > 0
-#         V = stout(U,ρ)
+#         V = stout_midpoint_old(U,ρ)
 #         for i = 1:n_stout-1
-#             V = stout(V,ρ)
+#             V = stout_midpoint_old(V,ρ)
 #         end
 #         return V
 #     else
@@ -182,7 +200,129 @@ end
 #     end
 # end
 
+# function stout_midpoint(U, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     V = similar(U)
+#     for t = 1:NT
+#         for x = 1:NX
+#             for μ = 1:2
+#                 # besser: exp(Z1 - Z0/2) * X1 
+#                 stap = staple(U,μ,x,t)
+#                 Ω0 = ρ * stap * adjoint(U[μ,x,t])
+#                 Z0 = -1/2*(adjoint(Ω0) - Ω0)
+#                 X1 = exp_u2(Z0/2) * U[μ,x,t]
+#                 Ω1 = ρ * stap * adjoint(X1)
+#                 Z1 = -1/2*(adjoint(Ω1) - Ω1)
+#                 V[μ,x,t] = exp_u2(Z1 - Z0/2) * X1
+#                 # Z0 = ρ * stap * adjoint(U[μ,x,t])
+#                 # X1 = exp_stout_slow(1/2 * Z0) * U[μ,x,t]
+#                 # Z1 = ρ * stap * adjoint(X1)
+#                 # V[μ,x,t] = exp_stout_slow(Z1 - Z0/2) * X1
+#             end
+#         end
+#     end
+#     return V
+# end
+
+# function stout_midpoint(U, n_stout, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     if n_stout > 0
+#         V = stout_midpoint(U,ρ)
+#         for i = 1:n_stout-1
+#             V = stout_midpoint(V,ρ)
+#         end
+#         return V
+#     else
+#         return U
+#     end
+# end
+
+function stout_midpoint(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = stout(U, 0.5*ρ)     # Inefficient, because staple(U,...) is calculated again below
+    W = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # besser: exp(Z1 - Z0/2) * X1 
+                stap0 = staple(U,μ,x,t)
+                stap1 = staple(V,μ,x,t)
+                Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
+                Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
+                Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+                Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+                W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
+            end
+        end
+    end
+    return W
+end
+
+function stout_midpoint(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    if n_stout > 0
+        V = stout_midpoint(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_midpoint(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end
+
+function stout_midpoint_fast(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    staps = [staple(U,μ,x,t) for μ = 1:2, x = 1:NX, t = 1:NT]
+    V = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # besser: exp(Z1 - Z0/2) * X1 
+                # stap = staps[μ,x,t]
+                V[μ,x,t] = exp_stout(0.5 * ρ * staps[μ,x,t] * adjoint(U[μ,x,t])) * U[μ,x,t]
+            end
+        end
+    end
+    W = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # besser: exp(Z1 - Z0/2) * X1 
+                # stap0 = staps[μ,x,t] # staple(U,μ,x,t)
+                stap1 = staple(V,μ,x,t)
+                # Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
+                Ω0 = ρ * staps[μ,x,t] * adjoint(U[μ,x,t])
+                Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
+                Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+                Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+                W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
+            end
+        end
+    end
+    return W
+end
         
+function stout_midpoint_fast(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    if n_stout > 0
+        V = stout_midpoint(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_midpoint(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end
+
+
 
 # # ⭕ Definitely reconsider this V = similar(U) bullcrap ⭕
 # function stout(U, n_stout, ρ)
@@ -344,6 +484,47 @@ end
 ########    3-dimensional Stuff    ########
 
 
+#=
+U = gaugefield_U2(L, L, true);
+for i = 1:100 chess_metro!(U, 0.1, 2.0, [0.0], "U2") end
 
 
+ρ = 0.2
+N_smear = 10^3
+
+V_stout = stout(U,ρ)
+V_stout_mid = stout_midpoint(U,ρ)
+V_stout_mid_super = stout_midpoint_super(U,ρ)
+V_stout_mid_super_fast = stout_midpoint_super_fast(U,ρ)
+
+s_stout = [action(V_stout,1)]
+s_stout_mid = [action(V_stout_mid,1)]
+s_stout_mid_super = [action(V_stout_mid_super,1)]
+s_stout_mid_super_fast = [action(V_stout_mid_super_fast,1)]
+
+for smear = 1:N_smear
+    V_stout = stout(V_stout,ρ)
+    V_stout_mid = stout_midpoint(V_stout_mid,ρ)
+    V_stout_mid_super = stout_midpoint_super(V_stout_mid_super,ρ)
+    V_stout_mid_super_fast = stout_midpoint_super_fast(V_stout_mid_super_fast,ρ)
+    push!(s_stout , action(V_stout,1))
+    push!(s_stout_mid , action(V_stout_mid,1))
+    push!(s_stout_mid_super , action(V_stout_mid_super,1))
+    push!(s_stout_mid_super_fast , action(V_stout_mid_super_fast,1))
+end
+
+win = 800:1000
+plot(s_stout[win], label = "stout")
+plot!(s_stout_mid[win], label = "wrong mid")
+plot!(s_stout_mid_super[win], label = "super mid")
+plot!(s_stout_mid_super_fast[win], label = "super mid fast")
+
+plot(s_stout_mid_super[100:end], label = "super mid")
+plot!(s_stout_mid_super_fast[100:end], label = "super mid fast")
+
+
+using BenchmarkTools
+@benchmark stout_midpoint_super(U,0.1)
+@benchmark stout_midpoint_super_fast(U,0.1)
+=#
 

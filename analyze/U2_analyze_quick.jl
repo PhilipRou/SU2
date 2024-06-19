@@ -315,3 +315,119 @@ end
 
 12*(1-analytic_plaq_U2(12))
 
+
+
+let
+    n_stout = 10^5 #[0, 10^2, 10^3, 10^4]
+    sim_count = 3
+    β = 6.0
+    L = 16
+    N_x = L
+    N_t = L
+    ρ   = 0.1
+    loops   = [[1,1], [1,2], [2,1], [2,2]]
+    num_loops = length(loops)
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    actions_path = string(base_path,"\\actions.txt")
+    actions_clover_path = string(base_path,"\\actions_clover.txt")
+    actions_unsm_path = string(base_path,"\\actions_unsm.txt")
+    actions_clover_unsm_path = string(base_path,"\\actions_clover_unsm.txt")
+    top_charge_path = string(base_path,"\\top_charge.txt")
+    top_charge_wil_path = string(base_path,"\\top_charge_wil.txt")
+
+    actions = readdlm(actions_path) ./ (β*N_x*N_t)
+    actions_clover = readdlm(actions_clover_path) ./ (β*N_x*N_t)
+    actions_unsm = readdlm(actions_unsm_path) ./ (β*N_x*N_t)
+    actions_clover_unsm = readdlm(actions_clover_unsm_path) ./ (β*N_x*N_t)
+    charges = readdlm(top_charge_path)
+    charges_wil = readdlm(top_charge_wil_path) 
+    susc = charges.^2 ./L^2 .* β
+    susc_wil = charges_wil.^2 ./L^2 .* β
+
+    b_size_actions          = round(Int, 2*auto_corr_time(actions)+1)
+    b_size_actions_clover   = round(Int, 2*auto_corr_time(actions_clover)+1)
+    b_size_actions_unsm          = round(Int, 2*auto_corr_time(actions_unsm)+1)
+    b_size_actions_clover_unsm   = round(Int, 2*auto_corr_time(actions_clover_unsm)+1)
+    b_size_charges          = round(Int, 2*auto_corr_time(charges)+1)
+    b_size_charges_wil      = round(Int, 2*auto_corr_time(charges_wil)+1)
+    b_size_susc          = round(Int, 2*auto_corr_time(susc)+1)
+    b_size_susc_wil      = round(Int, 2*auto_corr_time(susc_wil)+1)
+    s, s_sig            = round.(jackknife(actions, b_size_actions), digits = 10)
+    s_clo, s_clo_sig    = round.(jackknife(actions_clover, b_size_actions_clover), digits = 10)
+    s_unsm, s_unsm_sig            = round.(jackknife(actions_unsm, b_size_actions_unsm), digits = 10)
+    s_clo_unsm, s_clo_unsm_sig    = round.(jackknife(actions_clover_unsm, b_size_actions_clover_unsm), digits = 10)
+    # q, q_sig            = round.(jackknife(charges, b_size_charges), digits = 10)
+    # q_wil, q_wil_sig    = round.(jackknife(charges_wil, b_size_charges_wil), digits = 10)
+    susc, susc_sig            = round.(jackknife(susc, b_size_susc), digits = 10)
+    susc_wil, susc_wil_sig    = round.(jackknife(susc_wil, b_size_susc_wil), digits = 10)
+    # println("For β = $β, L = $L, ρ = $ρ, n_stout = $n_stout, using REGULAR stout:")
+    # println("Wilson gauge action:         $s_unsm ± $s_unsm_sig")
+    # println("Clover gauge action:         $s_cl0_unsmo ± $s_clo_unsm_sig")
+    # println("Wilson gauge action smeared: $s ± $s_sig")
+    # println("Clover gauge action smeared: $s_clo ± $s_clo_sig")
+    # # println("Geometric top. charge:       $q ± $q_sig")
+    # # println("Field theoretic top. charge: $q_wil ± $q_wil_sig \n")
+    # println("Geometric top. susc.:        $susc ± $susc_sig")
+    # println("Field theoretic top. susc.:  $susc_wil ± $susc_wil_sig")
+    # println("Block size for q:            2*τ_{int} + 1 = $b_size_charges")
+
+    abs_charges = abs.(round.(Int, charges))
+    q_max = maximum(abs_charges)
+    conf_Nr_by_charge = []
+    for q = 0:q_max
+        configs_with_that_q = []
+        for i = 1:length(abs_charges)
+            if abs_charges[i] == q
+                push!(configs_with_that_q, i)
+            end
+        end
+        if configs_with_that_q == []
+            push!(conf_Nr_by_charge, NaN)
+        else
+            push!(conf_Nr_by_charge, configs_with_that_q)
+        end
+    end
+    unsm_conf_Nr_by_charge = []
+    for q = 0:q_max
+        unsm_configs_with_that_q = []
+        for i = 1:length(abs_charges)
+            if abs_charges[i] == q
+                push!(unsm_configs_with_that_q, i)
+            end
+        end
+        if unsm_configs_with_that_q == []
+            push!(unsm_conf_Nr_by_charge, NaN)
+        else
+            push!(unsm_conf_Nr_by_charge, unsm_configs_with_that_q)
+        end
+    end
+    
+    actions_by_charge = [actions[conf_Nr_by_charge[q+1]] for q = 0:q_max]
+    actions_clover_by_charge = [actions_clover[conf_Nr_by_charge[q+1]] for q = 0:q_max]
+    actions_unsm_by_charge = [actions_unsm[unsm_conf_Nr_by_charge[q+1]] for q = 0:q_max]
+    actions_clover_unsm_by_charge = [actions_clover_unsm[unsm_conf_Nr_by_charge[q+1]] for q = 0:q_max]
+    # for q = 0:q_max
+    #     # s_q, s_q_sig = round.(jackknife(actions_by_charge[q+1], b_size_actions), digits = 10)
+    #     # s_q_clover, s_q_clover_sig = round.(jackknife(actions_clover_by_charge[q+1], b_size_actions_clover), digits = 10)
+    #     s_q, s_q_sig = jackknife(actions_by_charge[q+1], b_size_actions)
+    #     s_q_clover, s_q_clover_sig = jackknife(actions_clover_by_charge[q+1], b_size_actions_clover)
+    #     println("|q| = $q:")
+    #     println("$(length(conf_Nr_by_charge[q+1])) measurements")
+    #     println("   Wilson action per sector: $s_q ± $s_q_sig ")
+    #     println("   Clover action per sector: $s_q_clover ± $s_q_clover_sig \n")
+    # end
+    # println(actions_by_charge[1])
+    println("observe: $s_unsm $s_clo_unsm $s $s_clo $susc_wil $susc ")
+    println("         $s_unsm_sig $s_clo_unsm_sig $s_sig $s_clo_sig $susc_wil_sig $susc_sig ")
+    for q = 0:q_max
+        s_q, s_q_sig = round.(jackknife(actions_by_charge[q+1], b_size_actions), digits = 10)
+        s_q_clover, s_q_clover_sig = round.(jackknife(actions_clover_by_charge[q+1], b_size_actions_clover), digits = 10)
+        s_q_unsm, s_q_unsm_sig = round.(jackknife(actions_unsm_by_charge[q+1], b_size_actions_unsm), digits = 10)
+        s_q_clover_unsm, s_q_clover_unsm_sig = round.(jackknife(actions_clover_unsm_by_charge[q+1], b_size_actions_clover_unsm), digits = 10)
+        # s_q, s_q_sig = jackknife(actions_by_charge[q+1], b_size_actions)
+        # s_q_clover, s_q_clover_sig = jackknife(actions_clover_by_charge[q+1], b_size_actions_clover)
+        println("|q|=$q: $s_q_unsm $s_q_clover_unsm $s_q $s_q_clover")
+        println("$(length(conf_Nr_by_charge[q+1])):   $s_q_unsm_sig $s_q_clover_unsm_sig $s_q_sig $s_q_clover_sig")
+    end
+end
+

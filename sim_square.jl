@@ -13,13 +13,14 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 
 
 ####    Observable params    ####
-for beta in [3.0]
+for beta in [6.0]
     for L in [16]
-        for q_insta in [1]
+        # for q_insta in [1]
+        for N_stout in [10^5]  #[0, 10^2, 10^3, 10^4]
 
             # @assert 1==0 "Do you really want L = $L?"
 
-            comment = "Maybe this time the efficient log-method is correct?"
+            comment = "Cross check with Stephan using SUPER stout"
             
             ####    Update params   ####
             global group    = "U2"  # For "group" choose from: "SU2" or "U2"
@@ -31,14 +32,15 @@ for beta in [3.0]
             global read_last_config = false
             global N_metro  = 1                         # N_metro-many Metropolois sweeps followed by...
             global N_over   = 3                         # ...N_over-many overrelaxation sweeps, followed by...
-            global N_insta  = 1                         # ...N_insta instanton updates
-            global N_sepa   = 20
+            global N_insta  = 0                         # ...N_insta instanton updates
+            global N_sepa   = 10
             global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
-            global N_meas   = Int( 100* (round(300 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+            # global N_meas   = Int( 100* (round(300 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
+            global N_meas   = 800
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
             global N_stout_insta = 100
             global Q_start   = 0
-            global Q_insta   = q_insta
+            global Q_insta   = 0 # q_insta
 
             # if group != "SU2" && N_over != 0
             #     error("Overrelaxation is only implemented for SU(2) yet, so please set N_over to 0")
@@ -48,9 +50,9 @@ for beta in [3.0]
             end
 
             ####    Measurement params    ####
-            global n_stout   = 0
-            global ρ         = 0.12
-            loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+            global n_stout   = N_stout      # 🟥🟥🟥
+            global ρ         = 0.1
+            loops     = [[1,1], [1,2], [2,1], [2,2]]#, [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
             # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
 
 
@@ -95,10 +97,14 @@ for beta in [3.0]
             insta_delta_s_plus_path = string(base_path, "\\insta_delta_s_plus.txt") #⭕⭕⭕⭕⭕
 
             actions_path = string(base_path,"\\actions.txt")
+            actions_clover_path = string(base_path,"\\actions_clover.txt")
+            actions_unsm_path = string(base_path,"\\actions_unsm.txt")
+            actions_clover_unsm_path = string(base_path,"\\actions_clover_unsm.txt")
             params_path = string(base_path,"\\params.txt") #
             acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
             last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
             top_charge_path = string(base_path,"\\top_charge.txt")
+            top_charge_wil_path = string(base_path,"\\top_charge_wil.txt")
             corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
             mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
             mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
@@ -213,29 +219,26 @@ for beta in [3.0]
 
                 U = proj2man.(U)
 
-                mywrite(insta_delta_s_plus_path, insta_delta_s_plus) # ⭕⭕⭕⭕⭕
-
+                
+                # mywrite(insta_delta_s_plus_path, insta_delta_s_plus) # ⭕⭕⭕⭕⭕
+                
                 mywrite(acceptances_path, [acc_metro[1], acc_over[1], acc_insta[1]])
-                mywrite(actions_path, action(U,β))
-                mywrite(top_charge_path, top_charge_U2(U))
-                results = measure_RT_loops_corrs(U,loops,n_stout,ρ)
-                mywrite(mean_vals_path, results[2])
-                for t = 1:N_t
-                    mywrite(corr_mat_paths[t], results[1][:,:,t])
-                end
+                mywrite(actions_unsm_path, action(U,β))
+                mywrite(actions_clover_unsm_path, action_clover(U,β))
 
-                # loop_means = measure_RT_loops(U,loops,n_stout,ρ)
-                # mywrite(mean_vals_path, loop_means)
-                # loop_means_mike = measure_RT_loops_mike(U,loops,β)
-                # mywrite(mean_vals_mike_path, loop_means_mike)
-                # edge_loop_mean = sum([tr(edge_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-                # mywrite(edge_loop_means_path, edge_loop_mean)
-                # L_loop_mean = sum([tr(L_loop_1(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-                # mywrite(L_loop_means_path, L_loop_mean)
-                # rhomb_mean = sum([tr(rhomb_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-                # mywrite(rhomb_means_path, rhomb_mean)
-                # half_rhomb_mean = sum([tr(rhomb_half_loop_square(U,x,t)) for x = 1:N_x, t = 1:N_t])/N_x/N_t
-                # mywrite(half_rhomb_means_path, half_rhomb_mean)
+                V = stout(U, n_stout, ρ)
+                
+                mywrite(actions_path, action(V,β))
+                mywrite(actions_clover_path, action_clover(V,β))
+                mywrite(top_charge_path, top_charge_U2(V))
+                mywrite(top_charge_wil_path, top_charge_U2_wil(V))
+                # mywrite(mean_vals_path, results[2])
+                
+                # results = measure_RT_loops_corrs(U,loops,n_stout,ρ)
+                # for t = 1:N_t
+                #     mywrite(corr_mat_paths[t], results[1][:,:,t])
+                # end
+
             end
             println(" ")
             println("We're done!")
