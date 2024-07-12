@@ -312,9 +312,9 @@ function stout_midpoint_fast(U, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     if n_stout > 0
-        V = stout_midpoint(U,ρ)
+        V = stout_midpoint_fast(U,ρ)
         for i = 1:n_stout-1
-            V = stout_midpoint(V,ρ)
+            V = stout_midpoint_fast(V,ρ)
         end
         return V
     else

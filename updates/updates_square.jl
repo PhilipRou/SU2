@@ -344,3 +344,37 @@ end
 #     end
 # end
 
+function metro_mat!(U, μ, x, t, step, β, acc, group)
+    NX = size(U,2)
+    NT = size(U,3)
+    new_coeffs = U[μ,x,t]
+    if group == "SU2"
+        new_coeffs = coeffs2grp(ran_SU2(step)) * new_coeffs
+    elseif group == "U2"
+        new_coeffs = coeffs2grp(ran_U2(step)) * new_coeffs
+    end
+    staple_d = staple_dag(U,μ,x,t)
+    S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
+    S_new = β*0.5*real(tr(new_coeffs * staple_d))
+    if rand() < exp(S_new-S_old)
+        U[μ,x,t] = new_coeffs
+        acc[1] += 1/NX/NT/2
+    end
+    return nothing
+end
+
+function chess_metro_mat!(U, step, β, acc, group)
+    NX = size(U,2)
+    NT = size(U,3)
+    acc[1] = 0.0
+    for μ = 1:2
+        for trip = 1:2
+            for t = 1:NT
+                for x = (1+mod(t+trip,2)):2:NX
+                    metro_mat!(U,μ,x,t,step, β, acc, group)
+                end
+            end
+        end
+    end
+    return nothing
+end

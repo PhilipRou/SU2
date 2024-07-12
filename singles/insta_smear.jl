@@ -43,6 +43,207 @@ function insta_U2_slow(N_x, N_t, Q, z)
     return U
 end
 
+function two_metric(M::Matrix,N::Matrix)
+    O = M-N
+    return real(sqrt(sum(O.*conj(O))))
+end
+
+function two_metric(X::coeffs_U2,Y::coeffs_U2)
+    Z = X-Y
+    return real(sqrt(2)*sqrt(conj(Z.a)*Z.a + conj(Z.b)*Z.b + conj(Z.c)*Z.c + conj(Z.d)*Z.d))
+end
+
+function two_metric_squared(X::coeffs_U2, Y::coeffs_U2)
+    Z = X-Y
+    return real(2* (conj(Z.a)*Z.a + conj(Z.b)*Z.b + conj(Z.c)*Z.c + conj(Z.d)*Z.d))
+end
+
+function two_metric_field(U, V)
+    NX = size(U,2)
+    NT = size(U,3)
+    # Z = U.-V
+    # res = 0.0
+    # for t = 1:NT
+    #     for x = 1:NX
+    #         for μ = 1:2
+    #             res += real(2*(conj(Z[μ,x,t].a)*Z[μ,x,t].a + conj(Z[μ,x,t].b)*Z[μ,x,t].b + conj(Z[μ,x,t].c)*Z[μ,x,t].c + conj(Z[μ,x,t].d)*Z[μ,x,t].d))
+    #         end
+    #     end
+    # end
+    # return sqrt(res)/(2*NX*NT)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
+end
+
+
+λ1 = Complex.([0 1 0; 1 0 0; 0 0 0])
+λ2 = Complex.([0 -im 0; im 0 0; 0 0 0])
+λ3 = Complex.([1 0 0; 0 -1 0; 0 0 0])
+λ4 = Complex.([0 0 1; 0 0 0; 1 0 0])
+λ5 = Complex.([0 0 -im; 0 0 0; im 0 0])
+λ6 = Complex.([0 0 0; 0 0 1; 0 1 0])
+λ7 = Complex.([0 0 0; 0 0 -im; 0 im 0])
+λ8 = Complex.([1 0 0; 0 1 0; 0 0 -2]) / sqrt(3)
+
+Λ = [λ1, λ2, λ3, λ4, λ5, λ6, λ7, λ8]
+
+λ0 = Complex.([1 0 0; 0 1 0; 0 0 1])
+λ_zero = Complex.([0 0 0; 0 0 0; 0 0 0])
+
+function ran_U3(ϵ)
+    return exp(ϵ * im * sum((rand(8) .- 0.5).*Λ))
+end
+
+function insta_U3(N_x, N_t, Q)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    w = 0.0
+    if mod(Q%3,3) == 1
+        w = -2*π/sqrt(3)
+    elseif mod(Q%3,3) == 2
+        w = 2*π/sqrt(3)
+    end
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
+    return U
+end
+
+function insta_U3_w(N_x, N_t, Q, z)
+    w = sqrt(3) * 2 * pi * (z-Q/3)
+    U = Array{Matrix}(undef, 2, N_x, N_t)
+    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
+    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
+    return U
+end
+
+function stout_U3(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                Ω0 = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
+                Z0 = -1/2*(adjoint(Ω0) - Ω0)
+                V[μ,x,t] = exp(Z0) * U[μ,x,t]
+                # V[μ,x,t] = exp_stout(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
+            end
+        end
+    end
+    return V
+end
+
+function action_U3(U, β)
+    NX = size(U,2)
+    NT = size(U,3)
+    S = 3*NX*NT   # later generalization: N_colour * NT * (NX)^d_s
+    for t = 1:NT
+        for x = 1:NX
+            S -= real(tr(plaq(U,x,t)))
+        end
+    end
+    return β*S/3    # later generalization: β*S/N_colour
+end
+
+
+function write_conf_U3(U, path)
+    NX = size(U,2)
+    NT = size(U,3)
+    bla = []
+    for μ = 1:2
+        for x = 1:NX
+            for t = 1:NT
+                push!(bla, U[μ,x,t])
+            end
+        end
+    end
+    writedlm(path, bla, ',')
+    return nothing
+end
+
+function write_conf_U2(U, path)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = coeffs2grp.(U)
+    bla = []
+    for μ = 1:2
+        for x = 1:NX
+            for t = 1:NT
+                push!(bla, V[μ,x,t])
+            end
+        end
+    end
+    writedlm(path, bla, ',')
+    return nothing
+end
+
+function read_config_U3(path)
+    blub = readdlm(path, ',', ComplexF64)
+    L = Int(sqrt(size(blub,1)/2))
+    N = Int(sqrt(size(blub,2)))
+    return [reshape(blub[t+(x-1)*L+(μ-1)*L^2,:], N, N) for μ = 1:2, x = 1:L, t = 1:L] 
+end
+
+function read_config_U2(path)
+    blub = readdlm(path, ',', ComplexF64)
+    L = Int(sqrt(size(blub,1)/2))
+    N = Int(sqrt(size(blub,2)))
+    return grp2coeffs_U2.([reshape(blub[t+(x-1)*L+(μ-1)*L^2,:], N, N) for μ = 1:2, x = 1:L, t = 1:L])
+end
+
+function temp_gauge_U3(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = [convert.(ComplexF64, λ0) for μ = 1:2, x = 1:NX, t = 1:NT]
+    Ω_slice = [convert.(ComplexF64, λ0) for x = 1:NX] 
+    for t = 1:NT
+        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
+        Ω_slice = Ω_slice .* U[2,:,t]
+    end
+    V[2,:,NT] = Ω_slice
+    return V
+end
+
+function max_gauge_U3(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = [convert.(ComplexF64, λ0) for μ = 1:2, x = 1:NX, t = 1:NT]
+    Ω_slice = [convert.(ComplexF64, λ0)]
+    for x = 1:NX-1
+        next_el = last(Ω_slice) * U[1,x,1]
+        push!(Ω_slice, next_el)
+    end
+    Ω_slice_copy = Ω_slice
+    V[1,NX,1] = last(Ω_slice) * U[1,NX,1]
+    for t = 2:NT
+        Ω_slice = Ω_slice .* U[2,:,t-1]
+        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
+    end
+    V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
+    return V
+end
+
+function Gell_coeffs(M::Matrix)
+    x8 = -sqrt(3)/2*M[3,3]
+    x3 = M[1,1] - x8/sqrt(3)
+    x1 = real(M[2,1])
+    x2 = imag(M[2,1])
+    x4 = real(M[3,1])
+    x5 = imag(M[3,1])
+    x6 = real(M[3,2])
+    x7 = imag(M[3,2])
+    return [x1, x2, x3, x4, x5, x6, x7, x8]
+end
+
+function Gell_coeffs_log(M)
+    phase_fac = det(M)^(1/3)
+    A = M/phase_fac
+    return real.(Gell_coeffs(-im*log(A)))
+end
+
+
+
+
 
 for i = 1:100
     N_t = 32
@@ -208,18 +409,22 @@ image_smeared_actions = hline!([action_insta_up], label = latexstring("Instanton
 
 let
     # @assert 1==0 "Do we really want to start a smearing run???"
-    β   = 3.0
+    β   = 6.0
     L   = 16
     N_x = L
     N_t = L
-    ρ   = 0.01
+    ρ   = 0.1
     N_therm   = 500
     N_meas    = 100
     N_sepa    = 100
-    N_smear   = 10^5
+    N_smear   = 10^4
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_6"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_11"
+    actions_path = string(base_path,"\\non_smeared_actions.txt")
+    params_path = string(base_path, "\\params.txt")
+    writedlm(params_path, "L = $L\n β = $β")
+
     acc_metro = [0.0]
     actions_therm = []
     U = gaugefield(N_x, N_t, true, "U2", "square")
@@ -235,14 +440,24 @@ let
             chess_metro!(U,ϵ,β,acc_metro,"U2")
             push!(actions, action(U,β))
         end
+        q = top_charge_U2(U)
+        insta_max_gauge = max_gauge(insta_U2(N_x,N_t,round(Int,q)),"U2")
         smeared_actions = [action(U,β)]
-        smeared_charges = [top_charge_U2(U)]
-        V = stout(U,ρ)
+        smeared_charges = [q]
+        smeared_metrics = [two_metric_field(max_gauge(U,"U2"), insta_max_gauge)]
+        V = stout_midpoint(U,ρ)
         count = 0
         for smear = 1:N_smear
+            # q_old = last(smeared_charges)
+            q = top_charge_U2(V)
+            # if round(Int,q_old) != round(Int,q)
+            #     insta_max_gauge[:,:,:] = max_gauge(insta_U2(N_x,N_t,round(Int,q)),"U2")[:,:,:]
+            # end
+            insta_max_gauge = max_gauge(insta_U2(N_x,N_t,round(Int,q)),"U2")
             push!(smeared_actions,action(V,β))
-            push!(smeared_charges,top_charge_U2(V))
-            V = stout(V,ρ)
+            push!(smeared_charges,q)
+            push!(smeared_metrics,two_metric_field(max_gauge(V,"U2"), insta_max_gauge))
+            V = stout_midpoint_fast(V,ρ)
             if smear%Int(N_smear/100) == 0
                 count += 1
                 println("Measurement Nr.: $meas, Smearing Progress: $count%")
@@ -250,13 +465,14 @@ let
         end
         S_path = string(base_path,"\\sms_$meas.txt")
         Q_path = string(base_path,"\\smq_$meas.txt")
+        m_path = string(base_path,"\\smm_$meas.txt")
         writedlm(S_path,smeared_actions)
         writedlm(Q_path,smeared_charges)
+        writedlm(m_path,smeared_metrics)
     end
-    actions_path = string(base_path,"\\non_smeared_actions.txt")
-    params_path = string(base_path, "\\params.txt")
+    # actions_path = string(base_path,"\\non_smeared_actions.txt")
+    # params_path = string(base_path, "\\params.txt")
     writedlm(actions_path, actions)
-    writedlm(params_path, "L = $L\n β = $β")
     println("We're done here!")
 end
 
@@ -264,14 +480,14 @@ end
 
 
 
-β       = 16.0
-L       = 32
-ρ       = 0.01
+β       = 3.0
+L       = 16
+ρ       = 0.1
 N_sepa  = 100
-N_smear = 10^5
+N_smear = 10^4
 
-base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6\\sms_data_6"
-base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6"
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9\\sms_data_9"
+base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9"
 nsms_path = string(base_path, "\\non_smeared_actions.txt")
 nsms_fig_path = string(base_fig_path,"\\non_smeared_actions.pdf")
 
@@ -290,15 +506,15 @@ display(image_actions)
 
 
 
-β       = 3.0
+β       = 6.0
 L       = 16
-ρ       = 0.01
+ρ       = 0.1
 N_sepa  = 100
-N_smear = 10^5
+N_smear = 10^4
 N_meas  = 100
 
-base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6\\sms_data_6"
-base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6"
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\sms_data_11"
+base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11"
 
 queues = []
 
@@ -371,24 +587,24 @@ configs_by_q_list[1]
 # top_one_runs = [8,11,15] # 32, 8.0, 15
 # top_one_runs = Array(1:15) # 32, 16.0, 15
 let
-    q = 3
+    q = 1
     confs_with_that_q = configs_by_q_list[q+1]
 
-    β       = 3.0
+    β       = 6.0
     L       = 16
-    ρ       = 0.01
+    ρ       = 0.1
     N_sepa  = 100
-    N_smear = 10^5
+    N_smear = 10^4
     # N_smear = 5*10^4
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6\\sms_data_6"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\sms_data_11"
     base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms"
 
     cut = 100
-    sep = 100
+    sep = 10
     plot_length = cut + length(cut+1:sep:N_smear) + 1
     plot_sms = Array{Float64}(undef, plot_length, length(confs_with_that_q))
-    for i = 1:length(confs_with_that_q)
+    for i in eachindex(confs_with_that_q)#length(confs_with_that_q)
     # i = 1
         conf = confs_with_that_q[i]
         sms_path = string(base_path, "\\sms_$conf.txt")
@@ -398,8 +614,10 @@ let
 
     taus = ρ .* Array(1:N_smear+1)
     tau_plot = vcat(taus[1:cut], taus[cut+1:sep:end])
-    s_window = 200:plot_length
+    s_window = 300:plot_length
 
+    # display(plot(        tau_plot[s_window],
+    # plot_sms[s_window,1],))
     global image_top_ones = plot(
         tau_plot[s_window],
         plot_sms[s_window,1],
@@ -407,8 +625,9 @@ let
         label = "Conf. Nr. $(confs_with_that_q[1])",
         title  = latexstring("\$S/\\beta V \$ of Various Smeared Configs.\n 2D U(2), \$\\beta = $β, L = $L, \\rho = $ρ\$, final \$q=\\pm $q \$"),
         xlabel = latexstring("Smearing Time \$\\tau\$"),
+        # legendfontsize = 7,
         # yaxis = :log,
-        xticks = 0:100:900
+        # xticks = 0:100:900
     )
     for i = 2:length(confs_with_that_q)
         image_top_ones = plot!(
@@ -421,7 +640,7 @@ let
 end
 
 let
-    q = 3
+    q = 7
     z = q/2
     image_top_ones = hline!(
         [insta_action(β,2,L,L,q,z) / (β*L^2)],
@@ -431,52 +650,55 @@ let
     )
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_11.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_7.pdf")
 
 
 
 
 
-q = 12
-let
+# q = 8
+for q = 0:7
+# let 
     confs_with_that_q = configs_by_q_list[q+1]
 
-    β       = 3.0
+    β       = 6.0
     L       = 16
-    ρ       = 0.01
+    ρ       = 0.1
     N_sepa  = 100
-    N_smear = 10^5
+    N_smear = 10^4
     # N_smear = 5*10^4
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6\\sms_data_6"
-    base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\sms_data_11"
+    base_fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11"
 
     cut = 100
-    sep = 100
+    sep = 10
     plot_length = cut + length(cut+1:sep:N_smear) + 1
     plot_sms = Array{Float64}(undef, plot_length, length(confs_with_that_q))
-    long_sms = Array{Float64}(undef, N_smear+1, length(confs_with_that_q))
+    plot_smm = Array{Float64}(undef, plot_length, length(confs_with_that_q))
     last_sms = Array{Float64}(undef, length(confs_with_that_q))
-    for i = 1:length(confs_with_that_q)
+    for i in eachindex(confs_with_that_q)  # = 1:length(confs_with_that_q)
     # i = 1
         conf = confs_with_that_q[i]
         sms_path = string(base_path, "\\sms_$conf.txt")
+        smm_path = string(base_path, "\\smm_$conf.txt")
         sms = readdlm(sms_path) / (β*L^2)
-        long_sms[:,i] = sms
+        # smm = readdlm(smm_path)
+        smm = readdlm(smm_path)[:,1]
         plot_sms[:,i] =  vcat(sms[1:cut], sms[cut+1:sep:end])
+        plot_smm[:,i] =  vcat(smm[1:cut], smm[cut+1:sep:end])
         last_sms[i] = last(sms)
     end
 
     z = q/2
-    last_sms .-= insta_action(β, 2, L, L, q, z)
-
-    # z = q/2
-    plot_sms = plot_sms .- [insta_action(β,2,L,L,q,z) / (β*L^2)]
+    plot_sms = plot_sms .- [insta_action(β,2,L,L,q,z) / (β*L^2)] # .+ 10.0^(-11)
+    # last_sms .-= insta_action(β, 2, L, L, q, z)
 
     taus = ρ .* Array(1:N_smear+1)
     tau_plot = vcat(taus[1:cut], taus[cut+1:sep:end])
-    s_window = 200:plot_length
+    s_window = 1:plot_length
 
+    
     global image_top_ones = plot(
         tau_plot[s_window],
         plot_sms[s_window,1],
@@ -485,7 +707,7 @@ let
         title  = latexstring("\$S/\\beta V \$ minus Insta action at \$z=$z\$  \n 2D U(2), \$\\beta = $β, L = $L, \\rho = $ρ\$, final \$q=\\pm $q \$"),
         xlabel = latexstring("Smearing Time \$\\tau\$"),
         yaxis = :log,
-        xticks = 0:100:900,
+        # xticks = 0:100:900,
         yticks = [10.0^(-i) for i = 4:15],
         # legendfontsize = 5
     )
@@ -496,14 +718,42 @@ let
             label = "Conf. Nr. $(confs_with_that_q[i])",
         )
     end
-    display(image_top_ones)
+    # display(image_top_ones)
+    
+
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\smeared_actions_sub_q_$q.pdf")
 
 
+    
+    global image_metrics = plot(
+        tau_plot[s_window],
+        plot_smm[s_window,1],
+        # legend = :false,
+        label = "Conf. Nr. $(confs_with_that_q[1])",
+        title  = latexstring("Metric distance to Insta at \$z=$z\$  \n 2D U(2), \$\\beta = $β, L = $L, \\rho = $ρ\$, final \$q=\\pm $q \$"),
+        xlabel = latexstring("Smearing Time \$\\tau\$"),
+        # yaxis = :log,
+        # xticks = 0:100:900,
+        # yticks = [10.0^(-i) for i = 4:15],
+        # legendfontsize = 5
+    )
+    for i = 2:length(confs_with_that_q)
+        image_metrics = plot!(
+            tau_plot[s_window],
+            plot_smm[s_window, i],
+            label = "Conf. Nr. $(confs_with_that_q[i])",
+        )
+    end
+    display(image_metrics)
 
+   
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\smeared_metrics_q_$q.pdf")
     # display(histogram(last_sms, title = "Last smeared action of configs with q = $q", bins = 100))#
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_6\\smeared_actions_q_$q.pdf")
+
+
+
 
 
 
@@ -1089,12 +1339,14 @@ blub_ar[1] * L^2
 
 function insta_half_int(Q, N_x, N_t)
     U = gaugefield_U2(N_x, N_t, false)
-    r1 = rand(3) .- 0.5
-    r2 = rand(3) .- 0.5
-    r3 = cross(r1,r2)
-    c1 = complex(π/2 * r1/sqrt(sum(r1.^2)))
-    c2 = complex(π/2 * r3/sqrt(sum(r3.^2)))
-    # c2 = c1
+    # r1 = rand(3) .- 0.5
+    # r2 = rand(3) .- 0.5
+    # r3 = cross(r1,r2)
+    # c1 = complex(π/2 * r1/sqrt(sum(r1.^2)))
+    # c2 = complex(π/2 * r3/sqrt(sum(r3.^2)))
+    # # c2 = c1
+    c1 = convert.(ComplexF64, π/2*[1,0,0])
+    c2 = convert.(ComplexF64, π/2*[0,1,0])
     U[1,1:N_x-1,:] = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
     U[1,N_x,:] = [exp(-im*Q*t*π/N_x/N_t) * exp_u2(coeffs_U2(0.0im, c1[1], c1[2], c1[3])) for t = 1:N_t]
     U[2,:,N_t] = [exp(im*Q*x*π/N_x) * exp_u2(coeffs_U2(0.0im, c2[1], c2[2], c2[3])) for x = 1:N_x]
@@ -1105,12 +1357,14 @@ end
 
 function insta_full_int(Q, N_x, N_t)
     U = gaugefield_U2(N_x, N_t, false)
-    r1 = rand(3) .- 0.5
-    r2 = rand(3) .- 0.5
-    r3 = cross(r1,r2)
-    c1 = complex(π * r1/sqrt(sum(r1.^2)))
-    c2 = complex(π * r3/sqrt(sum(r3.^2)))
-    # c2 = c1
+    # r1 = rand(3) .- 0.5
+    # r2 = rand(3) .- 0.5
+    # r3 = cross(r1,r2)
+    # c1 = complex(π * r1/sqrt(sum(r1.^2)))
+    # c2 = complex(π * r3/sqrt(sum(r3.^2)))
+    # # c2 = c1
+    c1 = π*[1,0,0]
+    c2 = π*[0,1,0]
     U[1,1:N_x-1,:] = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
     U[1,N_x,:] = [exp(-im*Q*t*π/N_x/N_t) * exp_u2(coeffs_U2(0.0im, c1[1], c1[2], c1[3])) for t = 1:N_t]
     U[2,:,N_t] = [exp(im*Q*x*π/N_x) * exp_u2(coeffs_U2(0.0im, c2[1], c2[2], c2[3])) for x = 1:N_x]
@@ -1122,9 +1376,41 @@ end
 # iii = insta_half_int(1,L,L);
 # isapprox([coeffs2grp(plaq(iii,x,t)) for x = 1:N_x, t = 1:N_t], [plaq(iii,1,1).a*[1 0; 0 1] for x = 1:N_x, t = 1:N_t])
 
+# function insta_U2(N_x, N_t, Q)
+#     # U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+#     U = gaugefield_U2(N_x,N_t,false)
+#     if iseven(Q)
+#         U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x, t = 1:N_t]
+#         U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+#         U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * coeffs_Id_U2() for x = 1:N_x]
+#     else
+#         # U[1,:,:]       = [exp(-im*Q*t*π/N_x/N_t) * (cos(t*π/N_x/N_t)*coeffs_Id_U2() - sin(t*π/N_x/N_t)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x, t = 1:N_t]
+#         # U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+#         # U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * (cos(x*π/N_x)*coeffs_Id_U2() + sin(x*π/N_x)*coeffs_U2(0.0*im, 0.0*im, 0.0*im, 1.0 + 0.0*im)) for x = 1:N_x]
+#         ### For more on the below, see "insta_half_int" somewhere else in this pile of code
+#         c1 = convert.(ComplexF64, π/2*[1,0,0])
+#         c2 = convert.(ComplexF64, π/2*[0,1,0])
+#         U[1,1:N_x-1,:] = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+#         U[1,N_x,:] = [exp(-im*Q*t*π/N_x/N_t) * exp_u2(coeffs_U2(0.0im, c1[1], c1[2], c1[3])) for t = 1:N_t]
+#         U[2,:,N_t] = [exp(im*Q*x*π/N_x) * exp_u2(coeffs_U2(0.0im, c2[1], c2[2], c2[3])) for x = 1:N_x]
+#     end
+#     return U
+# end
+
+function insta_U2(N_x, N_t, Q)
+    U = gaugefield_U2(N_x,N_t,false)
+    x_fac = exp_u2(coeffs_U2(0.0im, complex(π/(1+mod(Q,2))), 0.0im, 0.0im))
+    t_fac = exp_u2(coeffs_U2(0.0im, 0.0im, complex(π/(1+mod(Q,2))), 0.0im))
+    U[1,1:N_x-1,:] = [exp(-im*Q*t*π/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    U[1,N_x,:] = [exp(-im*Q*t*π/N_x/N_t) * x_fac for t = 1:N_t]
+    U[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return U
+end
+
 action(insta_half_int(-1,L,L),1)
+action(insta_U2(L,L,2),1)
 action(insta_full_int(4,L,L),1)
-insta_action(1,2,L,L,4,2)
+insta_action(1,2,L,L,2,1)
 
 # log_U2(uuu[2,8,16])
 
@@ -1168,149 +1454,10 @@ action_after = action(exp_u2.(log_U2.(bla) .+ log_U2.(insta_half_int(-1,L,L))),1
 
 
 
-
-λ1 = Complex.([0 1 0; 1 0 0; 0 0 0])
-λ2 = Complex.([0 -im 0; im 0 0; 0 0 0])
-λ3 = Complex.([1 0 0; 0 -1 0; 0 0 0])
-λ4 = Complex.([0 0 1; 0 0 0; 1 0 0])
-λ5 = Complex.([0 0 -im; 0 0 0; im 0 0])
-λ6 = Complex.([0 0 0; 0 0 1; 0 1 0])
-λ7 = Complex.([0 0 0; 0 0 -im; 0 im 0])
-λ8 = Complex.([1 0 0; 0 1 0; 0 0 -2]) / sqrt(3)
-
-Λ = [λ1, λ2, λ3, λ4, λ5, λ6, λ7, λ8]
-
-λ0 = Complex.([1 0 0; 0 1 0; 0 0 1])
-λ_zero = Complex.([0 0 0; 0 0 0; 0 0 0])
-
-function ran_U3(ϵ)
-    return exp(ϵ * im * sum((rand(8) .- 0.5).*Λ))
-end
-
-function insta_U3(N_x, N_t, Q)
-    U = Array{Matrix}(undef, 2, N_x, N_t)
-    w = 0.0
-    if mod(Q%3,3) == 1
-        w = -2*π/sqrt(3)
-    elseif mod(Q%3,3) == 2
-        w = 2*π/sqrt(3)
-    end
-    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
-    return U
-end
-
-function insta_U3_w(N_x, N_t, Q, z)
-    w = sqrt(3) * 2 * pi * (z-Q/3)
-    U = Array{Matrix}(undef, 2, N_x, N_t)
-    U[1,:,:]       = [exp(-(im*Q*t*2*π)/(3*N_x*N_t)) * exp((-im*t*w)/(N_x*N_t) * λ8) for x = 1:N_x, t = 1:N_t]
-    U[2,:,1:N_t-1] = [λ0 for x = 1:N_x, t = 1:N_t-1]
-    U[2,:,N_t]     = [exp(im*Q*x*2*π/(3*N_x)) * exp((im*x*w)/(N_x) * λ8) for x = 1:N_x]
-    return U
-end
-
-function stout_U3(U, ρ)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                Ω0 = ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])
-                Z0 = -1/2*(adjoint(Ω0) - Ω0)
-                V[μ,x,t] = exp(Z0) * U[μ,x,t]
-                # V[μ,x,t] = exp_stout(ρ * staple(U,μ,x,t) * adjoint(U[μ,x,t])) * U[μ,x,t]
-            end
-        end
-    end
-    return V
-end
-
-function action_U3(U, β)
-    NX = size(U,2)
-    NT = size(U,3)
-    S = 3*NX*NT   # later generalization: N_colour * NT * (NX)^d_s
-    for t = 1:NT
-        for x = 1:NX
-            S -= real(tr(plaq(U,x,t)))
-        end
-    end
-    return β*S/3    # later generalization: β*S/N_colour
-end
+# exp(im*(sum(Gell_coeffs_log(uuu[2,1,16]).*Λ)))
+# uuu[2,1,16]/det(uuu[2,1,16])^(1/3)
 
 
-function write_conf_U3(U, path)
-    NX = size(U,2)
-    NT = size(U,3)
-    bla = []
-    for μ = 1:2
-        for x = 1:NX
-            for t = 1:NT
-                push!(bla, U[μ,x,t])
-            end
-        end
-    end
-    writedlm(path, bla, ',')
-    return nothing
-end
-
-function read_config_U3(path)
-    blub = readdlm(path, ',', ComplexF64)
-    L = Int(sqrt(size(blub,1)/2))
-    N = Int(sqrt(size(blub,2)))
-    return [reshape(blub[t+(x-1)*L+(μ-1)*L^2,:], N, N) for μ = 1:2, x = 1:L, t = 1:L] 
-end
-
-function temp_gauge_U3(U)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = [convert.(ComplexF64, λ0) for μ = 1:2, x = 1:NX, t = 1:NT]
-    Ω_slice = [convert.(ComplexF64, λ0) for x = 1:NX] 
-    for t = 1:NT
-        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice,-1))
-        Ω_slice = Ω_slice .* U[2,:,t]
-    end
-    V[2,:,NT] = Ω_slice
-    return V
-end
-
-function max_gauge_U3(U)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = [convert.(ComplexF64, λ0) for μ = 1:2, x = 1:NX, t = 1:NT]
-    Ω_slice = [convert.(ComplexF64, λ0)]
-    for x = 1:NX-1
-        next_el = last(Ω_slice) * U[1,x,1]
-        push!(Ω_slice, next_el)
-    end
-    Ω_slice_copy = Ω_slice
-    V[1,NX,1] = last(Ω_slice) * U[1,NX,1]
-    for t = 2:NT
-        Ω_slice = Ω_slice .* U[2,:,t-1]
-        V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
-    end
-    V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
-    return V
-end
-
-function Gell_coeffs(M::Matrix)
-    x8 = -sqrt(3)/2*M[3,3]
-    x3 = M[1,1] - x8/sqrt(3)
-    x1 = real(M[2,1])
-    x2 = imag(M[2,1])
-    x4 = real(M[3,1])
-    x5 = imag(M[3,1])
-    x6 = real(M[3,2])
-    x7 = imag(M[3,2])
-    return [x1, x2, x3, x4, x5, x6, x7, x8]
-end
-
-function Gell_coeffs_log(M::Matrix{ComplexF64})
-    phase_fac = det(M)^(1/3)
-    A = M/phase_fac
-    return Gell_coeffs(real.(-im*log(A)))
-end
 
 # conf_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_U3_conf_q_1.txt"
 # write_conf_U3(V, conf_path)
@@ -1390,17 +1537,21 @@ uu = temp_gauge_U3(v);
 uuu = max_gauge_U3(v);
 
 
-imag(log(plaq(uuu,1,1)[1,1]))/π*256
+imag(log(plaq(uuu,1,1)[1,1]))/π*N_x*N_t
 isapprox([plaq(uuu,x,t) for x = 1:N_x, t = 1:N_t], [exp(im*2*π/3/N_x/N_t) * λ0 for x = 1:N_x, t = 1:N_t])
 
+isapprox([imag(log(det(uuu[1,x,t])^(1/3)))/π*N_x*N_t for x = 1:N_x-1, t = 1:N_t], [-(t-1)*2/3 for x = 1:N_x-1, t = 1:N_t])
+
+[imag(log(det(uuu[1,N_x,t])^(1/3)))/π*N_x*N_t for t = 1:N_t] .+ 10
+[imag(log(det(uuu[2,x,N_t])^(1/3)))/π*N_x for x = 1:N_x]
 
 let
     println("Absolute value squared of Gell-Mann-coefficients IN X DIRECTION:")
     for x = 1:N_x
         for t = 1:N_t
-            bla = sum(Gell_coeffs_log(uuu[1,x,t]).^2)
+            bla = sqrt(sum(Gell_coeffs_log(uuu[1,x,t]).^2))
             if bla > 10.0^(-10)
-                println("x = $x, t = $t, |r|²: $bla")
+                println("x = $x, t = $t, |r_x|/π = $(bla/π)")
             end
         end
     end
@@ -1410,42 +1561,65 @@ let
     println("Absolute value squared of Gell-Mann-coefficients IN T DIRECTION:")
     for x = 1:N_x
         for t = 1:N_t
-            bla = sum(Gell_coeffs_log(uuu[2,x,t]).^2)
+            bla = sqrt(sum(Gell_coeffs_log(uuu[2,x,t]).^2))
             if bla > 10.0^(-10)
-                println("x = $x, t = $t, |r|²: $bla")
+                println("x = $x, t = $t, |r_t|/π = $(bla/π)")
             end
         end
     end
 end
 
 
-sqrt(sum(Gell_coeffs_log(uuu[1,N_x,1]).^2))
-sqrt(sum(Gell_coeffs_log(uuu[2,9,N_t]).^2))
+# sqrt(sum(Gell_coeffs_log(uuu[1,N_x,1]).^2))
+# sqrt(sum(Gell_coeffs_log(uuu[2,9,N_t]).^2))
 
 
-Gell_coeffs_log(uuu[2,1,N_t])
+Gell_coeffs_log(uu[1,2,1])
 
-let
-    μ = 2
-    x = 15
-    t = N_t
-    # uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t]
-    println(imag(log((uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t])[1,1]))/π)
-    # U_t(x,N_t) -> x/8*π for x = 1:N_x/2,   above it is -π + x/8*π
-end
+uu[1,1,1] * adjoint(uu[1,1,2])
+det(sum(Gell_coeffs_log(uu[1,1,1]) .* Λ))
+det(sum(Gell_coeffs_log(uu[1,1,2]') .* Λ))
+Gell_coeffs_log(bla)
+
 
 let
     μ = 1
-    x = 16
+    x = N_x
     t = 1
     # uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t]
-    println(imag(log((uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t])[1,1]))/π*L^2)
+    # println(imag(log((uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t])[1,1]))/π*L^2)
+    # uuu[μ,x,t] * adjoint(uuu[1,x,mod1(t+1,N_t)])
+    println(imag(log((uuu[μ,x,t] * adjoint(uuu[1,x,mod1(t+1,N_t)]))[1,1] ))/π*L^2 )
+end
+
+let
+    μ = 2
+    x = 16
+    t = N_t
+    # uuu[μ,x,t] * uuu[μ,x,t] * uuu[μ,x,t]
+    # println(imag(log((uu[μ,x,t] * uu[μ,x,t] * uu[μ,x,t])[1,1]))/π)
+    # U_t(x,N_t) -> x/8*π for x = 1:N_x/2,   above it is -π + x/8*π
+    # adjoint(uuu[μ,x,t] *  adjoint(uuu[μ,mod1(x+1,N_x),t]))
+    println(imag(log((adjoint(uuu[μ,x,t] *  adjoint(uuu[μ,mod1(x+1,N_x),t]))[1,1])))/π*N_x)
 end
 
 
 uuu[1,N_x,1] * uuu[2,1,1]    #* adjoint(uuu[1,N_x,2]) * adjoint(uuu[2,N_x,1])
 uuu[1,N_x,1] * uuu[2,1,1] * adjoint(uuu[1,N_x,2]) * adjoint(uuu[2,1,1])
+uuu[2,9,N_t] * adjoint(uuu[2,8,N_t])
 
+sum(Gell_coeffs_log(uuu[2,9,N_t]) .* Λ) + sum(Gell_coeffs_log(adjoint(uuu[2,8,N_t])) .* Λ)
+transpose(Gell_coeffs_log(adjoint(uuu[2,8,N_t])))
+transpose(Gell_coeffs_log(uuu[2,9,N_t]))
+sum(Gell_coeffs_log(uuu[2,9,N_t]).^2)
+
+
+
+for t = 1:N_t
+    μ = 1
+    x = N_x
+    println(transpose(Gell_coeffs_log(uuu[μ,x,t])))
+end
 
 for x = 1:N_x
     μ = 2
@@ -1456,7 +1630,787 @@ end
 for t = 1:N_t
     μ = 1
     x = N_x
-    println(transpose(Gell_coeffs_log(uuu[μ,x,t])))
+    lincomvec = Gell_coeffs_log(uuu[μ,x,t])
+    @assert isapprox(acos(3*sqrt(3)/2*det(sum(lincomvec.*Λ)/sqrt(sum(lincomvec.^2)) )), π/2)
+    # ⇒ ψ = π/6
 end
+
+for x = 1:N_x
+    μ = 2
+    t = N_t
+    lincomvec = Gell_coeffs_log(uuu[μ,x,t])
+    @assert isapprox(acos(3*sqrt(3)/2*det(sum(lincomvec.*Λ)/sqrt(sum(lincomvec.^2)) )), π/2)
+    # ⇒ ψ = π/6
+end
+
+
+sum(Gell_coeffs_log(uuu[1,16,1]) .* Gell_coeffs_log(uuu[2,1,16]))
+sum(Gell_coeffs_log(uuu[1,16,1]) .* Gell_coeffs_log(uuu[2,9,16]))
+sum(Gell_coeffs_log(uuu[2,8,16]) .* Gell_coeffs_log(uuu[2,9,16]))
+
+uuu[2,8,16]/det(uuu[2,8,16])^(1/3) * uuu[2,9,16]/det(uuu[2,9,16])^(1/3)
+
+lincomvecnorm = Gell_coeffs_log(uuu[1,16,1])/sqrt(sum(Gell_coeffs_log(uuu[1,16,1]).^2))
+
+λ0 + im*sqrt(3)/2*sum(lincomvecnorm.*Λ) - 3/2*(sum(lincomvecnorm.*Λ))^2
+uuu[1,16,1] / det(uuu[1,16,1])^(1/3)
+
+
+lincomvecnorm = Gell_coeffs_log(uuu[2,9,16])/sqrt(sum(Gell_coeffs_log(uuu[2,9,16]).^2))
+
+λ0 + im*sqrt(3)/2*sum(lincomvecnorm.*Λ) - 3/2*(sum(lincomvecnorm.*Λ))^2
+uuu[2,9,16] / det(uuu[2,9,16])^(1/3)
+
+
+
+function insta_U3_attempt(N_x,N_t,q)
+    U = [convert.(ComplexF64, λ0) for μ = 1:2, x = 1:N_x, t = 1:N_t]
+    v1 = rand(8) .- 0.5
+    v1 = 2*π/3 * v1/sqrt(v1'*v1)
+
+    v2 = rand(8) .- 0.5
+    v2 = v2 - (v1' * v2)*v1
+    v2 = 2*π/3 * v2/sqrt(v2'*v2)
+
+    v3 = rand(8) .- 0.5
+    v3 = v3 - (v1' * v3)*v1
+    v3 = 2*π/3 * v3/sqrt(v3'*v3)
+
+    U[1,N_x,:] = [exp(im*sum(v1.*Λ)) for t = 1:N_t]
+    U[2,1:N_x>>1,N_t] = [exp(im*sum(v2.*Λ)) for x = 1:N_x>>1]
+    U[2,N_x>>1+1:N_x,N_t] = [exp(im*sum(v3.*Λ)) for x = N_x>>1+1:N_x]
+    # for t = 1:N_t
+    #     for x = 1:N_x-1
+    #         U[1,x,t] = exp(-q*im*π*2/3*(t-1)/N_x/N_t) * U[1,x,t]
+    #     end
+    #     U[1,N_x,t] = exp(-q*im*π*(2/3*t+10)/N_x/N_t ) * U[1,N_x,t]
+    # end
+    # for x = 1:N_x>>1
+    #     U[2,x,N_t] = exp(q*im*π*2/3*x/N_x) * U[2,x,N_t]
+    # end
+    # for x = N_x>>1+1:N_x
+    #     U[2,x,N_t] = exp(q*im*π*2/3*(x-N_x)/N_x) * U[2,x,N_t]
+    # end
+    return U
+end
+
+# using BenchmarkTools
+
+# function mult_SU2(a,b)
+#     return [a[1] -conj(a[2]); a[2] conj(a[1])] * b
+# end
+
+# function grp2vec(M)
+#     return [M[1,1], M[2,1]]
+# end
+
+# function vec2grp(a)
+#     return [a[1] -conj(a[2]); a[2] conj(a[1])]
+# end
+
+
+
+u1 = ran_SU2(rand())
+u2 = ran_SU2(rand())
+M1 = coeffs2grp(u1)
+M2 = coeffs2grp(u2)
+v1 = grp2vec(M1)
+v2 = grp2vec(M2)
+
+@benchmark mult_SU2(v1,v2)  # (190±50)ns
+@benchmark M1*M2            # (80±30)ns
+@benchmark u1*u2            # (30±50)ns
+
+
+insta = insta_U2(16,16,1);
+pert = [ran_U2(0.001) for μ = 1:2, x = 1:16, t = 1:16] .* insta;
+# pert = temp_gauge_U2(pert);
+pert = stout_midpoint_fast(pert,10000,0.1);
+two_metric_field(insta,pert)
+two_metric_field(insta,temp_gauge_U2(pert))
+two_metric_field(max_gauge(insta,"U2"),max_gauge(pert,"U2"))
+
+action(pert,1) - action(insta,1)
+
+isapprox.(max_gauge(insta,"U2"),max_gauge(pert,"U2"))
+isapprox.(insta,temp_gauge(pert,"U2"))
+
+
+
+two_metric(ran_U2(0.0001),coeffs_Id_U2())
+two_metric_field(insta, temp_gauge_U2(insta))
+
+coeffs2grp(ran_U2(0.0001))
+
+let
+    R = ran_U2(0.0001)
+    println(two_metric(R,coeffs_Id_U2()))
+    coeffs2grp(R)
+end
+
+N_metric = 10^6
+metrics = Array{Float64}(undef,N_metric,10)
+for j = 1:10
+    ϵ = 10.0^(-j)
+    for i = 1:N_metric
+        metrics[i,j] = two_metric(ran_U2(ϵ),coeffs_Id_U2())
+    end
+end
+
+round.([mean(metrics[:,j]) for j = 1:10], sigdigits = 4)'
+round.([std(metrics[:,j]) for j = 1:10], sigdigits = 4)'
+
+bla = mean([coeffs2grp(ran_U2(0.1)) for i = 1:10^6])
+bla*[1,0]
+
+
+N_x = N_t = L = 16
+N_metric = 10^3
+insta = insta_U2(N_x, N_t, 5)
+ϵ = 10.0^(-3)
+metrics = []
+metrics_temp = []
+metrics_max = []
+count = 0
+for i = 1:N_metric
+    pert = [ran_U2(ϵ) for μ = 1:2, x = 1:16, t = 1:16] .* insta;
+    pert = stout_midpoint_fast(pert,1000,0.1)
+    push!(metrics,two_metric_field(pert, insta))
+    push!(metrics_temp,two_metric_field(temp_gauge_U2(pert), insta))
+    push!(metrics_max,two_metric_field(max_gauge(pert,"U2"), max_gauge(insta,"U2")))
+    if Int(i%(N_metric/100)) == 0
+        count += 1
+        println("Progress: $count%")
+    end
+end
+
+action(insta,1) - action(pert,1)
+
+round(mean(metrics), sigdigits = 5)
+round(std(metrics), sigdigits = 5)
+round(mean(metrics_temp), sigdigits = 5)
+round(std(metrics_temp), sigdigits = 5)
+round(mean(metrics_max), sigdigits = 5)
+round(std(metrics_max), sigdigits = 5)
+
+std(real.([coeffs2grp(ran_U2(ϵ)) for i = 1:10000]))
+
+mean([two_metric_field(gaugefield_U2(N_x,N_t,true),gaugefield_U2(N_x,N_t,true)) for i = 1:1000])
+
+
+N_x = N_t = L = 64
+N_meas = 10^3
+Nr_epsilons = 10
+meta_metrics = Array{Float64}(undef,N_meas,Nr_epsilons)
+for eps_pot = 0:Nr_epsilons-1
+    ϵ = 10.0^(-eps_pot)
+    conf_cold = gaugefield_U2(N_x, N_t, false);
+    for meas = 1:N_meas
+        conf_hot = [ran_U2(ϵ) for μ = 1:2, x = 1:N_x, t = 1:N_t];
+        meta_metrics[meas,eps_pot+1] = two_metric_field(conf_hot,conf_cold)
+    end
+end
+means = [mean(meta_metrics[:,eps_pot].*sqrt(2*N_x*N_t)) for eps_pot = 1:Nr_epsilons]
+stds = [std(meta_metrics[:,eps_pot]) for eps_pot = 1:Nr_epsilons]
+
+scatter(0:9, means, yerror = stds, yaxis = :log, xticks = 0:9, yticks = [10.0^(-i) for i = 0:10])
+plot!([0:9], [2.9*10.0^(-i) for i = 0:9])
+
+bla = [0.999785 - 2.5e-5im   -6.74174e-6 - 6.3e-6im; 6.9e-6 - 6.4e-6im   0.999785 + 3.1e-6im];
+two_metric(bla,σ0)
+two_metric(σ0,-σ0)
+
+# chi_sq = 0.0
+# for i = 0:Nr_epsilons-1
+#     chi_sq += (means[i+1]-2.9*10.0^(-i))^2/stds[i+1]^2
+# end
+# chi_sq
+
+N_x = N_t = L = 16
+U = gaugefield_U2(N_x, N_t, true);
+for i = 1:500 chess_metro!(U, 0.1, 4.0, [0.0], "U2") end
+
+N_smear = 10^5
+V = stout_midpoint_fast(U, 0.1);
+smeared_actions = [action(V,1)]
+for smear = 1:N_smear 
+    V = stout_midpoint_fast(V,0.1) 
+    push!(smeared_actions, action(V,1))
+end
+Q = round(Int,top_charge_U2(V))
+insta = insta_U2(N_x,N_t,Q);
+action(V,1) - action(insta,1)
+image = plot(smeared_actions)
+image = hline!([action(insta,1)])
+display(image)
+two_metric_field(max_gauge(V,"U2"), max_gauge(insta,"U2"))
+
+uu = temp_gauge(V,"U2");
+uuu = max_gauge(V,"U2");
+heatmap([real(tr(plaq(uuu,x,t))) for x = 1:N_x, t = 1:N_t])
+# heatmap([real(tr(plaq(insta,x,t))) for x = 1:N_x, t = 1:N_t])
+coeffs2grp(uuu[1,N_x,N_t])
+coeffs2grp(max_gauge(insta,"U2")[1,N_x,N_t])
+
+action(uuu,1)
+
+
+isapprox([coeffs2grp(plaq(V, x, t)) for x = 1:N_x, t = 1:N_t], [exp(2*im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
+
+
+V_insta = stout_midpoint_fast(insta,0.1);
+insta_actions = [action(V_insta,1)]
+for i = 1:1000
+    V_insta = stout_midpoint_fast(V_insta,0.1);
+    push!(insta_actions, action(V_insta,1))
+end
+(maximum(insta_actions) - minimum(insta_actions))/minimum(insta_actions)
+plot(insta_actions)
+
+# write_conf_U2(V,"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_gribov.txt")
+# # bla = read_config_U2("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_gribov.txt");
+
+N_x = N_t = L = 16
+insta = insta_U2(N_x,N_t,2);
+insta_max = max_gauge(insta,"U2");
+
+insta[1,N_x,1]
+exp(-im*2*π/N_x/N_t) * exp_u2(coeffs_U2(0.0im, complex(π), 0.0im, 0.0im)) 
+Pauli_coeffs(exp_u2(coeffs_U2(0.0im, complex(π), 0.0im, 0.0im)))
+Pauli_coeffs(exp_u2(coeffs_U2(0.0im, complex(π/2), 0.0im, 0.0im)))
+Pauli_coeffs(exp(coeffs2grp(coeffs_U2(0.0im, complex(π), 0.0im, 0.0im))))
+
+Pauli_coeffs(exp(im*π*σ3))
+
+
+
+[insta_max[μ,x,t] for μ = 1, x = N_x, t = 1:N_t]
+[(log(insta_max[1,x,2].a)) / (π/(N_x*N_t)) for x = 1:N_x-1]
+[(log(insta_max[1,x,3].a)) / (π/(N_x*N_t)) for x = 1:N_x-1]
+# log(insta_max[1,16,1].a)
+# imag(log(insta_max[1,N_x,1].a)) / (π/(N_x*N_t))
+[(log(insta_max[1,N_x,t].a)) / (π/(N_x*N_t)) for t = 1:N_t]
+[(log(insta_max[1,N_x,t].b)) / (π/(N_x*N_t)) for t = 1:N_t]
+
+[insta_max[μ,x,t] for μ = 2, x = 1:N_x, t = N_t]
+[(log(insta_max[2,x,N_t].c)) / (π/(N_x)) for x = 1:N_x]
+
+
+
+[coeffs2grp(insta_max[2,x,N_t]) for x = 1:N_x]
+
+isapprox([coeffs2grp(plaq(insta_max, x, t)) for x = 1:N_x, t = 1:N_t], [exp(im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
+
+bla_max = max_gauge(bla,"U2");
+(bla_max[1,N_x,5])
+(insta_max[1,N_x,5])
+
+# Needs M to be ∈ SU(2)!
+function Pauli_coeffs(M::Matrix)
+    N = -im*log(M)
+    v1 = real(N[2,1])
+    v2 = imag(N[2,1])
+    v3 = real(N[1,1])
+    return [v1,v2,v3]
+    # abs_v = acos(real(M[1,1]))
+    # fac = abs_v/sin(abs_v)
+    # v1 = fac*imag(M[1,2])
+    # v2 = fac*real(M[1,2])
+    # v3 = fac*imag(M[1,1])
+    # return [v1,v2,v3]
+end
+
+# Needs M to be ∈ SU(2)!
+function Pauli_coeffs(X::coeffs_U2)
+    # M = coeffs2grp(exp_u2(coeffs_U2(0.0im,0.01im,0.00im,0.01im)) * X)
+    M = coeffs2grp(X)
+    Pauli_coeffs(M)
+end
+
+# M1 = coeffs2grp(ran_U2(rand()))
+# M1 = M1/sqrt(det(M1))
+# isapprox(exp(im*sum(Pauli_coeffs(M1) .* [σ1,σ2,σ3])), M1)
+
+
+function find_rot_mat(a,b)
+    v = cross(a,b)
+    s = sqrt(v'*v)
+    c = a'*b
+    M_v = [0.0 -v[3] v[2]; v[3] 0.0 -v[1]; -v[2] v[1] 0.0]
+    return I(3) + M_v + (1-c)/s^2 * M_v^2
+end
+
+# a1 = rand(3)
+# a2 = rand(3)
+# a1 = a1/sqrt(a1'*a1)
+# a2 = a2/sqrt(a2'*a2)
+# M1 = find_rot_mat(a1,a2)
+# isapprox(M1 * a1, a2)
+
+function rot_mat2quat(M::Matrix)
+    x0x1 = (M[2,3]-M[3,2])/4
+    x0x2 = (M[3,1]-M[1,3])/4
+    x0x3 = (M[1,2]-M[2,1])/4
+    x1x3 = (M[1,3]+M[3,1])/4
+    x0_over_x1 = x0x3/x1x3
+    x0 = sqrt(x0x1 * x0_over_x1)
+    x1 = x0x1/x0
+    x2 = x0x2/x0
+    x3 = x0x3/x0
+    x0, x1, x2, x3 = complex.([x0, x1, x2, x3])
+    return coeffs_U2(x0, x1, x2, x3)
+end
+
+function vec2Pauli(v)
+    return im*sum(v.*[σ1,σ2,σ3])
+end
+
+function Pauli2vec(M::Matrix)
+    v1 = imag(M[1,2])
+    v2 = real(M[1,2])
+    v3 = imag(M[1,1])
+    return [v1,v2,v3]
+end
+
+# v_ran = rand(3)
+# Pauli2vec(vec2Pauli(v_ran))
+
+# a1 = rand(3)
+# a2 = rand(3)
+# a1 = a1/sqrt(a1'*a1)
+# a2 = a2/sqrt(a2'*a2)
+# p1 = vec2Pauli(a1)
+# p2 = vec2Pauli(a2)
+# M = find_rot_mat(a1,a2)
+# q = coeffs2grp(rot_mat2quat(M))
+# q*p1*q'
+# p2
+
+
+
+
+function find_rot_mat_Pauli(X::coeffs_U2, Y::coeffs_U2)
+    v_x = Pauli_coeffs(coeffs2grp(X)/sqrt(det(X)))
+    v_y = Pauli_coeffs(coeffs2grp(Y)/sqrt(det(Y)))
+    v_x = v_x/sqrt(v_x'*v_x)
+    v_y = v_y/sqrt(v_y'*v_y)
+    return find_rot_mat(v_x,v_y)
+end
+
+function rotate_Pauli_coeffs(M_rot, X)
+    U1_fac = sqrt(det(X))
+    M = coeffs2grp(X)
+    v = Pauli_coeffs(M/U1_fac)
+    w = M_rot*v .+ 0.0im
+    return U1_fac * exp_u2(coeffs_U2(0.0im, w[1], w[2], w[3]))
+end
+
+
+
+# r1 = ran_U2(rand());
+# # isapprox(rotate_Pauli_coeffs(I(3),r1), r1)
+# r2 = ran_U2(rand());
+# r1 = r1/sqrt(det(r1));
+# r2 = r2/sqrt(det(r2));
+# v1 = Pauli_coeffs(coeffs2grp(r1)) .+ 0.0im;
+# v1 = v1/sqrt(v1'*v1)
+# r1 = exp_u2(coeffs_U2(0.0im, v1[1], v1[2], v1[3]))
+# v2 = Pauli_coeffs(coeffs2grp(r2)) .+ 0.0im;
+# v2 = v2/sqrt(v2'*v2)
+# r2 = exp_u2(coeffs_U2(0.0im, v2[1], v2[2], v2[3]))
+# mmm_rot = find_rot_mat_Pauli(r1,r2);
+# rotate_Pauli_coeffs(mmm_rot,r1)
+# r2
+
+#=
+blabla = deepcopy(bla_max); # gaugefield_U2(N_x,N_t,false);
+U1_fac_ratio_inner = sqrt(det(insta_max[1,1,2])) / sqrt(det(bla_max[1,1,2]))
+U1_fac_ratio_outer = sqrt(det(insta_max[2,1,N_t])) / sqrt(det(bla_max[2,1,N_t]))
+for x = 1:N_x
+    for t = 1:N_t-1
+        blabla[1,x,t] = U1_fac_ratio_inner * bla_max[1,x,t]
+    end
+    blabla[2,x,N_t] = U1_fac_ratio_outer * bla_max[2,x,N_t]
+end
+
+U1_fac_ratio_outer = sqrt(det(insta_max[1,N_x,2])) / sqrt(det(bla_max[1,N_x,2]))
+for t = 1:N_t
+    blabla[1,N_x,t] = U1_fac_ratio_outer * bla_max[1,N_x,t]
+end
+top_charge_U2(blabla)
+action(blabla,1) - action(bla_max,1)
+isapprox([coeffs2grp(plaq(blabla, x, t)) for x = 1:N_x, t = 1:N_t], [exp(2*im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
+
+two_metric_field(bla_max, insta_max)
+two_metric_field(blabla, insta_max)
+
+# for μ = 1:1
+#     for x = 1:N_x
+#         for t = 1:N_t
+#             if !isapprox(blabla[μ,x,t], insta_max[μ,x,t])
+#                 println("$μ, $x, $t")
+#             end
+#         end
+#     end
+# end
+
+blabla_phases = [imag(log(sqrt(det(blabla[1,N_x,t])))) for t = 1:N_t ];
+insta_max_phases = [imag(log(sqrt(det(insta_max[1,N_x,t])))) for t = 1:N_t ];
+# isapprox(blabla_phases, insta_max_phases) # It lies! When phase ≈ π/2, we get problems
+transpose(blabla_phases)
+transpose(insta_max_phases)
+# # transpose(blabla_phases .- circshift(blabla_phases,-1) ) 
+# # transpose(insta_max_phases .- circshift(insta_max_phases,-1) ) 
+blabla_phases = [imag(log(sqrt(det(blabla[2,x,N_t])))) for x = 1:N_x ];
+insta_max_phases = [imag(log(sqrt(det(insta_max[2,x,N_t])))) for x = 1:N_x ];
+transpose(blabla_phases)
+transpose(insta_max_phases)
+# isapprox(blabla_phases, insta_max_phases) # It lies! When phase ≈ π/2, we get problems
+
+
+M_rot = find_rot_mat_Pauli(blabla[2,1,N_t],insta_max[2,1,N_t])
+for t = 1:N_t
+    # println(sqrt(sum(Pauli_coeffs(coeffs2grp(insta[1,N_x,t])/sqrt(det(insta[1,N_x,t])) ).^2))/π)
+    println(Pauli_coeffs(coeffs2grp(insta[1,N_x,t])/sqrt(det(insta[1,N_x,t])) )')
+end
+for x = 1:N_x
+    println(sqrt(sum(Pauli_coeffs(coeffs2grp(insta[2,x,N_t])/sqrt(det(insta[2,x,N_t])) ).^2))/π)
+    # println(Pauli_coeffs(coeffs2grp(insta[2,x,N_t])/sqrt(det(insta[2,x,N_t])) )')
+end
+
+for t = 1:N_t
+    # blabla[1,N_x,t] = rotate_Pauli_coeffs(M_rot,blabla[1,N_x,t])
+    # blabla[1,N_x,t] = sqrt(det(blabla[1,N_x,t])) * coeffs_Id_U2()
+    # blabla[1,N_x,t] = sqrt(det(blabla[1,N_x,t])) * exp_u2(coeffs_U2(0.0im, 1.0+0.0im, 0.0im, 0.0im)) # coeffs_Id_U2()
+    # println(Pauli_coeffs(blabla[1,N_x,t] / sqrt(det(blabla[1,N_x,t])))')
+end
+for x = 1:N_x
+    # blabla[2,x,N_t] = rotate_Pauli_coeffs(M_rot,blabla[2,x,N_t])
+    # blabla[2,x,N_t] = sqrt(det(blabla[2,x,N_t])) * coeffs_Id_U2()
+    # blabla[2,x,N_t] = sqrt(det(blabla[2,x,N_t])) * exp_u2(coeffs_U2(0.0im, 0.0im, 1.0+0.0im, 0.0im)) # coeffs_Id_U2()
+    # println(Pauli_coeffs(blabla[2,x,N_t] / sqrt(det(blabla[2,x,N_t])))')
+end
+
+action(blabla,1) - action(bla_max,1)
+isapprox([coeffs2grp(plaq(blabla, x, t)) for x = 1:N_x, t = 1:N_t], [exp(2*im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
+
+for μ = 1:2
+    for x = 1:N_x
+        for t = 1:N_t
+            if !isapprox(blabla[μ,x,t], insta_max[μ,x,t])
+                println("$μ, $x, $t")
+            end
+        end
+    end
+end
+
+two_metric_field(blabla,insta_max)
+
+
+bla_max[1,1,2]
+insta_max[1,1,2]
+=#
+
+
+
+function find_rot_mat(a,b)
+    v = cross(a,b)
+    s = sqrt(v'*v)
+    c = a'*b
+    M_v = [0.0 -v[3] v[2]; v[3] 0.0 -v[1]; -v[2] v[1] 0.0]
+    return I(3) + M_v + (1-c)/s^2 * M_v^2
+end
+
+function rot_mat2quat(M::Matrix)
+    x0x1 = (M[2,3]-M[3,2])/4
+    x0x2 = (M[3,1]-M[1,3])/4
+    x0x3 = (M[1,2]-M[2,1])/4
+    x1x3 = (M[1,3]+M[3,1])/4
+    x0_over_x1 = x0x3/x1x3
+    x0 = sqrt(x0x1 * x0_over_x1)
+    x1 = x0x1/x0
+    x2 = x0x2/x0
+    x3 = x0x3/x0
+    x0, x1, x2, x3 = complex.([x0, x1, x2, x3])
+    return coeffs_U2(x0, x1, x2, x3)
+end
+
+function vec2Pauli(v)
+    return im*sum(v.*[σ1,σ2,σ3])
+end
+
+function Pauli2vec(M::Matrix)
+    v1 = imag(M[1,2])
+    v2 = real(M[1,2])
+    v3 = imag(M[1,1])
+    return [v1,v2,v3]
+end
+
+function Pauli2vec(X::coeffs_U2)
+    M = coeffs2grp(X)
+    v1 = imag(M[1,2])
+    v2 = real(M[1,2])
+    v3 = imag(M[1,1])
+    return [v1,v2,v3]
+end
+
+function max_gauge(U, group, g)
+    NX = size(U,2)
+    NT = size(U,3)
+    if group == "U2"
+        V  = gaugefield_U2(NX, NT, false)
+        # Ω_slice = [coeffs_Id_U2()]
+        Ω_slice = [g]
+        for x = 1:NX-1
+            next_el = last(Ω_slice) * U[1,x,1]
+            push!(Ω_slice, next_el)
+        end
+        Ω_slice_copy = Ω_slice
+        V[1,NX,1] = last(Ω_slice) * U[1,NX,1] * adjoint(g)
+        for t = 2:NT
+            Ω_slice = Ω_slice .* U[2,:,t-1]
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
+        end
+        V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
+        return V
+    elseif group == "SU2"
+        V  = gaugefield_SU2(NX, NT, false)
+        # Ω_slice = [coeffs_Id_SU2()]
+        Ω_slice = [g]
+        for x = 1:NX-1
+            next_el = last(Ω_slice) * U[1,x,1]
+            push!(Ω_slice, next_el)
+        end
+        Ω_slice_copy = Ω_slice
+        V[1,NX,1] = last(Ω_slice) * U[1,NX,1] * adjoint(g)
+        for t = 2:NT
+            Ω_slice = Ω_slice .* U[2,:,t-1]
+            V[1,:,t] = Ω_slice .* U[1,:,t] .* adjoint.(circshift(Ω_slice, -1))
+        end
+        V[2,:,NT] = Ω_slice .* U[2,:,NT] .* adjoint.(Ω_slice_copy)
+        return V
+    end
+end
+
+# test_field = gaugefield_U2(16,16,true);
+# action(test_field, 1) - action(max_gauge(test_field, "U2"),1)
+# action(test_field, 1) - action(max_gauge(test_field, "U2", ran_U2(rand())),1)
+
+N_x = N_t = 16;
+bla = read_config_U2("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_gribov_q1.txt");
+
+q_bla = round(Int,top_charge_U2(bla))
+insta = insta_U2(N_x,N_t,q_bla);
+two_metric_field(bla,insta)
+
+bla_max = max_gauge(bla,"U2");
+insta_max = max_gauge(insta,"U2");
+two_metric_field(bla_max,insta_max)
+
+blabla = deepcopy(bla_max); # gaugefield_U2(N_x,N_t,false);
+U1_fac_ratio_outer = sqrt(det(insta_max[2,1,N_t])) / sqrt(det(bla_max[2,1,N_t]))
+for x = 1:N_x
+    blabla[2,x,N_t] = U1_fac_ratio_outer * bla_max[2,x,N_t]
+end
+
+U1_fac_ratio_outer = sqrt(det(insta_max[1,N_x,2])) / sqrt(det(bla_max[1,N_x,2]))
+for t = 1:N_t
+    blabla[1,N_x,t] = U1_fac_ratio_outer * bla_max[1,N_x,t]
+end
+
+top_charge_U2(blabla)
+action(blabla,1) - action(bla_max,1)
+isapprox([coeffs2grp(plaq(blabla, x, t)) for x = 1:N_x, t = 1:N_t], [exp(q_bla*im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
+
+two_metric_field(bla_max, insta_max)
+two_metric_field(blabla, insta_max)
+
+isapprox([sqrt(det(blabla[2,x,N_t])) for x = 1:N_x], [sqrt(det(insta_max[2,x,N_t])) for x = 1:N_x])
+isapprox([sqrt(det(blabla[1,N_x,t])) for t = 1:N_t], [sqrt(det(insta_max[1,N_x,t])) for t = 1:N_t])
+
+
+v_x_blabla = Pauli2vec(blabla[1,N_x,1]/sqrt(det(blabla[1,N_x,1])))
+v_t_blabla = Pauli2vec(blabla[2,1,N_t]/sqrt(det(blabla[2,1,N_t])))
+v_x_insta = [1.0, 0.0, 0.0]
+v_t_insta = [0.0, 1.0, 0.0]
+M1 = find_rot_mat(v_x_blabla, v_x_insta)
+M2 = find_rot_mat(M1*v_t_blabla, v_t_insta)
+isapprox(M2*M1*v_x_blabla, v_x_insta)
+isapprox(M2*M1*v_t_blabla, v_t_insta)
+
+quat = rot_mat2quat(M2*M1)
+false in isapprox.([quat * blabla[1,N_x,t] * adjoint(quat) for t = 1:N_t], [insta_max[1,N_x,t] for t = 1:N_t])
+false in isapprox.([quat * blabla[2,x,N_t] * adjoint(quat) for x = 1:N_x], [insta_max[2,x,N_t] for x = 1:N_x])
+
+two_metric_field(blabla,insta_max)
+for x = 1:N_x
+    blabla[2,x,N_t] = quat * blabla[2,x,N_t] * adjoint(quat)
+end
+for t = 1:N_t
+    blabla[1,N_x,t] = quat * blabla[1,N_x,t] * adjoint(quat)
+end
+two_metric_field(blabla,insta_max)
+
+
+function minimum_insta_metric(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    # insta = insta_U2_comb(NX,NT,q)
+    V = max_gauge(U,"U2")
+    v_x = Pauli2vec(V[1,N_x,1]/sqrt(det(V[1,N_x,1])))
+    v_t = Pauli2vec(V[2,1,N_t]/sqrt(det(V[2,1,N_t])))
+    v_x_insta = [1.0, 0.0, 0.0]
+    v_t_insta = [0.0, 1.0, 0.0]
+    M1 = find_rot_mat(v_x, v_x_insta)
+    M2 = find_rot_mat(M1*v_t, v_t_insta)
+    rot_quat = rot_mat2quat(M2*M1)
+    U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(V[2,1,N_t]))
+    for x = 1:NX
+        V[2,x,NT] = U1_fac_ratio_outer * rot_quat * V[2,x,NT] * adjoint(rot_quat)
+    end
+    # U1_fac_ratio_outer = sqrt(det(insta_max[1,N_x,2])) / sqrt(det(bla_max[1,N_x,2]))
+    U1_fac_ratio_outer = exp(-im*q*π*(1+N_x)/N_x/N_t) / sqrt(det(V[1,NX,2])) 
+    for t = 1:NT
+        V[1,NX,t] = U1_fac_ratio_outer * rot_quat * V[1,NX,t] * adjoint(rot_quat)
+    end
+    return two_metric_field(V,insta_U2_comb(NX,NT,q))
+end
+
+minimum_insta_metric(bla)
+
+
+# for t = 1:N_t
+#     println(coeffs2grp(blabla[1,N_x,t]/sqrt(det(blabla[1,N_x,t]))))
+# end
+# for x = 1:N_x
+#     println(coeffs2grp(blabla[2,x,N_t]/sqrt(det(blabla[2,x,N_t]))))
+# end
+# coeffs2grp(plaq(blabla,N_x,N_t)/sqrt(det(plaq(blabla,N_x,N_t))))
+# sqrt(sum(Pauli_coeffs(blabla[1,N_x,1]/sqrt(det(blabla[1,N_x,1]))).^2))
+# sqrt(sum(Pauli_coeffs(blabla[2,5,N_t]/sqrt(det(blabla[2,5,N_t]))).^2))
+
+# M1 = coeffs2grp(blabla[2,1,N_t]/sqrt(det(blabla[2,1,N_t])))
+# # M2 = coeffs2grp(blabla[2,5,N_t]/sqrt(det(blabla[2,5,N_t])))
+# M3 = coeffs2grp(blabla[1,N_x,1]/sqrt(det(blabla[1,N_x,1])))
+# isapprox(M1*M3, M3*M1)
+# isapprox(M1 * M3 * M1' * M3', σ0)
+# M1*M1' 
+# M3*M3'
+
+# exp(im*sum(v1.*[σ1,σ2,σ3]))
+
+# v1 = Pauli_coeffs(M1)
+# v3 = Pauli_coeffs(M3)
+# v1./v3
+# sqrt(sum(cross(v1,v3).^2))
+
+
+# U = gaugefield_U2(N_x,N_t,true);
+# for i = 1:500 chess_metro!(U,0.1,8.0,[0.0],"U2") end
+# # V = stout_midpoint_fast(U,300,0.1);
+# # top_charge_U2(V)
+# V = stout_midpoint_fast(U,0.1)
+# actions = [action(V,1)]
+# charges = [top_charge_U2(V)]
+# count = 0
+# for i = 1:4*10^5
+#     V = stout_midpoint_fast(V,0.1)
+#     push!(actions,action(V,1))
+#     push!(charges,top_charge_U2(V))
+#     if i%10^3 == 0
+#         count += 1
+#         println("Progress: $count%")
+#     end
+# end
+
+# # write_conf_U2(V,"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\smeared_gribov_q1.txt")
+
+# V[1,N_x,1]
+# V_max = max_gauge(V,"U2");
+# t = 15;
+# coeffs2grp(bla_max[1,N_x,t]/sqrt(det(bla_max[1,N_x,t])))
+# V_max[1,N_x,t]/sqrt(det(V_max[1,N_x,t]))
+# x = 15;
+# bla_max[2,x,N_t]/sqrt(det(bla_max[2,x,N_t]))
+# coeffs2grp(V_max[2,x,N_t]/sqrt(det(V_max[2,x,N_t])))
+# V_max[2,x,N_t]/sqrt(det(V_max[2,x,N_t]))
+# scatter([imag(log(sqrt(det(V_max[2,x,N_t])))) for x = 1:N_x])
+
+function insta_U2_comb(N_x, N_t, Q)
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = complex.([π/(1+mod(Q,2)), 0.0, 0.0])
+    t_vec = complex.([0.0, π/(1+mod(Q,2)), 0.0])
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+# action(insta_U2_comb(N_x,N_t,1),1) - action(insta_U2(N_x,N_t,1),1)
+
+function insta_U2_comb(N_x, N_t, Q, M_rot)
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = M_rot * complex.([π/(1+mod(Q,2)), 0.0, 0.0])
+    t_vec = M_rot * complex.([0.0, π/(1+mod(Q,2)), 0.0])
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+# heatmap([real(tr(plaq(insta_U2_comb(N_x, N_t, 1, λ0),x,t))) for x = 1:N_x, t = 1:N_t])
+# action(insta_U2_comb(N_x, N_t, 1, λ0),1) - action(insta_max,1)
+# action(insta_U2_comb(N_x, N_t, 1, λ0),1) - action(insta_U2(N_x,N_t,1),1)
+# action(insta_U2_comb(N_x, N_t, 2, λ0),1) - action(insta_U2(N_x,N_t,2),1)
+
+function two_metric_field_insta_rot(U, M_rot_Lie_coeffs)
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    L1 = [0 0 0; 0 0 -1; 0 1 0]
+    L2 = [0 0 1; 0 0 0; -1 0 0]
+    L3 = [0 -1 0; 1 0 0; 0 0 0]
+    M_rot = exp(sum(M_rot_Lie_coeffs.*[L1,L2,L3]))
+    insta = insta_U2_comb(NX,NT,q,M_rot)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
+end
+
+# two_metric_field_insta_rot(blabla, [0.0,0.0,0.0])
+
+function optim_rot(U, start_coeffs)
+    NX = size(U,2)
+    NT = size(U,3)
+    U_opt = max_gauge(U,"U2")
+    # U_opt = deepcopy(U)
+    q = round(Int,top_charge_U2(U))
+    # U1_fac_ratio_outer = sqrt(det(insta_max[2,1,N_t])) / sqrt(det(bla_max[2,1,N_t]))
+    U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(U_opt[2,1,N_t]))
+    for x = 1:NX
+        U_opt[2,x,NT] = U1_fac_ratio_outer * U_opt[2,x,NT]
+    end
+    # U1_fac_ratio_outer = sqrt(det(insta_max[1,N_x,2])) / sqrt(det(bla_max[1,N_x,2]))
+    U1_fac_ratio_outer = exp(-im*q*π*(1+N_x)/N_x/N_t)/sqrt(det(U_opt[1,NX,2])) 
+    for t = 1:NT
+        U_opt[1,NX,t] = U1_fac_ratio_outer * U_opt[1,NX,t]
+    end
+    optim_metric(coeffs) = two_metric_field_insta_rot(U_opt,coeffs)
+    return optimize(optim_metric, start_coeffs,LBFGS())
+end
+
+ip = optim_rot(bla,[0.0,0.0,0.0]).minimum
+
+
+L1 = [0 0 0; 0 0 -1; 0 1 0]
+L2 = [0 0 1; 0 0 0; -1 0 0]
+L3 = [0 -1 0; 1 0 0; 0 0 0]
+M = exp(sum(rand(3).*[L1,L2,L3]))
+det(M)
+M*transpose(M)
+# M = exp(sum(6*π .*[L1,L2,L3]))
 
 

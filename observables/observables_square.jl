@@ -416,3 +416,112 @@ function top_charge_U2_wil(U)
     return q/2/π
 end
 
+
+#=
+function one_link_integral_U2(A, β, n_sum_max, r_sum_max)
+    Z = 0.0
+    M = β^2 * A * adjoint(A)
+    for n = 1:n_sum_max
+        for r = 1:r_sum_max
+            Z += tr(M)^n * det(M)^r / (factorial(big(n+2*r+1)) * factorial(big(n)) * factorial(big(r))^2)
+        end
+    end
+    @assert imag(Z) < 10.0^(-10) "Z had non-negligible imaginary part for input A = $A"
+    return real(Z)
+end
+
+let
+    A = ran_U2(rand()) + ran_U2(rand())
+    n_max = 11
+    r_max = 11
+    start_val_for_heatmap = 6
+    Z_eval = [one_link_integral_U2(A,1.0,N,R) for N = 1:n_max, R = 1:r_max]
+    display(heatmap(Z_eval, xticks = 1:2:n_max, yticks = 1:2:r_max))
+    display(heatmap(
+        start_val_for_heatmap:n_max,
+        start_val_for_heatmap:r_max,
+        Z_eval[start_val_for_heatmap:n_max,start_val_for_heatmap:r_max]
+    ))
+end
+
+
+function one_link_expect_value_U2(U, μ, x, t, β, n_sum_max, r_sum_max, p_sum_max, s_sum_max)
+    A = staple(U,μ,x,t)
+    A_dagmod = coeffs_U2(conj(A.a), conj(A.b), conj(A.c), conj(A.d)) #  (-1)ⁱ⁺ʲ A†[̸j,̸i]
+    # M = A*adjoint(A)
+    # A_dagmod = conj.([A[2,2] -A[2,1]; -A[1,2] A[1,1]])
+    trM = tr(A*adjoint(A))
+    detA = det(A)
+    detA_dag = adjoint(detA)
+    detM = detA*detA_dag # det(A*adjoint(A))
+    sum_normal = 0.0
+    sum_dagmod = 0.0
+    for n = 1:n_sum_max
+        for r = 1:r_sum_max
+            for p = 1:p_sum_max
+                for s = 1:s_sum_max
+                    # Z += tr(M)^n * det(M)^r / (factorial(big(n+2*r+1)) * factorial(big(n)) * factorial(big(r))^2)
+                    denom = factorial(big(n+2*r+1))*factorial(big(p+2*s+1))*factorial(big(n))*factorial(big(p))*factorial(big(r))^2*factorial(big(s))^2
+                    sum_normal += p * trM^(p+n-1) * detM^(r+s) / denom
+                    sum_dagmod += s * trM^(p+n) * detA^(r+s) * detA_dag^(r+s-1) / denom
+                end
+            end
+        end
+    end
+    return convert(ComplexF64,sum_normal)*A + convert(ComplexF64,sum_dagmod)*A_dagmod
+end
+
+N_x = N_t = L = 16
+β = 1
+U = gaugefield_U2(N_x, N_t, true);
+for i = 1:200 chess_metro!(U,0.1,β,[0.0],"U2") end
+μ = rand([1,2])
+x, t = rand(Array(1:L), 2)
+Us = []
+V = deepcopy(U);
+for i = 1:100000
+    push!(Us, V[μ,x,t])
+    metro!(V,μ,x,t,0.1,β,[0.0],"U2")
+end
+Us = real.(tr.(Us))
+b_size = round(Int, 2*auto_corr_time(Us) + 1)
+jackknife(Us,b_size)
+U_exp = one_link_expect_value_U2(U,μ,x,t,β,6,6,6,6)
+real(tr(U_exp))
+
+# aaa = coeffs_U2(1.522347318101908 + 0.541280686115554im, 0.07674475624372301 + 0.14067257572225875im, 0.3587265810130666 + 0.15678099746753316im, 0.08346597802398936 - 0.08003358792801255im)
+# zzz = 0.0
+# mmm = aaa*adjoint(aaa)
+# for n = 1:10
+#     for r = 1:10
+#         zzz += tr(mmm)^n * det(mmm)^r / factorial(big(n+2*r+1)) / factorial(big(n)) / factorial(big(r))^2
+#     end
+# end
+# zzz
+
+
+# function one_link_expect_value_SU2(U, μ, x, t, β)
+#     stap = staple(U,μ,x,t)
+#     d = sqrt(det(stap))
+#     return 1/d*besseli(2,β*d)/besseli(1,β*d)*stap
+# end
+
+# N_x = N_t = L = 16
+# β = 1
+# U = gaugefield_SU2(N_x, N_t, true);
+# for i = 1:200 chess_metro!(U,0.1,β,[0.0],"SU2") end
+# μ = rand([1,2])
+# x, t = rand(Array(1:L), 2)
+# Us = []
+# V = deepcopy(U);
+# for i = 1:100000
+#     push!(Us, V[μ,x,t])
+#     metro!(V,μ,x,t,0.1,β,[0.0],"SU2")
+# end
+# Us = real.(tr.(Us))
+# b_size = round(Int, 2*auto_corr_time(Us) + 1)
+# jackknife(Us,b_size)
+# U_exp = one_link_expect_value_SU2(U,μ,x,t,β)
+# real(tr(U_exp))
+
+=#
