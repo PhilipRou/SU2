@@ -63,9 +63,9 @@ function metro!(U, μ, x, t, step, β, acc, group)
         new_coeffs = ran_U2(step) * new_coeffs
     end
     staple_d = staple_dag(U,μ,x,t)
-    S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
-    S_new = β*0.5*real(tr(new_coeffs * staple_d))
-    if rand() < exp(S_new-S_old)
+    S_old = -β*0.5*real(tr(U[μ,x,t] * staple_d))
+    S_new = -β*0.5*real(tr(new_coeffs * staple_d))
+    if rand() < exp(-(S_new-S_old))
         U[μ,x,t] = new_coeffs
         acc[1] += 1/NX/NT/2
     end
