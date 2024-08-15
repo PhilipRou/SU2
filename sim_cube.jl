@@ -104,19 +104,12 @@ for β in [7.0]
     U = gaugefield_SU2_cube(N_x, N_t, hot)
 
     for i = 1:N_therm
-        acc_copy = acc[1]
-        for j = 1:N_metro
-            chess_metro_cube!(U,ϵ,β,acc)
-        end
-        for j = 1:N_over
-            chess_overrelax_cube!(U)
-        end
-        # ϵ *= sqrt((acc[1]-acc_copy)  /3/N_t/N_x/(N_metro+N_over) / acc_wish)
+        chess_metro_cube!(U,ϵ,β,acc)
         ϵ *= sqrt(acc[1] / acc_wish)
         println("Acceptance: $(round(acc[1],digits = 3)), ϵ: $ϵ ")
     end
 
-    for meas = 1:N_meas 
+    for meas = 1:N_meas
         if meas%(Int(N_meas/100)) == 1
             println(" ")
             println("We're already ", counter, "% deep in the 3-dim. simulation with N_x = $N_x, N_t = $N_t, β = $β and ϵ = $ϵ !")
