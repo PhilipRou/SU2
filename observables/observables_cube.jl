@@ -139,7 +139,7 @@ function measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
         # these matrices contain the trace (2× first entry of quaternion array) of
         # the loop at the resp. space-time point
         # mat_t, mat_x, mat_y = loop_mat_3d(U,loops[i][1],loops[i][2])
-        mat_t = loop_mat_cube(U,loops[i][1],loop[i][2])
+        mat_t = loop_mat_cube(U,loops[i][1],loops[i][2])
         results_t[i] = tr.(mat_t)
         # results_x[i] = tr.(mat_x)
         # results_y[i] = tr.(mat_y)

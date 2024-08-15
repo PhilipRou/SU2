@@ -68,7 +68,7 @@ function staple_dag_cube(U, μ, x, y, t)
 end
 
 
-# ❗ Not in use! Only for testing purposes
+# ❌ Not in use anymore! Only for testing purposes ❌
 function delta_S_gauge_cube(U, μ, x, y, t, old_coeffs::coeffs_SU2, new_coeffs::coeffs_SU2, β)
     return β*0.5*(tr((old_coeffs - new_coeffs) * staple_dag_cube(U,μ,x,y,t)))
 end
@@ -88,6 +88,8 @@ end
 
 # metro! but for D-dim. configs
 function metro_cube!(U, μ, x, y, t, step, β, acc)
+    NX = size(U,2)
+    NT = size(U,4)
     # old_coeffs = deepcopy(U[μ,t,x])
     new_coeffs = ran_SU2(step) * U[μ,x,y,t]
     staple_d = staple_dag_cube(U,μ,x,y,t)
@@ -95,7 +97,7 @@ function metro_cube!(U, μ, x, y, t, step, β, acc)
     S_new = β*0.5*tr(new_coeffs * staple_d)
     if rand() < exp(S_new-S_old)
         U[μ,x,y,t] = new_coeffs
-        acc[1] += 1
+        acc[1] += 1/(NX^2 * NT * 3)
     end
     return nothing
 end
@@ -105,6 +107,7 @@ end
 function chess_metro_cube!(U, step, β, acc)
     NX = size(U,2)
     NT = size(U,4)
+    acc[1] = 0.0
     for μ = 1:3
         for trip = 1:2
             for t = 1:NT
@@ -152,3 +155,30 @@ end
 #         println(ind, " is not in list_test")
 #     end
 # end
+
+#
+function overrelax_cube!(U, μ, x, y, t)
+    NX = size(U,2)
+    NT = size(U,4)
+    v = proj2man(staple_dag_cube(U, μ, x, y, t))
+    U[μ,x,y,t] = adjoint(v * U[μ,x,y,t] * v)
+    return nothing
+end
+
+# 
+function chess_overrelax_cube!(U)
+    NX = size(U,2)
+    NT = size(U,4)
+    for μ = 1:3
+        for trip = 1:2
+            for t = 1:NT
+                for y = 1:NX
+                    for x = 1+mod(t+y+trip,2):2:NX
+                        overrelax_cube!(U, μ, x, y, t)
+                    end
+                end
+            end
+        end
+    end
+    return nothing
+end

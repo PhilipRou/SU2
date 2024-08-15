@@ -2,6 +2,7 @@ include("updates_head.jl")
 
 
 
+#
 function staple_dag(U, μ, x, t)
     NX = size(U,2)
     NT = size(U,3)
@@ -122,9 +123,10 @@ function overrelax!(U, μ, x, t, acc)
     v = proj2man(staple_dag(U,μ,x,t))
     # println(typeof(U[μ,x,t]))
     if typeof(U[μ,x,t]) == coeffs_SU2{Float64}
-        U[μ,x,t] = adjoint(v *  U[μ,x,t] * v)
+        U[μ,x,t] = adjoint(v * U[μ,x,t] * v)
+        acc[1] += 1/2/NX/NT
     elseif typeof(U[μ,x,t]) == coeffs_U2{ComplexF64}
-        new_coeffs = adjoint(v *  U[μ,x,t] * v)
+        new_coeffs = adjoint(v * U[μ,x,t] * v)
         staple_d = staple_dag(U,μ,x,t)
         S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
         S_new = β*0.5*real(tr(new_coeffs * staple_d))

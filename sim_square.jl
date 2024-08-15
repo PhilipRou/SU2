@@ -34,7 +34,7 @@ for beta in [6.0]
             global N_over   = 3                         # ...N_over-many overrelaxation sweeps, followed by...
             global N_insta  = 0                         # ...N_insta instanton updates
             global N_sepa   = 10
-            global N_therm  = Int(500/(N_metro+N_over+N_insta)) # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
+            global N_therm  = 500                       # For each therm.-sweep (N_metro+N_over+N_insta) sweeps will be performed
             # global N_meas   = Int( 100* (round(300 * (128/N_t)^2 / (N_metro+N_over+N_insta) /100, RoundNearestTiesAway))) 
             global N_meas   = 800
             # N_meas is similar to N_therm, but now we measure after (N_metro+N_over+N_insta) sweeps
@@ -128,6 +128,7 @@ for beta in [6.0]
             N_stout_insta = $N_stout_insta
             N_therm      = $N_therm
             N_meas       = $N_meas
+            N_sepa       = $N_sepa
             acc_wish     = $acc_wish
             Q_start      = $Q_start
             Q_insta      = $Q_insta
@@ -157,25 +158,9 @@ for beta in [6.0]
             end
 
             for i = 1:N_therm
-                # acc_copy = acc_metro[1]
-                # for j = 1:N_metro
-                #     chess_metro!(U,ϵ,β,acc_metro,group)
-                # end
-                # for j = 1:N_over
-                #     chess_overrelax!(U,acc_over)
-                # end
-                # for j = 1:N_insta
-                #     # insta_cool_update_U2!(U,ϵ,β,N_insta_cool,acc_insta)
-                #     # insta_ran_cool_update_U2!(U,ϵ,β,N_insta_cool,cool_deg,acc_insta)
-                #     insta_update_U2!(U,β,acc_insta,Q_insta)
-                #     # insta_flow_update_U2!(U, N_stout_insta, acc_insta, Q_insta)
-                # end
-                # # mywrite(acceptances_path, acc[1])
                 chess_metro!(U,ϵ,β,acc_metro,group)
                 ϵ *= sqrt(acc_metro[1] / acc_wish) # only update ϵ acc. to Metropolis
                 global epsilon = deepcopy(ϵ)
-                # println(epsilon)
-                # println(acc_metro[1])
                 println("Acceptance: $(round(acc_metro[1],digits = 3)), ϵ: $epsilon ")
             end
             bla = open(params_path, "a")
@@ -191,8 +176,8 @@ for beta in [6.0]
 
             insta_delta_s_plus = [0.0] #⭕⭕⭕⭕⭕
 
-            for i = 1:N_meas 
-                if i%(Int(N_meas/100)) == 1
+            for meas = 1:N_meas 
+                if meas%(Int(N_meas/100)) == 1
                     println(" ")
                     println("We're already ", counter, "% deep in the simulation with N_t = $N_t, N_x = $N_x, β = $β and ϵ = $ϵ !")
                     # mywrite(last_conf_path, U, N_x, N_t)
