@@ -24,6 +24,26 @@ function meta_charge(U, N_smear_meta, ρ_meta)
     return sum([imag(det(plaq(V, x, t))) for x = 1:NX, t = 1:NT]) / 2 / π
 end
 
+function wilson_charges(U, N_smear_meta, N_smear, ρ)
+    V = stout_midpoint_fast(U, N_smear_meta, ρ)
+    for smear = 0:N_smear-1
+        V = stout_midpoint_fast(V, N_smear_meta, ρ)
+        # println("1st loop")
+    end
+    q_meta = top_charge_U2_wil(V)
+    for smear = 0:N_smear-N_smear_meta-1
+        V = stout_midpoint_fast(V, N_smear_meta, ρ)
+        # println("2nd loop")
+    end
+    q = top_charge_U2_wil(V)
+    return q, q_meta
+end
+
+bla = gaugefield_U2(8, 8, true);
+for i = 1:100 chess_metro!(bla, 0.1, 5.0, [0.0], "U2") end
+wilson_charges(bla, 1, 2, 0.1)
+top_charge_U2_wil(stout_midpoint_fast(bla, 2, 0.1))
+
 function ind2metaq(q_max, δq, i)
     # return Array(-q_max:δq:q_max)[i]
     return -q_max + (i-1)*δq
@@ -112,8 +132,8 @@ function chess_metro_bias!(U, step, β, acc, group, bias_pot, q_max, δq, w)
 end
 
 
-#=
-for N_smear = 0:5
+
+for N_smear = 0:10
     β = 8.0
     L = 32
     N_x = L
@@ -158,7 +178,7 @@ for N_smear = 0:5
     hist_q = histogram2d(round.(Int,charges), meta_charges, bins = 100, title = "β = $β, L = $L, N_smear = $N_smear_meta")
     display(hist_q)
 end
-=#
+
 
 
 
@@ -167,15 +187,15 @@ L = 32
 N_x = L
 N_t = L
 N_therm = 250
-N_build = 5e4
+N_build = 1e4
 N_smear_meta = 3
-ρ_meta       = 0.08
+ρ_meta       = 0.1
 # N_meas  = 1000
 # N_skip  = 1
 
 δq = 1e-2
 w  = 1e-3
-q_max = 20
+q_max = 15
 # length(Array(-q_max:δq:q_max))
 bias_pot = zeros(Int(2*q_max/δq+1))
 

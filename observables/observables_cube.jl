@@ -31,7 +31,7 @@ function plaq_23(U, x, y, t)
 end
 
 # Compute the Wilson gauge action of a 3-dim. cubic config
-function action_cube(U)
+function action_cube(U, β)
     NX = size(U,2)
     NT = size(U,4)
     S = 3*2*NX*NX*NT    # 2: because SU(2), N_c = 2    AND    3: because we sum over 3 plaq's per site
@@ -190,3 +190,42 @@ end
 #   corrs[:,:,t] is the correlation matrix at phys. time t
 #   mean_vals[i] is the mean value of the i-th loop (average of the lattice)
 
+
+
+function other_measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
+    # NX = size(U,2)
+    NT = size(U,4)
+    L = length(loops)
+    t_arr = collect(1:NT)
+    results_t = Vector{Array{Float64}}(undef,L)
+    for i = 1:L
+        # "results" conatins matrices corresponding to different resp. loops;
+        # these matrices contain the trace (2× first entry of quaternion array) of
+        # the loop at the resp. space-time point
+        # mat_t, mat_x, mat_y = loop_mat_3d(U,loops[i][1],loops[i][2])
+        mat_t = loop_mat_cube(U,loops[i][1],loops[i][2])
+        results_t[i] = tr.(mat_t)
+    end
+
+    # Now for each loop we want to obtain a column in "summed":
+    # the position in that column is equal to the t-index of the time slice 
+    # over which we take the mean of our loop-observable
+    summed_t = Matrix{Float64}(undef,NT,L)
+    for i = 1:L
+        summed_t[:,i] = [mean(results_t[i][:,:,t]) for t = 1:NT]
+    end
+
+    mean_vals_t = Vector{Float64}(undef,L)
+    for i = 1:L
+        mean_vals_t[i] = mean(summed_t[:,i])
+    end
+
+    # A vector containing correlation matrices
+    corrs_t = Array{Float64}(undef,L,L,NT)
+    for τ = 1:NT
+        corrs_t[:,:,τ] = [sum((summed_t[:,i] .- mean_vals_t[i]) .* (summed_t[circshift(t_arr,-τ),j] .- mean_vals[j]))  for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
+        # / sqrt(sum(summed_t[:,i] .- mean_vals_t[i])^2) / sqrt(sum(summed_t[:,j] .- mean_vals_t[j])^2)
+    end
+
+    return corrs_t, mean_vals_t
+end

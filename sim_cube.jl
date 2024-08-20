@@ -20,8 +20,8 @@ for β in [7.0]
 
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
-    global N_therm   = 200      # ...for N_therm times,
-    global N_meas    = 10
+    global N_therm   = 100      # ...for N_therm times,
+    global N_meas    = 200
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
@@ -124,7 +124,8 @@ for β in [7.0]
             end
         end
 
-        results = measure_RT_loops_corrs_cube(U, loops)
+        # results = measure_RT_loops_corrs_cube(U, loops)
+        results = other_measure_RT_loops_corrs_cube(U,loops)
         # corr_mats = (results[1] .+ results[2] .+ results[3]) ./ 3 # Only possible if N_t = N_x
         # mean_vals = (results[4] .+ results[5] .+ results[6]) ./ 3 # Only possible if N_t = N_x
         corr_mats = results[1]
