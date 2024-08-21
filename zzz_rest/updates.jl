@@ -1,6 +1,6 @@
 # We want:
 # staple, local metropolis, chess metropolis
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 
 function staple_dag(U, μ, t, x)
     NT = size(U,2)
@@ -268,7 +268,7 @@ for L in [16,32,64,96]
     N_t = N_x = $N_t,  β = $β,  ϵ = $ϵ",
     xlabel = "MC time")
     display(image)
-    savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
+    savefig("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
     
     # auto_chess = []
     # auto_lex = []
@@ -295,19 +295,19 @@ for L in [16,32,64,96]
     # N_t = N_x = $N_t,  β = $β,  ϵ = $ϵ",
     # xlabel = "MC time at which summation began")
     # display(image)
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
+    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
     # println("chess: ", mean(auto_chess), ", ", std(auto_chess)/sqrt(length(auto_chess)))
     # println("lexicog.: ", mean(auto_lex),  ", ", std(auto_lex)/sqrt(length(auto_lex)))
     # println("random: ", mean(auto_ran),  ", ", std(auto_ran)/sqrt(length(auto_ran)))
     # println(" ")
 
-    writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_lex_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_lex)
-    writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_chess_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_chess)
-    writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_ran_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_ran)
+    writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_lex_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_lex)
+    writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_chess_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_chess)
+    writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\actions_2_ran_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", actions_ran)
 
-    # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_lex_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_lex)
-    # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_chess_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_chess)
-    # writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_ran_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_ran)
+    # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_lex_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_lex)
+    # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_chess_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_chess)
+    # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\auto_corr\\auto_ran_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.txt", auto_ran)
 end
 =#
 
