@@ -202,8 +202,7 @@ for beta in [6.0]
                     end
                 end
 
-                U = proj2man.(U)
-
+                U = proj2man.(U)    # project back onto the manifold
                 
                 # mywrite(insta_delta_s_plus_path, insta_delta_s_plus) # ⭕⭕⭕⭕⭕
                 

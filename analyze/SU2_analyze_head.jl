@@ -3,6 +3,7 @@ using StatsBase
 using DelimitedFiles
 using LsqFit
 using SpecialFunctions
+using LaTeXStrings
 
 include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")

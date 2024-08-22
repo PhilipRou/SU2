@@ -627,7 +627,7 @@ let
         # smeared_metrics = [two_metric_field(max_gauge(U,"U2"), insta_max_gauge)]
         # smeared_metrics_opt = [optimize_insta_metric(U,[0.0,0.0,0.0])]
         # smeared_metrics_opt_anal = [minimum_insta_metric(U)]
-        V = stout_midpoint_fast(U,ρ)
+        V = stout_midpoint(U,ρ)
         count = 0
         for smear = 1:N_smear
             # q_old = last(smeared_charges)
@@ -641,7 +641,7 @@ let
             # push!(smeared_metrics,two_metric_field(max_gauge(V,"U2"), insta_max_gauge))
             # push!(smeared_metrics_opt, optimize_insta_metric(V,[0.0,0.0,0.0]))
             # push!(smeared_metrics_opt_anal, minimum_insta_metric(V))
-            V = stout_midpoint_fast(V,ρ)
+            V = stout_midpoint(V,ρ)
             if smear%Int(N_smear/100) == 0
                 count += 1
                 println("Measurement Nr.: $meas, Smearing Progress: $count%")
@@ -1962,7 +1962,7 @@ v2 = grp2vec(M2)
 insta = insta_U2(16,16,1);
 pert = [ran_U2(0.001) for μ = 1:2, x = 1:16, t = 1:16] .* insta;
 # pert = temp_gauge_U2(pert);
-pert = stout_midpoint_fast(pert,10000,0.1);
+pert = stout_midpoint(pert,10000,0.1);
 two_metric_field(insta,pert)
 two_metric_field(insta,temp_gauge_U2(pert))
 two_metric_field(max_gauge(insta,"U2"),max_gauge(pert,"U2"))
@@ -2011,7 +2011,7 @@ metrics_max = []
 count = 0
 for i = 1:N_metric
     pert = [ran_U2(ϵ) for μ = 1:2, x = 1:16, t = 1:16] .* insta;
-    pert = stout_midpoint_fast(pert,1000,0.1)
+    pert = stout_midpoint(pert,1000,0.1)
     push!(metrics,two_metric_field(pert, insta))
     push!(metrics_temp,two_metric_field(temp_gauge_U2(pert), insta))
     push!(metrics_max,two_metric_field(max_gauge(pert,"U2"), max_gauge(insta,"U2")))
@@ -2068,10 +2068,10 @@ U = gaugefield_U2(N_x, N_t, true);
 for i = 1:500 chess_metro!(U, 0.1, 4.0, [0.0], "U2") end
 
 N_smear = 10^5
-V = stout_midpoint_fast(U, 0.1);
+V = stout_midpoint(U, 0.1);
 smeared_actions = [action(V,1)]
 for smear = 1:N_smear 
-    V = stout_midpoint_fast(V,0.1) 
+    V = stout_midpoint(V,0.1) 
     push!(smeared_actions, action(V,1))
 end
 Q = round(Int,top_charge_U2(V))
@@ -2095,10 +2095,10 @@ action(uuu,1)
 isapprox([coeffs2grp(plaq(V, x, t)) for x = 1:N_x, t = 1:N_t], [exp(2*im*π/(N_x*N_t)) * σ0 for x = 1:N_x, t = 1:N_t ]  )
 
 
-V_insta = stout_midpoint_fast(insta,0.1);
+V_insta = stout_midpoint(insta,0.1);
 insta_actions = [action(V_insta,1)]
 for i = 1:1000
-    V_insta = stout_midpoint_fast(V_insta,0.1);
+    V_insta = stout_midpoint(V_insta,0.1);
     push!(insta_actions, action(V_insta,1))
 end
 (maximum(insta_actions) - minimum(insta_actions))/minimum(insta_actions)
@@ -2376,14 +2376,14 @@ two_metric_field(blabla,insta_max)
 
 # U = gaugefield_U2(N_x,N_t,true);
 # for i = 1:500 chess_metro!(U,0.1,8.0,[0.0],"U2") end
-# # V = stout_midpoint_fast(U,300,0.1);
+# # V = stout_midpoint(U,300,0.1);
 # # top_charge_U2(V)
-# V = stout_midpoint_fast(U,0.1)
+# V = stout_midpoint(U,0.1)
 # actions = [action(V,1)]
 # charges = [top_charge_U2(V)]
 # count = 0
 # for i = 1:4*10^5
-#     V = stout_midpoint_fast(V,0.1)
+#     V = stout_midpoint(V,0.1)
 #     push!(actions,action(V,1))
 #     push!(charges,top_charge_U2(V))
 #     if i%10^3 == 0
@@ -2480,20 +2480,20 @@ top_charge_U2(bla)
 @benchmark optimize_insta_metric(bla, [0.0,0.0,0.0])
 
 bla = gaugefield_U2(12, 12, true);
-bla_v = stout_midpoint_fast(bla,1000,0.1);
+bla_v = stout_midpoint(bla,1000,0.1);
 q_prox = round(Int,top_charge_U2(bla_v))
 two_metric_field(bla_v, insta_U2(16,16,q_prox))
 optimize_insta_metric(bla_v,[0.0,0.0,0.0])
-bla_v = stout_midpoint_fast(bla,10^4,0.1);
+bla_v = stout_midpoint(bla,10^4,0.1);
 minimum_insta_metric(bla_v)
 iseven(q_prox)
 
 for i = 1:100
     bla = gaugefield_U2(16, 16, true);
-    bla_v = stout_midpoint_fast(bla,1000,0.1);
+    bla_v = stout_midpoint(bla,1000,0.1);
     q_prox = round(Int,top_charge_U2(bla_v))
     if iseven(q_prox)
-        bla_v = stout_midpoint_fast(bla_v,10^4-1000,0.1)
+        bla_v = stout_midpoint(bla_v,10^4-1000,0.1)
         if minimum_insta_metric(bla_v) > 10.0^(-9)
             global V = bla_v
             break
@@ -2503,5 +2503,5 @@ for i = 1:100
 end
 minimum_insta_metric(V)
 # heatmap([real(tr(plaq(V,x,t))) for x = 1:12, t = 1:12])
-vvv = stout_midpoint_fast(V,10^4,0.1);
+vvv = stout_midpoint(V,10^4,0.1);
 minimum_insta_metric(vvv)

@@ -223,8 +223,8 @@ function other_measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smea
     # A vector containing correlation matrices
     corrs_t = Array{Float64}(undef,L,L,NT)
     for τ = 1:NT
-        corrs_t[:,:,τ] = [sum((summed_t[:,i] .- mean_vals_t[i]) .* (summed_t[circshift(t_arr,-τ),j] .- mean_vals[j]))  for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-        # / sqrt(sum(summed_t[:,i] .- mean_vals_t[i])^2) / sqrt(sum(summed_t[:,j] .- mean_vals_t[j])^2)
+        corrs_t[:,:,τ] = [sum((summed_t[:,i] .- mean_vals_t[i]) .* (summed_t[circshift(t_arr,-τ),j] .- mean_vals[j])) / sqrt(mean((summed_t[:,i] .- mean_vals_t[i]).^2)) / sqrt(mean((summed_t[:,j] .- mean_vals_t[j]).^2))  for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
+        # / sqrt(mean(summed_t[:,i] .- mean_vals_t[i])^2) / sqrt(mean(summed_t[:,j] .- mean_vals_t[j])^2)
     end
 
     return corrs_t, mean_vals_t
