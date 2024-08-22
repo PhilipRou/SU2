@@ -123,109 +123,80 @@ end
 # A function which measures everything one can measure (yet) using Wilson loops.
 # The loops are specified in the array 'loops' in which tuples of [n_t, n_x] 
 # are specified, i.e. loops = [[1,1], [1,2], [1,4], [3,4], ...]
-function measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
-    NX = size(U,2)
-    NT = size(U,4)
-    L = length(loops)
-    t_arr = collect(1:NT)
-    # x_arr = collect(1:NX)
-    # y_arr = collect(1:NX)
-    # Transpose loop_mat because Julia is column-major, see below
-    results_t = Vector{Array{Float64}}(undef,L)
-    # results_x = Vector{Array{Float64}}(undef,L)
-    # results_y = Vector{Array{Float64}}(undef,L)
-    for i = 1:L
-        # "results" conatins matrices corresponding to different resp. loops;
-        # these matrices contain the trace (2× first entry of quaternion array) of
-        # the loop at the resp. space-time point
-        # mat_t, mat_x, mat_y = loop_mat_3d(U,loops[i][1],loops[i][2])
-        mat_t = loop_mat_cube(U,loops[i][1],loops[i][2])
-        results_t[i] = tr.(mat_t)
-        # results_x[i] = tr.(mat_x)
-        # results_y[i] = tr.(mat_y)
-    end
-    # Now for each loop we want to obtain a column in "summed":
-    # the position in that column is equal to the t-index of the time slice 
-    # over which we sum our loop-observable
-    summed_t = Matrix{Float64}(undef,NT,L)
-    # summed_x = Matrix{Float64}(undef,NX,L)
-    # summed_y = Matrix{Float64}(undef,NX,L)
-    for i = 1:L
-        summed_t[:,i] = [sum(results_t[i][:,:,t]) for t = 1:NT]
-        # summed_x[:,i] = [sum(results_x[i][:,x,:]) for x = 1:NX]
-        # summed_y[:,i] = [sum(results_y[i][:,:,y]) for y = 1:NX]
-    end
-
-    # A vector containing correlation matrices
-    corrs_t = Array{Float64}(undef,L,L,NT)
-    # corrs_x = Array{Float64}(undef,L,L,NX)
-    # corrs_y = Array{Float64}(undef,L,L,NX)
-    for τ = 1:NT
-        corrs_t[:,:,τ] = [sum(summed_t[:,i] .* summed_t[circshift(t_arr,-τ),j]) for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-    end
-    # for τ = 1:NX
-    #     corrs_x[:,:,τ] = [sum(summed_x[:,i] .* summed_x[circshift(x_arr,-τ),j]) for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-    #     corrs_y[:,:,τ] = [sum(summed_y[:,i] .* summed_y[circshift(y_arr,-τ),j]) for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-    # end
-    corrs_t ./= NX^4*NT
-    # corrs_x ./= NX^3*NT^2
-    # corrs_y ./= NX^3*NT^2
-
-    mean_vals_t = Vector{Float64}(undef,L)
-    # mean_vals_x = Vector{Float64}(undef,L)
-    # mean_vals_y = Vector{Float64}(undef,L)
-    for i = 1:L
-        mean_vals_t[i] = sum(summed_t[:,i])
-        # mean_vals_x[i] = sum(summed_x[:,i])
-        # mean_vals_y[i] = sum(summed_y[:,i])
-    end
-    mean_vals_t ./= NT*NX^2
-    # mean_vals_x ./= NT*NX^2
-    # mean_vals_y ./= NT*NX^2
-
-    # return corrs_t, corrs_x, corrs_y, mean_vals_t, mean_vals_x, mean_vals_y
-    return corrs_t, mean_vals_t
-end
-# So the result of measure_RT_loops is an array containing corrs and mean_vals:
-#   corrs[:,:,t] is the correlation matrix at phys. time t
-#   mean_vals[i] is the mean value of the i-th loop (average of the lattice)
-
-
-
-function other_measure_RT_loops_corrs_cube(U, loops::Array) # ⭕ Implement smearing!
+function measure_RT_loops_corrs_cube(U, loops::Array, n_stout, ρ) 
     # NX = size(U,2)
     NT = size(U,4)
     L = length(loops)
     t_arr = collect(1:NT)
     results_t = Vector{Array{Float64}}(undef,L)
     for i = 1:L
-        # "results" conatins matrices corresponding to different resp. loops;
-        # these matrices contain the trace (2× first entry of quaternion array) of
+        # "results_t" conatins matrices corresponding to different resp. loops;
+        # these matrices contain the trace of
         # the loop at the resp. space-time point
-        # mat_t, mat_x, mat_y = loop_mat_3d(U,loops[i][1],loops[i][2])
-        mat_t = loop_mat_cube(U,loops[i][1],loops[i][2])
+        mat_t = loop_mat_cube(stout_midpoint_cube_timesclice(U,n_stout,ρ), loops[i][1],loops[i][2])
         results_t[i] = tr.(mat_t)
     end
-
     # Now for each loop we want to obtain a column in "summed":
-    # the position in that column is equal to the t-index of the time slice 
-    # over which we take the mean of our loop-observable
+    # the row-index in that column is equal to the t-index of the time slice 
+    # over which we sum our loop-observable
     summed_t = Matrix{Float64}(undef,NT,L)
     for i = 1:L
         summed_t[:,i] = [mean(results_t[i][:,:,t]) for t = 1:NT]
     end
 
-    mean_vals_t = Vector{Float64}(undef,L)
-    for i = 1:L
-        mean_vals_t[i] = mean(summed_t[:,i])
-    end
+    # The config-mean of each loop will be stored in "mean_vals_conf":
+    # mean_vals_conf = Vector{Float64}(undef,L)
+    # for l = 1:L
+    #     mean_vals_conf[l] = mean(summed_t[:,l])
+    # end
+    mean_vals_conf = [mean(summed_t[:,l]) for l = 1:L]
 
     # A vector containing correlation matrices
-    corrs_t = Array{Float64}(undef,L,L,NT)
-    for τ = 1:NT
-        corrs_t[:,:,τ] = [sum((summed_t[:,i] .- mean_vals_t[i]) .* (summed_t[circshift(t_arr,-τ),j] .- mean_vals[j])) / sqrt(mean((summed_t[:,i] .- mean_vals_t[i]).^2)) / sqrt(mean((summed_t[:,j] .- mean_vals_t[j]).^2))  for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
-        # / sqrt(mean(summed_t[:,i] .- mean_vals_t[i])^2) / sqrt(mean(summed_t[:,j] .- mean_vals_t[j])^2)
+    # corrs_t = Array{Float64}(undef,L,L,NT)
+    # for τ = 1:NT
+    #     corrs_t[:,:,τ] = [mean(summed_t[:,i] .* summed_t[circshift(t_arr,-τ),j]) for i = 1:L, j = 1:L] # 😡 circshift and circshift! DO NOT shift in opposite ways ANYMORE 😡
+    # end
+    corrs_t = [mean(summed_t[:,l1] .* summed_t[circshift(t_arr,-τ),l2]) for l1 = 1:L, l2 = 1:L, τ = 1:NT]
+
+    return corrs_t, mean_vals_conf
+end
+# So the result of measure_RT_loops is an array containing corrs and mean_vals_conf:
+#   corrs[:,:,t] is the correlation matrix at phys. time t
+#   mean_vals_conf[i] is the mean value of the i-th loop (average of the lattice)
+
+# same as measure_RT_loops_corrs_cube, but without cross-correlations
+# (self-correlations only)
+function measure_RT_loops_corrs_cube_selfonly(U, loops::Array, n_sout, ρ) 
+    # NX = size(U,2)
+    NT = size(U,4)
+    L = length(loops)
+    t_arr = collect(1:NT)
+    results_t = Vector{Array{Float64}}(undef,L)
+    for l = 1:L
+        # "results_t" conatins matrices corresponding to different resp. loops;
+        # these matrices contain the trace of
+        # the loop at the resp. space-time point
+        mat_t = loop_mat_cube(stout_midpoint_cube_timesclice(U, n_stout, ρ), loops[l][1],loops[l][2])
+        results_t[l] = tr.(mat_t)
+    end
+    # Now for each loop we want to obtain a column in "summed":
+    # the row-index in that column is equal to the t-index of the time slice 
+    # over which we sum our loop-observable
+    summed_t = Matrix{Float64}(undef,NT,L)
+    for l = 1:L
+        summed_t[:,l] = [mean(results_t[l][:,:,t]) for t = 1:NT]
     end
 
-    return corrs_t, mean_vals_t
+    # The config-mean of each loop will be stored in "mean_vals_conf":
+    # mean_vals_conf = Vector{Float64}(undef,L)
+    # for l = 1:L
+    #     mean_vals_conf[l] = mean(summed_t[:,l])
+    # end
+    mean_vals_conf = [mean(summed_t[:,l]) for l = 1:L]
+
+    # A vector containing correlation matrices
+    # corrs_t = Array{Float64}(undef,L,NT)
+    corrs_t = [mean(summed_t[:,l] .* summed_t[circshift(t_arr,-τ),l]) for l = 1:L, τ = 1:NT]
+
+    return corrs_t, mean_vals_conf
 end
