@@ -1,7 +1,7 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 using Plots
 using LsqFit

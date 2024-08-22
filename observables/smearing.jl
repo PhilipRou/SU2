@@ -1,5 +1,6 @@
 include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
 include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 
@@ -239,43 +240,43 @@ end
 #     end
 # end
 
+# function stout_midpoint(U, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     V = stout(U, 0.5*ρ)     # Inefficient, because staple(U,...) is calculated again below
+#     W = similar(U)
+#     for t = 1:NT
+#         for x = 1:NX
+#             for μ = 1:2
+#                 # besser: exp(Z1 - Z0/2) * X1 
+#                 stap0 = staple(U,μ,x,t)
+#                 stap1 = staple(V,μ,x,t)
+#                 Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
+#                 Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
+#                 Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+#                 Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+#                 W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
+#             end
+#         end
+#     end
+#     return W
+# end
+
+# function stout_midpoint(U, n_stout, ρ)
+#     NX = size(U,2)
+#     NT = size(U,3)
+#     if n_stout > 0
+#         V = stout_midpoint(U,ρ)
+#         for i = 1:n_stout-1
+#             V = stout_midpoint(V,ρ)
+#         end
+#         return V
+#     else
+#         return U
+#     end
+# end
+
 function stout_midpoint(U, ρ)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = stout(U, 0.5*ρ)     # Inefficient, because staple(U,...) is calculated again below
-    W = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                # besser: exp(Z1 - Z0/2) * X1 
-                stap0 = staple(U,μ,x,t)
-                stap1 = staple(V,μ,x,t)
-                Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
-                Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
-                Z0 = 0.5 * (Ω0 - adjoint(Ω0))
-                Z1 = 0.5 * (Ω1 - adjoint(Ω1))
-                W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
-            end
-        end
-    end
-    return W
-end
-
-function stout_midpoint(U, n_stout, ρ)
-    NX = size(U,2)
-    NT = size(U,3)
-    if n_stout > 0
-        V = stout_midpoint(U,ρ)
-        for i = 1:n_stout-1
-            V = stout_midpoint(V,ρ)
-        end
-        return V
-    else
-        return U
-    end
-end
-
-function stout_midpoint_fast(U, ρ)
     NX = size(U,2)
     NT = size(U,3)
     staps = [staple(U,μ,x,t) for μ = 1:2, x = 1:NX, t = 1:NT]
@@ -308,13 +309,13 @@ function stout_midpoint_fast(U, ρ)
     return W
 end
         
-function stout_midpoint_fast(U, n_stout, ρ)
+function stout_midpoint(U, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,3)
     if n_stout > 0
-        V = stout_midpoint_fast(U,ρ)
+        V = stout_midpoint(U,ρ)
         for i = 1:n_stout-1
-            V = stout_midpoint_fast(V,ρ)
+            V = stout_midpoint(V,ρ)
         end
         return V
     else
@@ -484,47 +485,132 @@ end
 ########    3-dimensional Stuff    ########
 
 
-#=
-U = gaugefield_U2(L, L, true);
-for i = 1:100 chess_metro!(U, 0.1, 2.0, [0.0], "U2") end
-
-
-ρ = 0.2
-N_smear = 10^3
-
-V_stout = stout(U,ρ)
-V_stout_mid = stout_midpoint(U,ρ)
-V_stout_mid_super = stout_midpoint_super(U,ρ)
-V_stout_mid_super_fast = stout_midpoint_super_fast(U,ρ)
-
-s_stout = [action(V_stout,1)]
-s_stout_mid = [action(V_stout_mid,1)]
-s_stout_mid_super = [action(V_stout_mid_super,1)]
-s_stout_mid_super_fast = [action(V_stout_mid_super_fast,1)]
-
-for smear = 1:N_smear
-    V_stout = stout(V_stout,ρ)
-    V_stout_mid = stout_midpoint(V_stout_mid,ρ)
-    V_stout_mid_super = stout_midpoint_super(V_stout_mid_super,ρ)
-    V_stout_mid_super_fast = stout_midpoint_super_fast(V_stout_mid_super_fast,ρ)
-    push!(s_stout , action(V_stout,1))
-    push!(s_stout_mid , action(V_stout_mid,1))
-    push!(s_stout_mid_super , action(V_stout_mid_super,1))
-    push!(s_stout_mid_super_fast , action(V_stout_mid_super_fast,1))
+function stout_midpoint(U, ρ)
+    NX = size(U,2)
+    NT = size(U,3)
+    staps = [staple(U,μ,x,t) for μ = 1:2, x = 1:NX, t = 1:NT]
+    V = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # besser: exp(Z1 - Z0/2) * X1 
+                # stap = staps[μ,x,t]
+                V[μ,x,t] = exp_stout(0.5 * ρ * staps[μ,x,t] * adjoint(U[μ,x,t])) * U[μ,x,t]
+            end
+        end
+    end
+    W = similar(U)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                # besser: exp(Z1 - Z0/2) * X1 
+                # stap0 = staps[μ,x,t] # staple(U,μ,x,t)
+                stap1 = staple(V,μ,x,t)
+                # Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
+                Ω0 = ρ * staps[μ,x,t] * adjoint(U[μ,x,t])
+                Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
+                Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+                Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+                W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
+            end
+        end
+    end
+    return W
 end
 
-win = 800:1000
-plot(s_stout[win], label = "stout")
-plot!(s_stout_mid[win], label = "wrong mid")
-plot!(s_stout_mid_super[win], label = "super mid")
-plot!(s_stout_mid_super_fast[win], label = "super mid fast")
 
-plot(s_stout_mid_super[100:end], label = "super mid")
-plot!(s_stout_mid_super_fast[100:end], label = "super mid fast")
+function stout_midpoint_cube(U, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    staps = [adjoint(staple_dag_cube(U,μ,x,y,t)) for μ = 1:3, x = 1:NX, y = 1:NX, t = 1:NT]
+    V = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:3
+                    # besser: exp(Z1 - Z0/2) * X1 
+                    # stap = staps[μ,x,t]
+                    V[μ,x,y,t] = exp_stout(0.5 * ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                end
+            end
+        end
+    end
+    W = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:3
+                    stap1 = adjoint(staple_dag_cube(V,μ,x,y,t))
+                    Ω0 = ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])
+                    Ω1 = ρ * stap1 * adjoint(V[μ,x,y,t])
+                    Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+                    Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+                    W[μ,x,y,t] = exp_u2(Z1 - Z0/2) * V[μ,x,y,t]
+                end
+            end
+        end
+    end
+    return W
+end
 
+function stout_midpoint_cube(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    if n_stout > 0
+        V = stout_midpoint_cube(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_midpoint_cube(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end
 
-using BenchmarkTools
-@benchmark stout_midpoint_super(U,0.1)
-@benchmark stout_midpoint_super_fast(U,0.1)
-=#
+function stout_midpoint_cube_timesclice(U,ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    staps = [adjoint(staple_dag_cube(U,μ,x,y,t)) for μ = 1:2, x = 1:NX, y = 1:NX, t = 1:NT]
+    V = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:2
+                    # besser: exp(Z1 - Z0/2) * X1 
+                    # stap = staps[μ,x,t]
+                    V[μ,x,y,t] = exp_stout(0.5 * ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                end
+            end
+        end
+    end
+    W = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:2
+                    stap1 = adjoint(staple_dag_cube(V,μ,x,y,t))
+                    Ω0 = ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])
+                    Ω1 = ρ * stap1 * adjoint(V[μ,x,y,t])
+                    Z0 = 0.5 * (Ω0 - adjoint(Ω0))
+                    Z1 = 0.5 * (Ω1 - adjoint(Ω1))
+                    W[μ,x,y,t] = exp_u2(Z1 - Z0/2) * V[μ,x,y,t]
+                end
+            end
+        end
+    end
+    return W
+end
 
+function stout_midpoint_cube_timesclice(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    if n_stout > 0
+        V = stout_midpoint_cube_timesclice(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_midpoint_cube_timesclice(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end

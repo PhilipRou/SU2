@@ -1,8 +1,8 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
 
 
 using Plots
@@ -355,10 +355,10 @@ image_insta_path = string(fig_path,"\\insta.pdf")
 #     end
 #     if round(Int,abs(top_charge_U2(U))) == 1
 #         for i in eachindex(rhos)
-#             V = stout_midpoint_fast(U, rhos[i])
+#             V = stout_midpoint(U, rhos[i])
 #             sms = [action(V,β)/L^2]
 #             for smear in smears[i]-1
-#                 V = stout_midpoint_fast(U, rhos[i])
+#                 V = stout_midpoint(U, rhos[i])
 #                 push!(sms, action(V,β)/L^2)
 #             end
 #             push!(meta_measures[i], sms)
@@ -381,7 +381,7 @@ let
     N_sepa    = 100
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = string(data_path, "\\smearing") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
+    base_path = string(data_path, "\\smearing") # "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
 
     acc_therm = [0.0]
     U = gaugefield(N_x, N_t, true, "U2", "square")
@@ -403,13 +403,13 @@ let
         q = top_charge_U2(U)
         smeared_actions = [action(U,β)]
         smeared_charges = [q]
-        V = stout_midpoint_fast(U,ρ)
+        V = stout_midpoint(U,ρ)
         count = 0
         for smear = 1:1000
             q = top_charge_U2(V)
             push!(smeared_actions,action(V,β))
             push!(smeared_charges,q)
-            V = stout_midpoint_fast(V,ρ)
+            V = stout_midpoint(V,ρ)
             if smear%Int(N_smear/100) == 0
                 count += 1
                 println("Measurement Nr.: $meas, rho_nr.: 1, Smearing Progress: $count%")
@@ -421,7 +421,7 @@ let
                 q = top_charge_U2(V)
                 push!(smeared_actions,action(V,β))
                 push!(smeared_charges,q)
-                V = stout_midpoint_fast(V,ρ)
+                V = stout_midpoint(V,ρ)
                 if smear%Int(N_smear/100) == 0
                     count += 1
                     println("Measurement Nr.: $meas, rho_nr.: 1, Smearing Progress: $count%")
@@ -438,13 +438,13 @@ let
                 q = top_charge_U2(U)
                 smeared_actions = [action(U,β)]
                 smeared_charges = [q]
-                V = stout_midpoint_fast(U,ρ)
+                V = stout_midpoint(U,ρ)
                 count = 0
                 for smear = 1:N_smear
                     q = top_charge_U2(V)
                     push!(smeared_actions,action(V,β))
                     push!(smeared_charges,q)
-                    V = stout_midpoint_fast(V,ρ)
+                    V = stout_midpoint(V,ρ)
                     if smear%Int(N_smear/100) == 0
                         count += 1
                         println("Measurement Nr.: $meas, rho_nr.: $i, Smearing Progress: $count%")
@@ -810,10 +810,10 @@ for i in eachindex(epsilons)
     ϵ = epsilons[i]
     U = [ran_U2(ϵ*rand()) for μ = 1:2, x = 1:L, t = 1:L ] .* insta_U2_z(L, L, q, z)
     smeared_actions = [action(U,1)]
-    V = stout_midpoint_fast(U,ρ)
+    V = stout_midpoint(U,ρ)
     for smear = 1:N_smear
         push!(smeared_actions, action(V,1))
-        V = stout_midpoint_fast(V,ρ)
+        V = stout_midpoint(V,ρ)
     end
     dist_actions[:,i] = smeared_actions
 end

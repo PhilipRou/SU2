@@ -5,16 +5,16 @@ using BenchmarkTools
 using LinearAlgebra
 using DelimitedFiles
 
-# include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\SU2_gaugefields.jl")
-# include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\U2_gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+# include("D:\\Physik Uni\\julia_projects\\SU2\\SU2_gaugefields.jl")
+# include("D:\\Physik Uni\\julia_projects\\SU2\\U2_gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 # include("SU2_d_dim.jl")
 
 

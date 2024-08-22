@@ -1,8 +1,8 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
 
 
 using Plots
@@ -20,19 +20,19 @@ using Statistics
 function meta_charge(U, N_smear_meta, ρ_meta)
     NX = size(U,2)
     NT = size(U,3)
-    V = stout_midpoint_fast(U, N_smear_meta, ρ_meta)
+    V = stout_midpoint(U, N_smear_meta, ρ_meta)
     return sum([imag(det(plaq(V, x, t))) for x = 1:NX, t = 1:NT]) / 2 / π
 end
 
 function wilson_charges(U, N_smear_meta, N_smear, ρ)
-    V = stout_midpoint_fast(U, N_smear_meta, ρ)
+    V = stout_midpoint(U, N_smear_meta, ρ)
     for smear = 0:N_smear-1
-        V = stout_midpoint_fast(V, N_smear_meta, ρ)
+        V = stout_midpoint(V, N_smear_meta, ρ)
         # println("1st loop")
     end
     q_meta = top_charge_U2_wil(V)
     for smear = 0:N_smear-N_smear_meta-1
-        V = stout_midpoint_fast(V, N_smear_meta, ρ)
+        V = stout_midpoint(V, N_smear_meta, ρ)
         # println("2nd loop")
     end
     q = top_charge_U2_wil(V)
@@ -42,7 +42,7 @@ end
 bla = gaugefield_U2(8, 8, true);
 for i = 1:100 chess_metro!(bla, 0.1, 5.0, [0.0], "U2") end
 wilson_charges(bla, 1, 2, 0.1)
-top_charge_U2_wil(stout_midpoint_fast(bla, 2, 0.1))
+top_charge_U2_wil(stout_midpoint(bla, 2, 0.1))
 
 function ind2metaq(q_max, δq, i)
     # return Array(-q_max:δq:q_max)[i]

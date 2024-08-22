@@ -1,4 +1,4 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 
 # We want to get only one half of the chequer board, that being 
 # the vertices on which two non-trivial links are defined

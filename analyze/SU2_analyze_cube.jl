@@ -1,7 +1,5 @@
 include("SU2_analyze_head.jl")
 
-using LaTeXStrings
-
 
 
 β           = 7.0
@@ -10,23 +8,24 @@ N_t = N_x   = 32
 # ϵ           = 0.2
 n_stout     = 0
 ρ           = 0.1
-sim_count   = 3
-loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
-# N_metro   = 1
-# N_over    = 3
+sim_count   = 2
+loops       = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+# loops       = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
+# N_metro     = 1
+# N_over      = 3
 
-base_path           = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+base_path           = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
 params_path         = string(base_path,"\\params.txt") #
-acceptances_path    = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-last_conf_path      = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-corr_mat_paths      = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-mean_vals_path      = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+acceptances_path    = string(base_path,"\\acceptances.txt") #"D:\\Physik Uni\\julia_projects\\SU2\\data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+last_conf_path      = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2\\data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+corr_mat_paths      = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2\\data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+mean_vals_path      = string(base_path,"\\mean_vals.txt") #"D:\\Physik Uni\\julia_projects\\SU2\\data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
 # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 # last_conf_path      = string(last_base_path,"\\last_config.txt")
 
 mean_vals = readdlm(mean_vals_path)
 n_meas = size(mean_vals,1)
-n_meas = 92 #414
+# n_meas = 92 #414
 L = length(loops)
 
 # acc = readdlm(acceptances_path)
@@ -73,12 +72,13 @@ scatter(string.(loops), loop_means, yerror = loop_errs, label = "Wilson loop exp
 # For each t we want corr_mat_ar[t] to contain the time series of the correlation
 # matrix at Euclidean time t
 corr_mat_ar = Array{Array{Matrix{Float64}}}(undef, N_t)
-corr_mat_ar_sym = Array{Array{Matrix{Float64}}}(undef, N_t)
 for t = 1:N_t
     corr_mats = readdlm(corr_mat_paths[t])
     corr_mat_ar[t] = [corr_mats[Int((i-1)*L+1) : Int(i*L), 1:L] for i = 1:n_meas]
-    # corr_mat_ar_sym[t] = [(corr_mats[Int((i-1)*L+1) : Int(i*L), 1:L] + transpose(corr_mats[Int((i-1)*L+1) : Int(i*L), 1:L]))/2 for i = 1:n_meas]
-    corr_mat_ar_sym[t] = (corr_mat_ar[t] .+ transpose.(corr_mat_ar[t])) ./ 2
+    corr_mat_ar[t] = (corr_mat_ar[t] .+ transpose.(corr_mat_ar[t])) ./ 2
+    # for meas = 1:n_meas
+    #     corr_mat_ar[t][meas] ./= [i^2*j^2 for i = 1:L, j = 1:L]
+    # end
 end
 
 e_val_means = Matrix{Float64}(undef, L, N_t)
@@ -88,7 +88,7 @@ for t = 1:N_t
     for i = 1:n_meas
         # e_val_mat[i,:] = abs.(eigen(corr_mat_ar[t][i]).values)
         # e_val_mat[i,:] = eigen(corr_mat_ar[t][i]).values
-        e_val_mat[i,:] = real.(eigen(corr_mat_ar_sym[t][i]).values)    # evals of sym. matr. are real
+        e_val_mat[i,:] = real.(eigen(corr_mat_ar[t][i]).values)    # evals of sym. matr. are real
     end
     b_sizes = [Int(round(2*auto_corr_time(e_val_mat[:,i])+1, RoundNearestTiesAway)) for i = 1:L]
     jacks = [jackknife(e_val_mat[:,i], b_sizes[i]) for i = 1:L]
@@ -103,7 +103,7 @@ gen_e_val_errs = Matrix{Float64}(undef, L, N_t)
 for t = 1:N_t
     gen_e_val_mat = Matrix{Float64}(undef, n_meas, L)
     for i = 1:n_meas
-        gen_e_val_mat[i,:] = real.(eigen(corr_mat_ar_sym[t][i], corr_mat_ar_sym[N_t][i]).values)
+        gen_e_val_mat[i,:] = real.(eigen(corr_mat_ar[t][i], corr_mat_ar[N_t][i]).values)
     end
     b_sizes = [Int(round(2*auto_corr_time(gen_e_val_mat[:,i])+1, RoundNearestTiesAway)) for i = 1:L]
     jacks = [jackknife(gen_e_val_mat[:,i], b_sizes[i]) for i = 1:L]
@@ -117,7 +117,7 @@ end
 #     @assert isapprox(imag.(gen_e_val_means[:,t]), zeros(L))
 # end
 
-let ev_nr = 16
+let ev_nr = 6
     # ev_nr = 3
     display(scatter(1:N_t, real.(gen_e_val_means[ev_nr,:]), yerror = real.(gen_e_val_errs[ev_nr,:]), label = "Gen. EV Nr = $ev_nr, real", legend = :top))
     display(scatter(1:N_t, real.(e_val_means[ev_nr,:]), yerror = real.(e_val_errs[ev_nr,:]), label = "EV Nr = $ev_nr, real", legend = :top))
@@ -136,8 +136,6 @@ let
     )
     display(image_ev)
 end
-
-
 
 let
     image_gen_ev = scatter(1:N_t, gen_e_val_means[1,:], yerror = gen_e_val_errs[1,:], label = "EV nr. 1")
@@ -169,6 +167,7 @@ for t = 1:N_t
     plaq_corr_mean[t], plaq_corr_err[t] = jackknife(plaq_corrs_t, b_size)
 end
 plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
+# plot_corrs(N_t, plaq_corr_mean.-loop_means[1]^2, plaq_corr_err, :false)
 
 
 small_corr_mat_ar = [] #Array{Array{Matrix{Float64}}}(undef,N_t)
@@ -204,7 +203,7 @@ end
 
 let
     image_ev = plot_corrs(N_t, e_val_means[1,:], e_val_errs[1,:], "EV nr. $LLL")
-    for l = 2:LLL-1
+    for l = 2:LLL
         plot_corrs!(N_t, e_val_means[l,:], e_val_errs[l,:], "EV nr. $(LLL+1-l)", image_ev)
     end
     image_ev = plot!(
@@ -232,7 +231,7 @@ end
 
 let
     global LLL = 6
-    global t_start = 1
+    global t_start = 4
     global gen_e_val_means = Matrix{Float64}(undef, LLL, N_t)
     global gen_e_val_errs = Matrix{Float64}(undef, LLL, N_t)
     for t = t_start+1:N_t
@@ -254,8 +253,8 @@ end
 
 let
     interval = t_start+1:N_t
-    start_l = 2
-    end_l   = LLL-1
+    start_l = 1
+    end_l   = LLL
     image_gen_ev = scatter(interval, gen_e_val_means[start_l,interval], yerror = gen_e_val_errs[start_l,interval], label = "EV nr. $end_l")
     for l = start_l+1:end_l
         image_ev = scatter!(interval, gen_e_val_means[l,interval], yerror = gen_e_val_errs[l,interval], label = "EV nr. $(LLL+1-l)")

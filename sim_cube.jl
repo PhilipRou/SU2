@@ -2,9 +2,9 @@ using LinearAlgebra
 using StatsBase 
 using DelimitedFiles
 
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
+include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 
@@ -21,7 +21,7 @@ for β in [7.0]
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 200
+    global N_meas    = 100
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
@@ -29,7 +29,8 @@ for β in [7.0]
     #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
     global n_stout   = 0
     global ρ         = 0.1
-    global loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+    # global loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+    global loops     = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
     # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
     # loops   = [[N_t, 0]]    # Polyakov
     
@@ -38,8 +39,8 @@ for β in [7.0]
 
 
     ####    Handling directories    ####
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
-    last_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
+    base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
+    last_base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
     count_path = string(base_path, "\\sim_count.txt")
 
     # Have we already simulated with these parameters (excluding "loops")? If so,
@@ -58,12 +59,12 @@ for β in [7.0]
     end
     mkdir(base_path)
     
-    # actions_path     = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+    # actions_path     = "D:\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
     params_path = string(base_path,"\\params.txt") #
-    acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-    mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    acceptances_path = string(base_path,"\\acceptances.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    last_conf_path   = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+    mean_vals_path = string(base_path,"\\mean_vals.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
     last_conf_path = string(last_base_path,"\\last_config.txt")
 
@@ -124,8 +125,10 @@ for β in [7.0]
             end
         end
 
+        # U = proj2man.(U)
+
         # results = measure_RT_loops_corrs_cube(U, loops)
-        results = other_measure_RT_loops_corrs_cube(U,loops)
+        results = measure_RT_loops_corrs_cube_conn_only(U,loops)
         # corr_mats = (results[1] .+ results[2] .+ results[3]) ./ 3 # Only possible if N_t = N_x
         # mean_vals = (results[4] .+ results[5] .+ results[6]) ./ 3 # Only possible if N_t = N_x
         corr_mats = results[1]
@@ -142,3 +145,4 @@ for β in [7.0]
     println("We're done!")
 end
 # end
+
