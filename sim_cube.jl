@@ -13,7 +13,8 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 ####    Observable params   ####
-for β in [7.0]
+for β in [10.0]
+    comment = "Trying to measure the clover"
     ####    Update params   ####
     global N_t = N_x = 32
     global hot       = true
@@ -21,16 +22,17 @@ for β in [7.0]
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 100
+    global N_meas    = 500
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
     # N_meas    = Int( 100* (round(3200 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
     #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
-    global n_stout   = 0
-    global ρ         = 0.1
+    global n_stout   = 7
+    global ρ         = 0.22
     # global loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     global loops     = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
+    # global loops     = [[1,1]]
     # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
     # loops   = [[N_t, 0]]    # Polyakov
     
@@ -84,7 +86,9 @@ for β in [7.0]
 
     n_stout = $n_stout
     ρ       = $ρ
-    loops   = $loops"
+    loops   = $loops
+    
+    comment = $comment"
 
     # writedlm(params_path,params)
     # mkpath(params_path)
@@ -125,18 +129,19 @@ for β in [7.0]
             end
         end
 
-        # U = proj2man.(U)
+        U = proj2man.(U)
 
-        # results = measure_RT_loops_corrs_cube(U, loops)
-        results = measure_RT_loops_corrs_cube_conn_only(U,loops)
-        # corr_mats = (results[1] .+ results[2] .+ results[3]) ./ 3 # Only possible if N_t = N_x
-        # mean_vals = (results[4] .+ results[5] .+ results[6]) ./ 3 # Only possible if N_t = N_x
+        # results = measure_RT_loops_corrs_cube(U, loops, n_stout, ρ)
+        # results = measure_RT_loops_corrs_cube_selfonly(U, loops, n_stout, ρ)
+        results = measure_clover(U, n_stout, ρ)
         corr_mats = results[1]
         mean_vals = results[2]
         mywrite(acceptances_path, acc[1])
         mywrite(mean_vals_path, mean_vals)
         for t = 1:N_t
-            mywrite(corr_mat_paths[t], corr_mats[:,:,t])
+            # mywrite(corr_mat_paths[t], corr_mats[:,:,t])
+            # mywrite(corr_mat_paths[t], corr_mats[:,t])
+            mywrite(corr_mat_paths[t], corr_mats[t])
         end
         # mywrite(mean_vals_path, loop_means)
         # mywrite(mean_vals_mike_path, loop_means_mike)

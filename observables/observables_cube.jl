@@ -129,11 +129,13 @@ function measure_RT_loops_corrs_cube(U, loops::Array, n_stout, ρ)
     L = length(loops)
     t_arr = collect(1:NT)
     results_t = Vector{Array{Float64}}(undef,L)
+    V = stout_cube_timeslice(U,n_stout,ρ)
     for i = 1:L
         # "results_t" conatins matrices corresponding to different resp. loops;
         # these matrices contain the trace of
         # the loop at the resp. space-time point
-        mat_t = loop_mat_cube(stout_midpoint_cube_timesclice(U,n_stout,ρ), loops[i][1],loops[i][2])
+        # mat_t = loop_mat_cube(stout_midpoint_cube_timeslice(U,n_stout,ρ), loops[i][1],loops[i][2])
+        mat_t = loop_mat_cube(V, loops[i][1],loops[i][2])
         results_t[i] = tr.(mat_t)
     end
     # Now for each loop we want to obtain a column in "summed":
@@ -166,17 +168,19 @@ end
 
 # same as measure_RT_loops_corrs_cube, but without cross-correlations
 # (self-correlations only)
-function measure_RT_loops_corrs_cube_selfonly(U, loops::Array, n_sout, ρ) 
+function measure_RT_loops_corrs_cube_selfonly(U, loops::Array, n_stout, ρ) 
     # NX = size(U,2)
     NT = size(U,4)
     L = length(loops)
     t_arr = collect(1:NT)
     results_t = Vector{Array{Float64}}(undef,L)
+    V = stout_cube_timeslice(U, n_stout, ρ)
     for l = 1:L
         # "results_t" conatins matrices corresponding to different resp. loops;
         # these matrices contain the trace of
         # the loop at the resp. space-time point
-        mat_t = loop_mat_cube(stout_midpoint_cube_timesclice(U, n_stout, ρ), loops[l][1],loops[l][2])
+        # mat_t = loop_mat_cube(stout_midpoint_cube_timeslice(U, n_stout, ρ), loops[l][1],loops[l][2])
+        mat_t = loop_mat_cube(V, loops[l][1],loops[l][2])
         results_t[l] = tr.(mat_t)
     end
     # Now for each loop we want to obtain a column in "summed":
@@ -199,4 +203,31 @@ function measure_RT_loops_corrs_cube_selfonly(U, loops::Array, n_sout, ρ)
     corrs_t = [mean(summed_t[:,l] .* summed_t[circshift(t_arr,-τ),l]) for l = 1:L, τ = 1:NT]
 
     return corrs_t, mean_vals_conf
+end
+
+function clover_cube_timeslice(U,x,y,t)
+    NX = size(U,2)
+    # NT = size(U,4)
+    x_p = mod1(x+1,NX)
+    x_m = mod1(x-1,NX)
+    y_p = mod1(y+1,NX)
+    y_m = mod1(y-1,NX)
+    tmq =  U[1,x,y,t] * U[2,x_p,y,t] * adjoint(U[1,x,y_p,t]) * adjoint(U[2,x,y,t])
+    tmq += U[2,x,y,t] * adjoint(U[1,x_m,y_p,t]) * adjoint(U[2,x_m,y,t]) * U[1,x_m,y,t]
+    tmq += adjoint(U[1,x_m,y,t]) * adjoint(U[2,x_m,y_m,t]) * U[1,x_m,y_m,t] * U[2,x,y_m,t]
+    tmq += adjoint(U[2,x,y_m,t]) * U[1,x,y_m,t] * U[2,x_p,y_m,t] * adjoint(U[1,x,y,t])
+    tmq = (tmq-adjoint(tmq)) # /8 /im
+    return -tr(tmq*tmq)/128
+end
+
+
+function measure_clover(U, n_stout, ρ) 
+    NX = size(U,2)
+    NT = size(U,4)
+    t_arr = collect(1:NT)
+    V = stout_cube_timeslice(U,n_stout,ρ)
+    results = [clover_cube_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
+    summed_t = [mean(results[:,:,t]) for t = 1:NT]
+    corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
+    return corrs_t, mean(summed_t)
 end

@@ -485,39 +485,92 @@ end
 ########    3-dimensional Stuff    ########
 
 
-function stout_midpoint(U, ρ)
+
+
+
+function staple_dag_cube_timeslice(U,μ,x,y,t)
     NX = size(U,2)
     NT = size(U,3)
-    staps = [staple(U,μ,x,t) for μ = 1:2, x = 1:NX, t = 1:NT]
-    V = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                # besser: exp(Z1 - Z0/2) * X1 
-                # stap = staps[μ,x,t]
-                V[μ,x,t] = exp_stout(0.5 * ρ * staps[μ,x,t] * adjoint(U[μ,x,t])) * U[μ,x,t]
-            end
-        end
+    a = coeffs_SU2(0.0,0.0,0.0,0.0)
+    b = coeffs_SU2(0.0,0.0,0.0,0.0)
+    x_p = mod1(x+1, NX) # x%NX +1                 
+    y_p = mod1(y+1, NX) # t%NT +1                 
+    x_m = mod1(x-1, NX) # (x + NX -2)%NX +1   
+    y_m = mod1(y-1, NX) # (t + NT -2)%NT +1   
+
+    # 🐌 More efficient: only use adjoint once 🐌 (but less human-readable, no?)
+    if μ == 1
+        a = U[2,x_p,y,t] * adjoint(U[1,x,y_p,t]) * adjoint(U[2,x,y,t])
+        b = adjoint(U[2,x_p,y_m,t]) * adjoint(U[1,x,y_m,t]) * U[2,x,y_m,t]
+    elseif μ == 2
+        a = U[1,x,y_p,t] * adjoint(U[2,x_p,y,t]) * adjoint(U[1,x,y,t])
+        b = adjoint(U[1,x_m,y_p,t]) * adjoint(U[2,x_m,y,t]) * U[1,x_m,y,t]
+    else
+        error("μ must be either 1 or 2 for a staple inside of the timeslice")
     end
-    W = similar(U)
-    for t = 1:NT
-        for x = 1:NX
-            for μ = 1:2
-                # besser: exp(Z1 - Z0/2) * X1 
-                # stap0 = staps[μ,x,t] # staple(U,μ,x,t)
-                stap1 = staple(V,μ,x,t)
-                # Ω0 = ρ * stap0 * adjoint(U[μ,x,t])
-                Ω0 = ρ * staps[μ,x,t] * adjoint(U[μ,x,t])
-                Ω1 = ρ * stap1 * adjoint(V[μ,x,t])
-                Z0 = 0.5 * (Ω0 - adjoint(Ω0))
-                Z1 = 0.5 * (Ω1 - adjoint(Ω1))
-                W[μ,x,t] = exp_u2(Z1 - Z0/2) * V[μ,x,t]
-            end
-        end
-    end
-    return W
+    return a + b 
 end
 
+function stout_cube(U, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    V = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:3
+                    V[μ,x,y,t] = exp_stout(ρ * adjoint(staple_dag_cube(U,μ,x,y,t)) * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                end
+            end
+        end
+    end
+    return V
+end
+
+function stout_cube(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    if n_stout > 0
+        V = stout_cube(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_cube(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end
+
+function stout_cube_timeslice(U,ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    V = similar(U)
+    for t = 1:NT
+        for y = 1:NX
+            for x = 1:NX
+                for μ = 1:2
+                    V[μ,x,y,t] = exp_stout(ρ * adjoint(staple_dag_cube_timeslice(U,μ,x,y,t)) * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                end
+                V[3,x,y,t] = U[3,x,y,t]
+            end
+        end
+    end
+    return V
+end
+
+function stout_cube_timeslice(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    if n_stout > 0
+        V = stout_cube_timeslice(U,ρ)
+        for i = 1:n_stout-1
+            V = stout_cube_timeslice(V,ρ)
+        end
+        return V
+    else
+        return U
+    end
+end
 
 function stout_midpoint_cube(U, ρ)
     NX = size(U,2)
@@ -567,10 +620,10 @@ function stout_midpoint_cube(U, n_stout, ρ)
     end
 end
 
-function stout_midpoint_cube_timesclice(U,ρ)
+function stout_midpoint_cube_timeslice(U,ρ)
     NX = size(U,2)
     NT = size(U,4)
-    staps = [adjoint(staple_dag_cube(U,μ,x,y,t)) for μ = 1:2, x = 1:NX, y = 1:NX, t = 1:NT]
+    staps = [adjoint(staple_dag_cube_timeslice(U,μ,x,y,t)) for μ = 1:2, x = 1:NX, y = 1:NX, t = 1:NT]
     V = similar(U)
     for t = 1:NT
         for y = 1:NX
@@ -580,6 +633,7 @@ function stout_midpoint_cube_timesclice(U,ρ)
                     # stap = staps[μ,x,t]
                     V[μ,x,y,t] = exp_stout(0.5 * ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
                 end
+                V[3,x,y,t] = U[3,x,y,t]
             end
         end
     end
@@ -588,26 +642,27 @@ function stout_midpoint_cube_timesclice(U,ρ)
         for y = 1:NX
             for x = 1:NX
                 for μ = 1:2
-                    stap1 = adjoint(staple_dag_cube(V,μ,x,y,t))
+                    stap1 = adjoint(staple_dag_cube_timeslice(V,μ,x,y,t))
                     Ω0 = ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])
                     Ω1 = ρ * stap1 * adjoint(V[μ,x,y,t])
                     Z0 = 0.5 * (Ω0 - adjoint(Ω0))
                     Z1 = 0.5 * (Ω1 - adjoint(Ω1))
-                    W[μ,x,y,t] = exp_u2(Z1 - Z0/2) * V[μ,x,y,t]
+                    W[μ,x,y,t] = exp_su2(Z1 - Z0/2) * V[μ,x,y,t]
                 end
+                W[3,x,y,t] = V[3,x,y,t]
             end
         end
     end
     return W
 end
 
-function stout_midpoint_cube_timesclice(U, n_stout, ρ)
+function stout_midpoint_cube_timeslice(U, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,4)
     if n_stout > 0
-        V = stout_midpoint_cube_timesclice(U,ρ)
+        V = stout_midpoint_cube_timeslice(U,ρ)
         for i = 1:n_stout-1
-            V = stout_midpoint_cube_timesclice(V,ρ)
+            V = stout_midpoint_cube_timeslice(V,ρ)
         end
         return V
     else

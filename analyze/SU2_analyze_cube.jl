@@ -6,11 +6,12 @@ include("SU2_analyze_head.jl")
 # D           = 3
 N_t = N_x   = 32
 # ϵ           = 0.2
-n_stout     = 0
-ρ           = 0.1
+n_stout     = 7
+ρ           = 0.22
 sim_count   = 2
-loops       = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
+# loops       = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 # loops       = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
+loops       = [[1,1]]
 # N_metro     = 1
 # N_over      = 3
 
@@ -51,6 +52,29 @@ function s_from_plaq(β, plaq_mean)
     return 3 * β * (2-plaq_mean) / 2
 end
 
+function jack_conn_corr_self(corrs, loop_means, b_size)
+    N_blocks = Int(div(length(corrs), b_size, RoundDown))
+
+    first_loop = mean(loop_means[b_size+1:b_size*N_blocks])
+    first_corr = mean(corrs[b_size+1:b_size*N_blocks])
+    first_con = first_corr - first_loop^2
+
+    last_loop = mean(loop_means[1:b_size*N_blocks - b_size])
+    last_corr = mean(corrs[1:b_size*N_blocks - b_size])
+    last_con = last_corr - last_loop^2
+
+    jack_cons = [first_con, last_con]
+    for i = 2:N_blocks-1
+        temp_mean = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
+        temp_corr = mean(vcat(corrs[1:(i-1)*b_size], corrs[i*b_size+1:b_size*N_blocks]))
+        push!(jack_cons, temp_corr - temp_mean^2)
+    end
+
+    con_mean = mean(corrs) - mean(loop_means)^2
+    σ = sqrt((N_blocks-1) * mean((jack_cons .- con_mean).^2 ))
+    return con_mean, σ
+end
+
 actions = s_from_plaq.(1, mean_vals[:,1]);
 plot(actions)
 # bla = gaugefield_SU2_cube(8, 8, true);
@@ -67,8 +91,33 @@ loop_errs = [jacks[i][2] for i = 1:L]
 
 scatter(string.(loops), loop_means, yerror = loop_errs, label = "Wilson loop exp. values")
 
+plaq_corr_mean = Vector{Float64}(undef,N_t);
+plaq_corr_err = Vector{Float64}(undef,N_t);
+for t = 1:N_t
+    plaq_corrs = readdlm(corr_mat_paths[t])[:,1]
+    b_size = round(Int, 2*auto_corr_time(plaq_corrs)+1)
+    plaq_corr_mean[t], plaq_corr_err[t] = jackknife(plaq_corrs, b_size)
+end
+plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
 
+plaq_corr_con_mean = Vector{Float64}(undef,N_t);
+plaq_corr_con_err = Vector{Float64}(undef,N_t);
+b_sizes = Vector{Float64}(undef,N_t);
+for t = 1:N_t
+    plaq_corrs = readdlm(corr_mat_paths[t])[:,1]
+    plaq_means = mean_vals[:,1]
+    b_size = maximum([round(Int, 2*auto_corr_time(plaq_corrs)+1), round(Int, 2*auto_corr_time(plaq_means)+1)])
+    b_sizes[t] = b_size
+    plaq_corr_con_mean[t], plaq_corr_con_err[t] = jack_conn_corr_self(plaq_corrs, plaq_means, b_size)
+end
+image_con = plot_corrs(N_t, plaq_corr_con_mean, plaq_corr_con_err, :false)
+image_con = plot!(
+    title = "Connected Plaq. Corr. \n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ"
+)
 
+# savefig("D:\\Physik Uni\\Master_Thesis\\glueballs\\plaq_corrs_n_smear_$n_stout.n_meas_$n_meas.pdf")
+
+#=
 # For each t we want corr_mat_ar[t] to contain the time series of the correlation
 # matrix at Euclidean time t
 corr_mat_ar = Array{Array{Matrix{Float64}}}(undef, N_t)
@@ -80,6 +129,24 @@ for t = 1:N_t
     #     corr_mat_ar[t][meas] ./= [i^2*j^2 for i = 1:L, j = 1:L]
     # end
 end
+
+plaq_corr_mean = Vector{Float64}(undef,N_t);
+plaq_corr_err = Vector{Float64}(undef,N_t);
+for t = 1:N_t
+    corr_mats = readdlm(corr_mat_paths[t])
+    plaq_corrs_t = [corr_mats[Int((i-1)*L+1), 1] for i = 1:n_meas]
+    b_size = round(Int, 2*auto_corr_time(plaq_corrs_t)+1)
+    plaq_corr_mean[t], plaq_corr_err[t] = jackknife(plaq_corrs_t, b_size)
+end
+plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
+# plot_corrs(N_t, plaq_corr_mean.-loop_means[1]^2, plaq_corr_err, :false)
+=#
+
+
+
+
+
+
 
 e_val_means = Matrix{Float64}(undef, L, N_t)
 e_val_errs = Matrix{Float64}(undef, L, N_t)
@@ -156,18 +223,6 @@ end
 
 
 
-
-
-plaq_corr_mean = Vector{Float64}(undef,N_t);
-plaq_corr_err = Vector{Float64}(undef,N_t);
-for t = 1:N_t
-    corr_mats = readdlm(corr_mat_paths[t])
-    plaq_corrs_t = [corr_mats[Int((i-1)*L+1), 1] for i = 1:n_meas]
-    b_size = round(Int, 2*auto_corr_time(plaq_corrs_t)+1)
-    plaq_corr_mean[t], plaq_corr_err[t] = jackknife(plaq_corrs_t, b_size)
-end
-plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
-# plot_corrs(N_t, plaq_corr_mean.-loop_means[1]^2, plaq_corr_err, :false)
 
 
 small_corr_mat_ar = [] #Array{Array{Matrix{Float64}}}(undef,N_t)

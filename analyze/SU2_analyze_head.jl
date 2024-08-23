@@ -41,9 +41,9 @@ function jackknife(obs, b_size)
         push!(jack_means, mean(vcat(obs[1:(i-1)*b_size], obs[i*b_size+1:b_size*N_blocks])))
     end
     obs_mean = mean(obs)
-    σ = sqrt((N_blocks-1) * mean( (jack_means.-obs_mean).^2 ))
+    σ = sqrt((N_blocks-1) * mean((jack_means.-obs_mean).^2 ))
 
-    return [mean(obs), σ]
+    return [obs_mean, σ]
 end
 
 # function to determine the autocorrelation of an observable (stored in an
