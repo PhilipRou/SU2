@@ -6,15 +6,16 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
 include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
-# surely this will work
+
 
 ################################################################################
 
 
 
-####    Observable params   ####
-for β in [10.0]
-    comment = "Trying to measure the clover"
+####    Observable params   ####    
+for β in [7.0, 9.0]
+    # for N_stout in [7]
+    comment = "Serious run for plaq- and clover self-correlation (\"loops\" unneccessary)"
     ####    Update params   ####
     global N_t = N_x = 32
     global hot       = true
@@ -22,17 +23,17 @@ for β in [10.0]
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 500
+    global N_meas    = 5000
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
     # N_meas    = Int( 100* (round(3200 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
     #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
     global n_stout   = 7
-    global ρ         = 0.22
+    global ρ         = 0.24
     # global loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
-    global loops     = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
-    # global loops     = [[1,1]]
+    # global loops     = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
+    global loops     = [[1,1]]
     # loops   = [[2^i,R] for i = 0:Int(log2(N_t)), R = 1:4:N_x ]
     # loops   = [[N_t, 0]]    # Polyakov
     
@@ -67,8 +68,10 @@ for β in [10.0]
     last_conf_path   = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
     corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
     mean_vals_path = string(base_path,"\\mean_vals.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
-    last_conf_path = string(last_base_path,"\\last_config.txt")
+    corr_mat_clover_paths = [string(base_path,"\\corrs_clover_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+    mean_vals_clover_path = string(base_path,"\\mean_vals_clover.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
+    # last_conf_path = string(last_base_path,"\\last_config.txt")
 
 
     params = "3d Simulation with:
@@ -133,15 +136,21 @@ for β in [10.0]
 
         # results = measure_RT_loops_corrs_cube(U, loops, n_stout, ρ)
         # results = measure_RT_loops_corrs_cube_selfonly(U, loops, n_stout, ρ)
-        results = measure_clover(U, n_stout, ρ)
-        corr_mats = results[1]
-        mean_vals = results[2]
+        results_plaq = measure_plaq_12(U, n_stout, ρ)
+        results_clover = measure_clover(U, n_stout, ρ)
+        # results = measure_s_wil(U, n_stout, ρ)
+        corr_mats_plaq = results_plaq[1]
+        mean_vals_plaq = results_plaq[2]
+        corr_mats_clover = results_clover[1]
+        mean_vals_clover = results_clover[2]
         mywrite(acceptances_path, acc[1])
-        mywrite(mean_vals_path, mean_vals)
+        mywrite(mean_vals_path, mean_vals_plaq)
+        mywrite(mean_vals_clover_path, mean_vals_clover)
         for t = 1:N_t
             # mywrite(corr_mat_paths[t], corr_mats[:,:,t])
             # mywrite(corr_mat_paths[t], corr_mats[:,t])
-            mywrite(corr_mat_paths[t], corr_mats[t])
+            mywrite(corr_mat_paths[t], corr_mats_plaq[t])
+            mywrite(corr_mat_clover_paths[t], corr_mats_clover[t])
         end
         # mywrite(mean_vals_path, loop_means)
         # mywrite(mean_vals_mike_path, loop_means_mike)

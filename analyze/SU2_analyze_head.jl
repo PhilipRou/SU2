@@ -78,9 +78,9 @@ end
 
 function mass_2pt(corrs)
     L = length(corrs)
-    masses = zeros(L)
+    masses = Array{Float64}(undef,L)
     for i = 1:L
-        i_p = i%L + 1
+        i_p = mod1(i+1,L)
         masses[i] = log(corrs[i]/corrs[i_p])
     end
     return masses
@@ -90,9 +90,9 @@ function mass_3pt(corrs)
     L = length(corrs)
     masses = zeros(L)
     for i = 1:L
-        i_p = i%L + 1
-        i_m = (i-2+L)%L +1
-        arg = (corrs[i_p] + corrs[i_m])/corrs[i]
+        i_p = mod1(i+1,L)
+        i_m = mod1(i-1,L)
+        arg = (corrs[i_p] + corrs[i_m])/(2*corrs[i])
         if arg > 0.0
             masses[i] = acosh(arg)
         end

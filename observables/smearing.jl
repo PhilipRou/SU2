@@ -86,7 +86,7 @@ end
 # the exponential of that quantity can be evaluated without bothering the 
 # exponential function, as exp(ianⱼσⱼ) = cos(a)σ₀ + i sin(a) nⱼσⱼ.
 function exp_stout(X::coeffs_SU2)
-    Y = X - adjoint(X)      # Already traceless for X ∈ SU(2)
+    Y = 1/2*(X - adjoint(X))      # Already traceless for X ∈ SU(2)
     w = sqrt(Y.b^2 + Y.c^2 + Y.d^2)
     s = sin(w)/w
     return coeffs_SU2(cos(w), s*Y.b, s*Y.c, s*Y.d)
@@ -286,7 +286,7 @@ function stout_midpoint(U, ρ)
             for μ = 1:2
                 # besser: exp(Z1 - Z0/2) * X1 
                 # stap = staps[μ,x,t]
-                V[μ,x,t] = exp_stout(0.5 * ρ * staps[μ,x,t] * adjoint(U[μ,x,t])) * U[μ,x,t]
+                V[μ,x,t] = exp_stout(ρ * staps[μ,x,t] * adjoint(U[μ,x,t])) * U[μ,x,t]
             end
         end
     end
@@ -544,6 +544,7 @@ end
 function stout_cube_timeslice(U,ρ)
     NX = size(U,2)
     NT = size(U,4)
+    # V = [coeffs_SU2(0.0, 0.0, 0.0, 0.0) for μ = 1:3, x = 1:NX, y = 1:NX, t = 1:NT]
     V = similar(U)
     for t = 1:NT
         for y = 1:NX
@@ -557,6 +558,13 @@ function stout_cube_timeslice(U,ρ)
     end
     return V
 end
+
+bla = gaugefield_SU2_cube(8, 8, true);
+bli = stout_cube_timeslice(bla, 0.24);
+# # coeffs_SU2(0.0, 0.0, 0.0, 0.0) in bli
+blub = stout(bla[1:2,:,:,1], 0.24);
+false in isapprox.(bli[1:2,:,:,1], blub)
+
 
 function stout_cube_timeslice(U, n_stout, ρ)
     NX = size(U,2)
@@ -583,7 +591,7 @@ function stout_midpoint_cube(U, ρ)
                 for μ = 1:3
                     # besser: exp(Z1 - Z0/2) * X1 
                     # stap = staps[μ,x,t]
-                    V[μ,x,y,t] = exp_stout(0.5 * ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                    V[μ,x,y,t] = exp_stout(ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
                 end
             end
         end
@@ -631,7 +639,7 @@ function stout_midpoint_cube_timeslice(U,ρ)
                 for μ = 1:2
                     # besser: exp(Z1 - Z0/2) * X1 
                     # stap = staps[μ,x,t]
-                    V[μ,x,y,t] = exp_stout(0.5 * ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
+                    V[μ,x,y,t] = exp_stout(ρ * staps[μ,x,y,t] * adjoint(U[μ,x,y,t])) * U[μ,x,y,t]
                 end
                 V[3,x,y,t] = U[3,x,y,t]
             end

@@ -5,7 +5,7 @@ include("observables_head.jl")
 # Following three functions 
 function plaq_12(U, x, y, t)
     NX = size(U,2)
-    NT = size(U,4)
+    # NT = size(U,4)
     # t_p = mod1(t+1,NT)
     x_p = mod1(x+1,NX)
     y_p = mod1(y+1,NX)
@@ -64,21 +64,38 @@ function loop_mat_cube(U, l_1, l_2)
     y_arr = collect(1:NX)
 
     # The y-x-loops, stored in res_t:
+    # for i = 1:l_1
+    #     res_t = res_t .* U[2,x_arr,y_arr,:]
+    #     circshift!(y_arr,-1)    
+    # end
+    # for i = 1:l_2
+    #     res_t = res_t .* U[1,x_arr,y_arr,:]
+    #     circshift!(x_arr,-1)   
+    # end
+    # for i = 1:l_1
+    #     circshift!(y_arr,1)
+    #     res_t = res_t .* adjoint.(U[2,x_arr,y_arr,:])
+    # end
+    # for i = 1:l_2
+    #     circshift!(x_arr,1)
+    #     res_t = res_t .* adjoint.(U[1,x_arr,y_arr,:])
+    # end
+    
     for i = 1:l_1
-        res_t = res_t .* U[2,x_arr,y_arr,:]
-        circshift!(y_arr,-1)    
-    end
-    for i = 1:l_2
         res_t = res_t .* U[1,x_arr,y_arr,:]
-        circshift!(x_arr,-1)   
-    end
-    for i = 1:l_1
-        circshift!(y_arr,1)
-        res_t = res_t .* adjoint.(U[2,x_arr,y_arr,:])
+        circshift!(x_arr,-1)    
     end
     for i = 1:l_2
+        res_t = res_t .* U[2,x_arr,y_arr,:]
+        circshift!(y_arr,-1)   
+    end
+    for i = 1:l_1
         circshift!(x_arr,1)
         res_t = res_t .* adjoint.(U[1,x_arr,y_arr,:])
+    end
+    for i = 1:l_2
+        circshift!(y_arr,1)
+        res_t = res_t .* adjoint.(U[2,x_arr,y_arr,:])
     end
 
     # # The x-t-loops, stored in res_y:
@@ -119,6 +136,19 @@ function loop_mat_cube(U, l_1, l_2)
 
     return res_t #, res_x, res_y
 end
+
+# bla = gaugefield_SU2_cube(8,8,true);
+# res = tr.(loop_mat_cube(bla,1,1));
+# res_true = [tr(plaq_12(bla,x,y,t)) for x = 1:8, y = 1:8, t = 1:8];
+# isapprox(res,res_true)
+
+# bla = gaugefield_SU2_cube(8,8,true);
+# bli = deepcopy(bla);
+# bli[1:2,:,:,1] = temp_gauge(bli[1:2,:,:,1],"SU2");
+# mat_bla = loop_mat_cube(bla,3,4);
+# mat_bli = loop_mat_cube(bli,3,4);
+# isapprox(tr.(mat_bla), tr.(mat_bli))
+
 
 # A function which measures everything one can measure (yet) using Wilson loops.
 # The loops are specified in the array 'loops' in which tuples of [n_t, n_x] 
@@ -220,13 +250,38 @@ function clover_cube_timeslice(U,x,y,t)
     return -tr(tmq*tmq)/128
 end
 
-
-function measure_clover(U, n_stout, ρ) 
+function measure_clover(U, n_stout, ρ)
     NX = size(U,2)
     NT = size(U,4)
     t_arr = collect(1:NT)
     V = stout_cube_timeslice(U,n_stout,ρ)
     results = [clover_cube_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
+    summed_t = [mean(results[:,:,t]) for t = 1:NT]
+    corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
+    return corrs_t, mean(summed_t)
+end
+
+function s_wil_timeslice(U, x, y, t)
+    return 1-tr(plaq_12(U,x,y,t))/2
+end
+
+function measure_s_wil(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    t_arr = collect(1:NT)
+    V = stout_cube_timeslice(U,n_stout,ρ)
+    results = [s_wil_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
+    summed_t = [mean(results[:,:,t]) for t = 1:NT]
+    corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
+    return corrs_t, mean(summed_t)
+end
+
+function measure_plaq_12(U, n_stout, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    t_arr = collect(1:NT)
+    V = stout_cube_timeslice(U,n_stout,ρ)
+    results = [tr(plaq_12(V,x,y,t)) for x = 1:NX, y = 1:NX, t = 1:NT]
     summed_t = [mean(results[:,:,t]) for t = 1:NT]
     corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
     return corrs_t, mean(summed_t)
