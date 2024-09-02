@@ -182,3 +182,20 @@ function chess_overrelax_cube!(U)
     end
     return nothing
 end
+
+function parity_hit_cube!(U)
+    if rand() < 0.5
+        return
+    end
+    NX = size(U,2)
+    NT = size(U,4)
+    U[1,:,:,:] = adjoint.(U[1,circshift(NX:-1:1,-1),NX:-1:1,:])
+    U[2,:,:,:] = adjoint.(U[2,NX:-1:1,circshift(NX:-1:1,-1),:])
+    U[3,:,:,:] = U[3,NX:-1:1,NX:-1:1,:]
+end
+
+# bla = gaugefield_SU2_cube(8,8,true);
+# action_cube(bla,1)
+# parity_hit!(bla);
+# action_cube(bla,1)
+
