@@ -188,7 +188,7 @@ function parity_hit_cube!(U)
         return
     end
     NX = size(U,2)
-    NT = size(U,4)
+    # NT = size(U,4)
     U[1,:,:,:] = adjoint.(U[1,circshift(NX:-1:1,-1),NX:-1:1,:])
     U[2,:,:,:] = adjoint.(U[2,NX:-1:1,circshift(NX:-1:1,-1),:])
     U[3,:,:,:] = U[3,NX:-1:1,NX:-1:1,:]

@@ -14,7 +14,6 @@ loops       = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
 # N_over      = 3
 
 base_path           = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
-params_path         = string(base_path,"\\params.txt") #
 acceptances_path    = string(base_path,"\\acceptances.txt") #"D:\\Physik Uni\\julia_projects\\SU2\\data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
 last_conf_path      = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2\\data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
 corr_mat_paths      = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2\\data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
@@ -31,77 +30,6 @@ L = size(mean_vals,2)
 
 for l = 1:L
     mean_vals[:,l] ./= l^2
-end
-
-function plot_corrs(N_t, corr_means, corr_errs, series_label)
-    return scatter(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label)
-end
-
-function plot_corrs!(N_t, corr_means, corr_errs, series_label, image)
-    image = scatter!(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label)
-    return nothing
-end
-
-function s_from_plaq(β, plaq_mean)
-    return 3 * β * (2-plaq_mean) / 2
-end
-
-function s_wil(plaq_mean)
-    return 1 - plaq_mean/2
-end
-
-function jack_conn_corr_self(corrs, loop_means, b_size)
-    N_blocks = Int(div(length(corrs), b_size, RoundDown))
-
-    first_loop = mean(loop_means[b_size+1:b_size*N_blocks])
-    first_corr = mean(corrs[b_size+1:b_size*N_blocks])
-    first_con = first_corr - first_loop^2
-
-    last_loop = mean(loop_means[1:b_size*N_blocks - b_size])
-    last_corr = mean(corrs[1:b_size*N_blocks - b_size])
-    last_con = last_corr - last_loop^2
-
-    jack_cons = [first_con, last_con]
-    for i = 2:N_blocks-1
-        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
-        temp_corr = mean(vcat(corrs[1:(i-1)*b_size], corrs[i*b_size+1:b_size*N_blocks]))
-        push!(jack_cons, temp_corr - temp_loop^2)
-    end
-
-    con_mean = mean(corrs) - mean(loop_means)^2
-    σ = sqrt((N_blocks-1) * mean((jack_cons .- con_mean).^2 ))
-    return con_mean, σ
-end
-
-function jack_mass_conn_corr_self_2pt(corrs_t1, corrs_t2, loop_means, b_size)
-    N_blocks = Int(div(length(corrs_t1), b_size, RoundDown))
-    jack_masses = Vector{Float64}(undef,N_blocks)
-    for i = 1:N_blocks
-        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
-        temp_corr_t1 = mean(vcat(corrs_t1[1:(i-1)*b_size], corrs_t1[i*b_size+1:b_size*N_blocks]))
-        temp_corr_t2 = mean(vcat(corrs_t2[1:(i-1)*b_size], corrs_t2[i*b_size+1:b_size*N_blocks]))
-        jack_masses[i] = log((temp_corr_t1-temp_loop^2) / (temp_corr_t2-temp_loop^2))
-    end
-    loop = mean(loop_means)
-    mass_mean = log((mean(corrs_t1)-loop^2) / (mean(corrs_t2)-loop^2))    
-    σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
-    return mass_mean, σ
-end
-
-function jack_mass_conn_corr_self_3pt(corrs_t1, corrs_t2, corrs_t3, loop_means, b_size)
-    N_blocks = Int(div(length(corrs_t1), b_size, RoundDown))
-    jack_masses = Vector{Float64}(undef,N_blocks)
-    for i = 1:N_blocks
-        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
-        temp_corr_t1 = mean(vcat(corrs_t1[1:(i-1)*b_size], corrs_t1[i*b_size+1:b_size*N_blocks]))
-        temp_corr_t2 = mean(vcat(corrs_t2[1:(i-1)*b_size], corrs_t2[i*b_size+1:b_size*N_blocks]))
-        temp_corr_t3 = mean(vcat(corrs_t3[1:(i-1)*b_size], corrs_t3[i*b_size+1:b_size*N_blocks]))
-        jack_masses[i] = acosh((temp_corr_t1+temp_corr_t3-2*temp_loop^2) / (2*(temp_corr_t2-temp_loop^2)))
-    end
-    loop = mean(loop_means)
-    mass_mean = acosh((mean(corrs_t1)+mean(corrs_t3)-2*loop^2) / (2*(mean(corrs_t2)-loop^2)))    
-    σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
-    return mass_mean, σ
 end
 
 
@@ -125,9 +53,11 @@ for t = 1:N_t
     b_size = round(Int, 2*auto_corr_time(plaq_corrs)+1)
     plaq_corr_mean[t], plaq_corr_err[t] = jackknife(plaq_corrs, b_size)
 end
-image_full = plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
+# image_full = plot_corrs(N_t, plaq_corr_mean, plaq_corr_err, :false)
+image_full = plot(0:N_t-1, plaq_corr_mean[circshift(1:N_t,1)], yerror = plaq_corr_err[circshift(1:N_t,1)], label = :false)
 image_full = plot!(
-    title = "Full Plaquette Corr. \n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ"
+    title = "Full Plaquette Corr. \n β = $β, L = $N_t, n_smear = $n_stout, ρ = $ρ",
+    yaxis = :log
 )
 display(image_full)
 
@@ -142,9 +72,12 @@ for t = 1:N_t
     b_sizes[t] = b_size
     plaq_corr_con_mean[t], plaq_corr_con_err[t] = jack_conn_corr_self(plaq_corrs, plaq_means, b_size)
 end
-image_con = plot_corrs(N_t, plaq_corr_con_mean, plaq_corr_con_err, :false)
+# image_con = plot_corrs(N_t, plaq_corr_con_mean, plaq_corr_con_err, :false)
+image_con = plot(0:N_t-1, plaq_corr_con_mean[circshift(1:N_t,1)], yerror = plaq_corr_con_err[circshift(1:N_t,1)], label = :false)
 image_con = plot!(
-    title = "Connected Plaquette Corr. \n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ"
+    title = "Connected Plaquette Corr. \n β = $β, L = $N_t, n_smear = $n_stout, ρ = $ρ",
+    ylims = (1e-10, 1e-7),
+    yaxis = :log,
 )
 display(image_con)
 #=
@@ -193,9 +126,11 @@ image_mass_conn_2pt = scatter(
     mass_conn_2pt_mean, 
     yerror = mass_conn_2pt_err, 
     xticks = t_vals_2pt,
-    title = "2-pt. Masses of conn. plaq. corr.\n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ",
-    label = latexstring("\$m_{\\textrm{eff}} = \\log\\left(\\frac{C(t)}{C(t+a)} \\right) \$"),
+    title = "2-pt. Masses of conn. plaq. corr.\n β = $β, L = $N_t, n_smear = $n_stout, ρ = $ρ",
+    label = latexstring("\$m_{\\textrm{eff}}\\left(t+\\frac{a}{2}\\right) = \\log\\left(\\frac{C(t)}{C(t+a)} \\right) \$"),
     xlabel = latexstring("\$ t\$"),
+    ylim = (0.5, 1.5),
+    legend = :topleft
     # legendfontsize = 10
 )
 
@@ -220,10 +155,11 @@ image_mass_conn_2pt_2 = scatter(
     mass_conn_2pt_2_mean, 
     yerror = mass_conn_2pt_2_err, 
     xticks = t_vals_2pt_2,
-    title = "2-pt. Masses of conn. plaq. corr.\n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ",
-    label = latexstring("\$m_{\\textrm{eff}} = \\frac{1}{2} \\log\\left(\\frac{C(t)}{C(t+2a)} \\right) \$"),
+    title = "2-pt. Masses of conn. plaq. corr.\n β = $β, L = $N_t, n_smear = $n_stout, ρ = $ρ",
+    label = latexstring("\$m_{\\textrm{eff}}(t) = \\frac{1}{2} \\log\\left(\\frac{C(t-a)}{C(t+a)} \\right) \$"),
     xlabel = latexstring("\$ t\$"),
-    # legendfontsize = 10
+    ylim = (0.5, 1.5),
+    legend = :topleft
 )
 
 mass_conn_3pt_mean = [];
@@ -249,9 +185,11 @@ image_mass_conn_3pt = scatter(
     mass_conn_3pt_mean, 
     yerror = mass_conn_3pt_err, 
     xticks = t_vals_3pt,
-    title = "3-pt. Masses of conn. plaq. corr.\n β = $β, n_meas = $n_meas, n_smear = $n_stout, ρ = $ρ",
-    label = latexstring("\$m_{\\textrm{eff}} = \\textrm{acosh}\\,\\left(\\frac{C(t) + C(t+2a)}{C(t+a)} \\right) \$"),
+    title = "3-pt. Masses of conn. plaq. corr.\n β = $β, L = $N_t, n_smear = $n_stout, ρ = $ρ",
+    label = latexstring("\$m_{\\textrm{eff}}(t) = \\textrm{acosh}\\,\\left(\\frac{C(t-a) + C(t+a)}{2C(t)} \\right) \$"),
     xlabel = latexstring("\$ t\$"),
+    ylim = (0.5, 1.5),
+    legend = :topleft
     # legendfontsize = 10
 )
     

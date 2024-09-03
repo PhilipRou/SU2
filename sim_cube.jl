@@ -13,24 +13,25 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 ####    Observable params   ####    
-for β in [7.0, 9.0]
+for β in [8.0]
     # for N_stout in [7]
     comment = "Serious run for plaq- and clover self-correlation (\"loops\" unneccessary)"
     ####    Update params   ####
-    global N_t = N_x = 32
+    global N_t = N_x = 8
     global hot       = true
 
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 5000
+    global N_meas    = 100
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
     # N_meas    = Int( 100* (round(3200 * (128/N_t)^2 / (N_metro+N_over) /100, RoundNearestTiesAway))) # ...plus N_meas times,
     #                                                       # i.e. (N_therm + N_meas) ⋅ (N_metro + N_over) sweeps in total
-    global n_stout   = 7
+    # global n_stout   = 7
     global ρ         = 0.24
+    global smear_nums= [0,1,3,7,15]
     # global loops     = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     # global loops     = [[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]]
     global loops     = [[1,1]]
@@ -42,8 +43,8 @@ for β in [7.0, 9.0]
 
 
     ####    Handling directories    ####
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
-    last_base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ"
+    base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
+    # last_base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
     count_path = string(base_path, "\\sim_count.txt")
 
     # Have we already simulated with these parameters (excluding "loops")? If so,
@@ -87,9 +88,9 @@ for β in [7.0, 9.0]
     N_meas  = $N_meas
     N_sepa  = $N_sepa
 
-    n_stout = $n_stout
-    ρ       = $ρ
-    loops   = $loops
+    smear_nums = $smear_nums
+    ρ          = $ρ
+    loops      = $loops
     
     comment = $comment"
 
@@ -131,26 +132,29 @@ for β in [7.0, 9.0]
                 chess_overrelax_cube!(U)
             end
         end
-
+        
         U = proj2man.(U)
+        parity_hit_cube!(U)
 
         # results = measure_RT_loops_corrs_cube(U, loops, n_stout, ρ)
         # results = measure_RT_loops_corrs_cube_selfonly(U, loops, n_stout, ρ)
-        results_plaq = measure_plaq_12(U, n_stout, ρ)
-        results_clover = measure_clover(U, n_stout, ρ)
-        # results = measure_s_wil(U, n_stout, ρ)
-        corr_mats_plaq = results_plaq[1]
-        mean_vals_plaq = results_plaq[2]
-        corr_mats_clover = results_clover[1]
-        mean_vals_clover = results_clover[2]
+        # results_plaq = measure_plaq_12(U, n_stout, ρ)
+        results = measure_s_wil(U, smear_nums, ρ)
+        # results_clover = measure_clover(U, n_stout, ρ)
+        corr_mats = results[1]
+        mean_vals = results[2]
+        # corr_mats_plaq = results_plaq[1]
+        # mean_vals_plaq = results_plaq[2]
+        # corr_mats_clover = results_clover[1]
+        # mean_vals_clover = results_clover[2]
         mywrite(acceptances_path, acc[1])
-        mywrite(mean_vals_path, mean_vals_plaq)
-        mywrite(mean_vals_clover_path, mean_vals_clover)
+        mywrite(mean_vals_path, mean_vals)
+        # mywrite(mean_vals_clover_path, mean_vals_clover)
         for t = 1:N_t
-            # mywrite(corr_mat_paths[t], corr_mats[:,:,t])
+            mywrite(corr_mat_paths[t], corr_mats[:,:,t])
             # mywrite(corr_mat_paths[t], corr_mats[:,t])
-            mywrite(corr_mat_paths[t], corr_mats_plaq[t])
-            mywrite(corr_mat_clover_paths[t], corr_mats_clover[t])
+            # mywrite(corr_mat_paths[t], corr_mats_plaq[t])
+            # mywrite(corr_mat_clover_paths[t], corr_mats_clover[t])
         end
         # mywrite(mean_vals_path, loop_means)
         # mywrite(mean_vals_mike_path, loop_means_mike)

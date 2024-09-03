@@ -9,6 +9,13 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl
 include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
 include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
 
+
+
+enu_endings = ["st", "nd", "rd"]
+for i = 1:50
+    push!(enu_endings, "th")
+end
+
 function bootstrap(obs, b_size, N_boot)
     N_blocks = Int(div(length(obs), b_size, RoundDown))
     # Step 1: blocking
@@ -111,7 +118,96 @@ function string_err(a, b, c, d, aerr, berr, cerr, derr)
 end
 =#
 
-enu_endings = ["st", "nd", "rd"]
-for i = 1:50
-    push!(enu_endings, "th")
+
+function plot_corrs(N_t, corr_means, corr_errs, series_label)
+    return scatter(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label)
+end
+
+function plot_corrs!(N_t, corr_means, corr_errs, series_label, image)
+    image = scatter!(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label)
+    return nothing
+end
+
+function plot_corrs(N_t, corr_means, corr_errs, series_label, farbe)
+    return scatter(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label, color = farbe)
+end
+
+function plot_corrs!(N_t, corr_means, corr_errs, series_label, image, farbe)
+    image = scatter!(0:N_t-1, circshift(corr_means,1), yerror = circshift(corr_errs,1), label = series_label, color = farbe)
+    return nothing
+end
+
+function s_from_plaq(β, plaq_mean)
+    return 3 * β * (2-plaq_mean) / 2
+end
+
+function s_wil(plaq_mean)
+    return 1 - plaq_mean/2
+end
+
+function jack_conn_corr_self(corrs, loop_means, b_size)
+    N_blocks = Int(div(length(corrs), b_size, RoundDown))
+
+    first_loop = mean(loop_means[b_size+1:b_size*N_blocks])
+    first_corr = mean(corrs[b_size+1:b_size*N_blocks])
+    first_con = first_corr - first_loop^2
+
+    last_loop = mean(loop_means[1:b_size*N_blocks - b_size])
+    last_corr = mean(corrs[1:b_size*N_blocks - b_size])
+    last_con = last_corr - last_loop^2
+
+    jack_cons = [first_con, last_con]
+    for i = 2:N_blocks-1
+        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
+        temp_corr = mean(vcat(corrs[1:(i-1)*b_size], corrs[i*b_size+1:b_size*N_blocks]))
+        push!(jack_cons, temp_corr - temp_loop^2)
+    end
+
+    con_mean = mean(corrs) - mean(loop_means)^2
+    σ = sqrt((N_blocks-1) * mean((jack_cons .- con_mean).^2 ))
+    return con_mean, σ
+end
+
+function jack_mass_conn_corr_self_2pt(corrs_t1, corrs_t2, loop_means, b_size)
+    N_blocks = Int(div(length(corrs_t1), b_size, RoundDown))
+    jack_masses = Vector{Float64}(undef,N_blocks)
+    for i = 1:N_blocks
+        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
+        temp_corr_t1 = mean(vcat(corrs_t1[1:(i-1)*b_size], corrs_t1[i*b_size+1:b_size*N_blocks]))
+        temp_corr_t2 = mean(vcat(corrs_t2[1:(i-1)*b_size], corrs_t2[i*b_size+1:b_size*N_blocks]))
+        jack_masses[i] = log((temp_corr_t1-temp_loop^2) / (temp_corr_t2-temp_loop^2))
+    end
+    loop = mean(loop_means)
+    mass_mean = log((mean(corrs_t1)-loop^2) / (mean(corrs_t2)-loop^2))    
+    σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
+    return mass_mean, σ
+end
+
+function jack_mass_conn_corr_self_3pt(corrs_t1, corrs_t2, corrs_t3, loop_means, b_size)
+    N_blocks = Int(div(length(corrs_t1), b_size, RoundDown))
+    jack_masses = Vector{Float64}(undef,N_blocks)
+    for i = 1:N_blocks
+        temp_loop = mean(vcat(loop_means[1:(i-1)*b_size], loop_means[i*b_size+1:b_size*N_blocks]))
+        temp_corr_t1 = mean(vcat(corrs_t1[1:(i-1)*b_size], corrs_t1[i*b_size+1:b_size*N_blocks]))
+        temp_corr_t2 = mean(vcat(corrs_t2[1:(i-1)*b_size], corrs_t2[i*b_size+1:b_size*N_blocks]))
+        temp_corr_t3 = mean(vcat(corrs_t3[1:(i-1)*b_size], corrs_t3[i*b_size+1:b_size*N_blocks]))
+        jack_masses[i] = acosh((temp_corr_t1+temp_corr_t3-2*temp_loop^2) / (2*(temp_corr_t2-temp_loop^2)))
+    end
+    loop = mean(loop_means)
+    mass_mean = acosh((mean(corrs_t1)+mean(corrs_t3)-2*loop^2) / (2*(mean(corrs_t2)-loop^2)))    
+    σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
+    return mass_mean, σ
+end
+
+function jack_corr_mat_ev(corr_mats, b_size)
+    num_vals = size(corr_mats[1],1)
+    N_blocks = Int(div(length(corr_mats), b_size, RoundDown))
+    jack_evs = Array{Float64}(undef, N_blocks, num_vals)
+    for i = 1:N_blocks 
+        temp_corr = mean(vcat(corr_mats[1:(i-1)*b_size], corr_mats[i*b_size+1:b_size*N_blocks]))
+        jack_evs[i,:] = eigen(temp_corr).values
+    end
+    mean_evs = eigen(mean(corr_mats)).values
+    σ = [sqrt((N_blocks-1) * mean((jack_evs[:,i] .- mean_evs[i]).^2 )) for i = 1:num_vals]
+    return mean_evs, σ
 end
