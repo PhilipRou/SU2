@@ -235,32 +235,6 @@ function measure_RT_loops_corrs_cube_selfonly(U, loops::Array, n_stout, ρ)
     return corrs_t, mean_vals_conf
 end
 
-function clover_cube_timeslice(U,x,y,t)
-    NX = size(U,2)
-    # NT = size(U,4)
-    x_p = mod1(x+1,NX)
-    x_m = mod1(x-1,NX)
-    y_p = mod1(y+1,NX)
-    y_m = mod1(y-1,NX)
-    tmq =  U[1,x,y,t] * U[2,x_p,y,t] * adjoint(U[1,x,y_p,t]) * adjoint(U[2,x,y,t])
-    tmq += U[2,x,y,t] * adjoint(U[1,x_m,y_p,t]) * adjoint(U[2,x_m,y,t]) * U[1,x_m,y,t]
-    tmq += adjoint(U[1,x_m,y,t]) * adjoint(U[2,x_m,y_m,t]) * U[1,x_m,y_m,t] * U[2,x,y_m,t]
-    tmq += adjoint(U[2,x,y_m,t]) * U[1,x,y_m,t] * U[2,x_p,y_m,t] * adjoint(U[1,x,y,t])
-    tmq = (tmq-adjoint(tmq)) # /8 /im
-    return -tr(tmq*tmq)/128
-end
-
-function measure_clover(U, n_stout, ρ)
-    NX = size(U,2)
-    NT = size(U,4)
-    t_arr = collect(1:NT)
-    V = stout_cube_timeslice(U,n_stout,ρ)
-    results = [clover_cube_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
-    summed_t = [mean(results[:,:,t]) for t = 1:NT]
-    corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
-    return corrs_t, mean(summed_t)
-end
-
 function s_wil_timeslice(U, x, y, t)
     return 1-tr(plaq_12(U,x,y,t))/2
 end
@@ -287,8 +261,56 @@ function measure_s_wil(U, smear_nums::Vector, ρ)
     smeared_means = Vector{Float64}(undef, length(smear_nums))
     for smear in eachindex(smear_nums)
         n_smear = smear_nums[smear] - smear_help[smear]
-        V = stout_cube(V,n_smear,ρ)
+        V = stout_cube_timeslice(V,n_smear,ρ)
         results = [s_wil_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
+        summed_t = [mean(results[:,:,t]) for t = 1:NT]
+        smeared_sums[:,smear] = summed_t
+        smeared_means[smear]  = mean(summed_t)
+    end
+
+    corrs = [mean(smeared_sums[:,s1] .* smeared_sums[circshift(t_arr,-τ),s2]) for s1 in eachindex(smear_nums), s2 in eachindex(smear_nums), τ = 1:NT]
+    return corrs, smeared_means
+end
+
+function clover_cube_timeslice(U,x,y,t)
+    NX = size(U,2)
+    # NT = size(U,4)
+    x_p = mod1(x+1,NX)
+    x_m = mod1(x-1,NX)
+    y_p = mod1(y+1,NX)
+    y_m = mod1(y-1,NX)
+    tmq =  U[1,x,y,t] * U[2,x_p,y,t] * adjoint(U[1,x,y_p,t]) * adjoint(U[2,x,y,t])
+    tmq += U[2,x,y,t] * adjoint(U[1,x_m,y_p,t]) * adjoint(U[2,x_m,y,t]) * U[1,x_m,y,t]
+    tmq += adjoint(U[1,x_m,y,t]) * adjoint(U[2,x_m,y_m,t]) * U[1,x_m,y_m,t] * U[2,x,y_m,t]
+    tmq += adjoint(U[2,x,y_m,t]) * U[1,x,y_m,t] * U[2,x_p,y_m,t] * adjoint(U[1,x,y,t])
+    tmq = (tmq-adjoint(tmq)) # /8 /im
+    return -tr(tmq*tmq)/128
+end
+
+function measure_clover(U, n_stout::Int, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    t_arr = collect(1:NT)
+    V = stout_cube_timeslice(U,n_stout,ρ)
+    results = [clover_cube_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
+    summed_t = [mean(results[:,:,t]) for t = 1:NT]
+    corrs_t = [mean(summed_t[:] .* summed_t[circshift(t_arr,-τ)]) for τ = 1:NT]
+    return corrs_t, mean(summed_t)
+end
+
+function measure_clover(U, smear_nums::Vector, ρ)
+    NX = size(U,2)
+    NT = size(U,4)
+    t_arr = collect(1:NT)
+    smear_help = vcat([0],smear_nums)
+
+    V = deepcopy(U)
+    smeared_sums = Array{Float64}(undef, NT, length(smear_nums))
+    smeared_means = Vector{Float64}(undef, length(smear_nums))
+    for smear in eachindex(smear_nums)
+        n_smear = smear_nums[smear] - smear_help[smear]
+        V = stout_cube_timeslice(V,n_smear,ρ)
+        results = [clover_cube_timeslice(V,x,y,t) for x = 1:NX, y = 1:NX, t = 1:NT]
         summed_t = [mean(results[:,:,t]) for t = 1:NT]
         smeared_sums[:,smear] = summed_t
         smeared_means[smear]  = mean(summed_t)

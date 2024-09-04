@@ -15,15 +15,15 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 ####    Observable params   ####    
 for β in [8.0]
     # for N_stout in [7]
-    comment = "Serious run for plaq- and clover self-correlation (\"loops\" unneccessary)"
+    comment = "Large statistics for s_wil at different smearing levels and smear-cross-correlation"
     ####    Update params   ####
-    global N_t = N_x = 8
+    global N_t = N_x = 32
     global hot       = true
 
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 100
+    global N_meas    = 500
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85

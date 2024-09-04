@@ -1,4 +1,5 @@
 include("SU2_analyze_head.jl")
+include("SU2_jackknives.jl")
 
 
 
