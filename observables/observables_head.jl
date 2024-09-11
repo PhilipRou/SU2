@@ -1,7 +1,7 @@
 using SpecialFunctions
 
-include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 
 function mywrite(path, obs)

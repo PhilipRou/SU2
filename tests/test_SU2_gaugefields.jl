@@ -148,8 +148,8 @@ comb_gauge_test()
 
 # function read_last_config_test()
 #     test_config = gaugefield_SU2(4,4,true)
-#     writedlm("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt", test_config.U)
-#     recon = read_last_config("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt")
+#     writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt", test_config.U)
+#     recon = read_last_config("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt")
 #     # ⭕ For some reason (test_config == recon) = false, hence check all attributes individually: ⭕
 #     @assert test_config.U           == recon.U
 #     @assert test_config.N_t         == recon.N_t

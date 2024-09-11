@@ -83,9 +83,9 @@ sim_count = 1
 loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 num_loops = length(loops)
 
-# base_base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
+# base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
 # base_path = string(base_base_path, "\\sim_count_$sim_count")
-base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
 mean_vals_path = string(base_path,"\\mean_vals.txt")
 
 means = readdlm(mean_vals_path)
@@ -145,9 +145,9 @@ sim_count = 1
 loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
 num_loops = length(loops)
 
-# base_base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
+# base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
 # base_path = string(base_base_path, "\\sim_count_$sim_count")
-base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
 Q_path = string(base_path, "\\top_charge.txt")
 acc_path = string(base_path, "\\acceptances.txt")
 insta_delta_s_path = string(base_path, "\\insta_delta_s_plus.txt")
@@ -245,9 +245,9 @@ for β in [2.0,4.0,6.0,8.0]
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    # base_base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
+    # base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
     # base_path = string(base_base_path, "\\sim_count_$sim_count")
-    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     Q_path = string(base_path, "\\top_charge.txt")
 
     charges = readdlm(Q_path)
@@ -300,7 +300,7 @@ let
     ρ   = 0.12
     sim_count = 1
 
-    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
 
     means = readdlm(mean_vals_path)./2
@@ -327,7 +327,7 @@ let
     ρ   = 0.1
     loops   = [[1,1], [1,2], [2,1], [2,2]]
     num_loops = length(loops)
-    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     actions_path = string(base_path,"\\actions.txt")
     actions_clover_path = string(base_path,"\\actions_clover.txt")
     actions_unsm_path = string(base_path,"\\actions_unsm.txt")

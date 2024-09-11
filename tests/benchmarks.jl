@@ -160,7 +160,7 @@ step = 0.5*rand()
 
 
 
-@benchmark mywrite("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt", 5.0) # (247 ± 177)μs
+@benchmark mywrite("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt", 5.0) # (247 ± 177)μs
 test_array = []
 @benchmark push!(test_array,5.0)                                                                                             # (54 ± 316)ns
 

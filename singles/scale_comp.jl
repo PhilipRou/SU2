@@ -167,7 +167,7 @@ end
 
 # display(plot_LCP_beta(32,128,"U(1)"))
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_U1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_U1.pdf")
 
 
 
@@ -394,19 +394,19 @@ end
 β_1 = 2.0
 
 plot_LCP_a(β_1, 2^9)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_1_$β_1.later.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_1_$β_1.later.pdf")
 
 plaq_LCP_U2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_plaq_LCP_beta_1_$β_1.pdf")
 
 susc_LCP_U2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_susc_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_susc_LCP_beta_1_$β_1.pdf")
 
 plaq_LCP_U1(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_plaq_LCP_beta_1_$β_1.pdf")
 
 susc_LCP_U1(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_susc_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_susc_LCP_beta_1_$β_1.pdf")
 
 plaq_LCP_SU2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\SU2_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\SU2_plaq_LCP_beta_1_$β_1.pdf")
