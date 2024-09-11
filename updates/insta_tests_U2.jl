@@ -1,7 +1,7 @@
-include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 using Plots
 using LsqFit
@@ -333,12 +333,12 @@ image_insta = plot(
     title = "S/β for Local Minimum Solutions of 2D U(2) \n Q Taken as Continuous",
     xlabel = L"Top. Charge $Q$",
     legend = :top,
-    xticks = -Q_bound:Q_bound
+    xticks = -Q_bounC:Q_bound
 )
 for z = -2:2
     image_insta = plot!(
-        -Q_bound:0.01:Q_bound, 
-        [action(insta_U2_w(N_x, N_t, q, z), 1) for q = -Q_bound:0.01:Q_bound],
+        -Q_bounC:0.01:Q_bound, 
+        [action(insta_U2_w(N_x, N_t, q, z), 1) for q = -Q_bounC:0.01:Q_bound],
         label = "z = $z",
     )
 end

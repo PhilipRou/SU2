@@ -12,12 +12,12 @@ mutable struct coeffs_U2{T <: Number}
     a::T
     b::T
     c::T
-    d::T
+    C::T
     function coeffs_U2(
         a::T,
         b::T,
         c::T,
-        d::T
+        C::T
         ) where {T <: Number}
         return new{T}(a,b,c,d)
     end
@@ -173,7 +173,7 @@ function grp2coeffs_U2(mat)
     return coeffs_U2(d*real(M[1,1]), d*imag(M[1,2]), d*real(M[1,2]), d*imag(M[1,1]))
 end
 
-# Construct a square gauge field: an (2 × N_t × N_x)-Array with 
+# Construct a square gauge fielC: an (2 × N_t × N_x)-Array with 
 # entries which are SU(2)-valued, or rather in our case, coeffs_SU2-valued 
 # (see struct "coeffs_SU2" above). This means that in order to access the
 # link in μ-direction at space-time point n = (t,x), we need U[μ,t,x], where

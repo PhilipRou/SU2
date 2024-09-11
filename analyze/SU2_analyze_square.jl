@@ -17,7 +17,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -26,11 +26,11 @@ for L = 32:32:128
     # num_means = size(means,1)
 
     sim_count_2 = sim_count +1
-    base_path_2 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
+    base_path_2 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
     mean_vals_path_2 = string(base_path_2,"\\mean_vals.txt")
     mean_vals_mike_path_2 = string(base_path_2,"\\mean_vals_mike.txt")
     sim_count_3 = sim_count +2
-    base_path_3 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
+    base_path_3 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
     mean_vals_path_3 = string(base_path_3,"\\mean_vals.txt")
     mean_vals_mike_path_3 = string(base_path_3,"\\mean_vals_mike.txt")
 
@@ -79,7 +79,7 @@ for L = 32:32:128
     # xticks = int_start-1:1:int_end+1)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\mikes_loops_zoomed_N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\mikes_loops_zoomed_N_t_$N_t.pdf")
 
     image_err = plot(title = "Uncertainties of Various ⟨W(R,T)⟩ 
     with N_t = N_x = $N_t",
@@ -93,7 +93,7 @@ for L = 32:32:128
 
     display(image_err)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\mikes_loops_uncer_zoomed_N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\mikes_loops_uncer_zoomed_N_t_$N_t.pdf")
 end
 
 
@@ -110,7 +110,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -119,11 +119,11 @@ for L = 32:32:128
     # num_means = size(means,1)
 
     sim_count_2 = sim_count +1
-    base_path_2 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
+    base_path_2 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
     mean_vals_path_2 = string(base_path_2,"\\mean_vals.txt")
     mean_vals_mike_path_2 = string(base_path_2,"\\mean_vals_mike.txt")
     sim_count_3 = sim_count +2
-    base_path_3 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
+    base_path_3 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
     mean_vals_path_3 = string(base_path_3,"\\mean_vals.txt")
     mean_vals_mike_path_3 = string(base_path_3,"\\mean_vals_mike.txt")
 
@@ -177,7 +177,7 @@ for L = 32:32:128
     # xticks = 1:num_ratios)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\ratios_N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\ratios_N_t_$N_t.pdf")
 end
 
 
@@ -199,7 +199,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -208,11 +208,11 @@ for L = 32:32:128
     # num_means = size(means,1)
 
     sim_count_2 = sim_count +1
-    base_path_2 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
+    base_path_2 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_2"
     mean_vals_path_2 = string(base_path_2,"\\mean_vals.txt")
     mean_vals_mike_path_2 = string(base_path_2,"\\mean_vals_mike.txt")
     sim_count_3 = sim_count +2
-    base_path_3 = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
+    base_path_3 = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count_3"
     mean_vals_path_3 = string(base_path_3,"\\mean_vals.txt")
     mean_vals_mike_path_3 = string(base_path_3,"\\mean_vals_mike.txt")
 
@@ -309,7 +309,7 @@ for L = 32:32:128
     # xticks = 1:num_ratios)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\strings_zoomed_N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\strings_zoomed_N_t_$N_t.pdf")
     push!(first_strings, strings_mike[1])
     push!(first_string_errs_m, string_errs_m_mike[1])
     push!(first_string_errs_p, string_errs_p_mike[1])
@@ -347,7 +347,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -385,7 +385,7 @@ for L = 32:32:128
     # xticks = int_start-1:1:int_end+1)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
 
     image_err = plot(title = "Uncertainties of Various ⟨W(R,T)⟩ 
     with N_t = N_x = $N_t, β = $β",
@@ -399,7 +399,7 @@ for L = 32:32:128
 
     display(image_err)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_uncer_zoomed_beta_$β.N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_uncer_zoomed_beta_$β.N_t_$N_t.pdf")
 end
 
 
@@ -416,7 +416,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -457,7 +457,7 @@ for L = 32:32:128
     # xticks = 1:num_ratios)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\ratios_beta_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\ratios_beta_$β._N_t_$N_t.pdf")
 end
 
 
@@ -480,7 +480,7 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -564,7 +564,7 @@ for L = 32:32:128
     # xticks = 1:num_ratios)
     display(image)
 
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\strings_zoomed_β_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\strings_zoomed_β_$β._N_t_$N_t.pdf")
     push!(first_strings, strings_mike[1])
     push!(first_string_errs_m, string_errs_m_mike[1])
     push!(first_string_errs_p, string_errs_p_mike[1])
@@ -589,9 +589,9 @@ image_sqrts = scatter(
 
 
 
-# writedlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrts.txt", string_sqrts)
-# writedlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrt_errs_m.txt", string_sqrt_errs_m)
-# writedlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrt_errs_p.txt", string_sqrt_errs_p) 
+# writedlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrts.txt", string_sqrts)
+# writedlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrt_errs_m.txt", string_sqrt_errs_m)
+# writedlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\string_sqrt_errs_p.txt", string_sqrt_errs_p) 
 
 
 

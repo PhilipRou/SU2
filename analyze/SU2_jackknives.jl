@@ -184,6 +184,15 @@ function jack_conn_corr_mat_ev(corr_mats, mean_vals, b_size)
     return mean_evs, σ
 end
 
+# bla = collect(1:5);
+# [bla[i] * bla[j]  for i = 1:5, j = 1:5]
+# bla = [mean_vals[i,:] for i in eachindex(mean_vals[:,1])];
+# size(bla)
+# vcat(bla, bla)
+# mean(bla)
+# mean(mean_vals[:,5])
+# bla[1]
+
 # function cheat_log(x, alternative_result)
 #     if x > 0.0
 #         return log(x)
@@ -216,7 +225,7 @@ end
 function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size, ev_nr)
     N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
     num_vals = size(corr_mats_t1[1],1)
-    ev_nr    = num_vals - ev_nr +1
+    ev_nr    = num_vals - ev_nr +1  # So that Nr. 1 is the largest
     mean_vals_f = [mean_vals[i,:] for i = 1:Int(b_size*N_blocks)] # just to have an array of arrays instead of a [n_meas:num_vals]-matrix
     jack_masses = Array{Float64}(undef, N_blocks)
     for i = 1:N_blocks
@@ -234,3 +243,22 @@ function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b
     σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
     return mass_mean, σ
 end
+
+# function jack_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, b_size, ev_nr)
+#     N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
+#     num_vals = size(corr_mats_t1[1],1)
+#     ev_nr    = num_vals - ev_nr +1  # So that Nr. 1 is the largest 
+#     jack_masses = Array{Float64}(undef, N_blocks)
+#     for i = 1:N_blocks
+#         temp_corr_t1 = mean(vcat(corr_mats_t1[1:(i-1)*b_size], corr_mats_t1[i*b_size+1:b_size*N_blocks]))
+#         temp_corr_t2 = mean(vcat(corr_mats_t2[1:(i-1)*b_size], corr_mats_t2[i*b_size+1:b_size*N_blocks]))
+#         jack_ev_t1   = eigen(temp_corr_t1).values[ev_nr]
+#         jack_ev_t2   = eigen(temp_corr_t2).values[ev_nr]
+#         jack_masses[i] = log(jack_ev_t1 / jack_ev_t2)
+#     end
+#     mean_ev_t1 = eigen(mean(corr_mats_t1)).values[ev_nr]
+#     mean_ev_t2 = eigen(mean(corr_mats_t2)).values[ev_nr]
+#     mass_mean  = log(mean_ev_t1 / mean_ev_t2)
+#     σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
+#     return mass_mean, σ
+# end

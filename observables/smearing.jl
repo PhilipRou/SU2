@@ -1,6 +1,6 @@
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 

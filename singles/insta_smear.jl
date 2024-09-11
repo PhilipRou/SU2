@@ -1,7 +1,7 @@
-include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 using Plots
 using LsqFit
@@ -476,9 +476,9 @@ hline!([insta_action(1.0, 2, N_x, N_t, 0, 1.0)/N_x/N_t], label = "z = 1")
 
 # # # @assert 1==0 "Bro, just check it twice"; writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\sms\\sms_12.txt", smeared_actions)
 # using DelimitedFiles
-smeared_actions_8 = readdlm("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_8.txt")
-smeared_actions_9 = readdlm("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_9.txt")
-smeared_actions_10 = readdlm("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_11.txt")
+smeared_actions_8 = readdlm("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_8.txt")
+smeared_actions_9 = readdlm("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_9.txt")
+smeared_actions_10 = readdlm("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\old_sms\\sms_11.txt")
 # Q = 1
 
 
@@ -515,7 +515,7 @@ smeared_actions_sub = smeared_actions .- minimum(smeared_actions)
 upper_end = 10^5
 lower_end = 10^2
 step_size = 10
-rho_vals = Array(lower_end:step_size:upper_end)
+rho_vals = Array(lower_enC:step_size:upper_end)
 image_smeared_actions = plot(
     ρ .* rho_vals,
     smeared_actions_sub[rho_vals],
@@ -598,7 +598,7 @@ let
     N_smear   = 5*10^4
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
+    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
     actions_path = string(base_path,"\\non_smeared_actions.txt")
     params_path = string(base_path, "\\params.txt")
     writedlm(params_path, "L = $L\n β = $β")
@@ -680,8 +680,8 @@ L       = 16
 N_sepa  = 100
 N_smear = 10^4
 
-base_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9\\sms_data_9"
-base_fig_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9"
+base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9\\sms_data_9"
+base_fig_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_9"
 nsms_path = string(base_path, "\\non_smeared_actions.txt")
 nsms_fig_path = string(base_fig_path,"\\non_smeared_actions.pdf")
 
@@ -707,8 +707,8 @@ N_sepa  = 100
 N_smear = 10^4 *5
 N_meas  = 100
 
-base_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\sms_data_18"
-base_fig_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18"
+base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\sms_data_18"
+base_fig_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18"
 
 queues = []
 
@@ -791,8 +791,8 @@ let
     N_smear = 10^4
     # N_smear = 5*10^4
 
-    base_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\sms_data_11"
-    base_fig_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms"
+    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\sms_data_11"
+    base_fig_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms"
 
     cut = 100
     sep = 10
@@ -844,7 +844,7 @@ let
     )
 end
 
-# savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_7.pdf")
+# savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_7.pdf")
 
 
 
@@ -862,8 +862,8 @@ for q = 0:5
     # N_smear = 10^4
     N_smear = 10^4 *5
 
-    base_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\sms_data_18"
-    base_fig_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18"
+    base_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\sms_data_18"
+    base_fig_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18"
 
     cut = 100
     sep = 10
@@ -928,7 +928,7 @@ for q = 0:5
     #     )
     # end
     # display(image_top_ones)
-    # savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_17\\smeared_actions_sub_q_$q.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_17\\smeared_actions_sub_q_$q.pdf")
     # display(histogram(last_sms, title = "Last smeared action of configs with q = $q", bins = 100))#
 
     if isodd(q)
@@ -938,7 +938,7 @@ for q = 0:5
             legend = :false
         )
         display(hist_opt)
-        # savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\last_metric_opt_$q.pdf")
+        # savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\last_metric_opt_$q.pdf")
     end
     hist_ana = histogram(
         last_m_ana_with_that_q,
@@ -946,7 +946,7 @@ for q = 0:5
         legend = :false
     )
     display(hist_ana)
-    # savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\last_metric_ana_$q.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_18\\last_metric_ana_$q.pdf")
 end
 
 
@@ -984,7 +984,7 @@ end
 
     display(image_metrics)
     
-    # savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\smeared_metrics_q_$q.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_11\\smeared_metrics_q_$q.pdf")
 end
 =#
 
@@ -1047,7 +1047,7 @@ image_top_twos = hline!(
     label = latexstring("Insta: \$q = 2, z = 1\$")
 )
 
-# savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_2.pdf")
+# savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_2.pdf")
 
 
 
@@ -1178,7 +1178,7 @@ let
 end
 
 
-# savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_dif.pdf")
+# savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_actions_q_dif.pdf")
 
 =#
 q = 1
@@ -1309,7 +1309,7 @@ for z = 0.5:0.5:2.5
     #     color = :green
     # )
 
-    # savefig("D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_insta_q_$q.z_$z.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_insta_q_$q.z_$z.pdf")
 end
 
 
@@ -1696,7 +1696,7 @@ action_after = action(exp_u2.(log_U2.(bla) .+ log_U2.(insta_half_int(-1,L,L))),1
 
 
 
-# conf_path = "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_U3_conf_q_1.txt"
+# conf_path = "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\smeared_U3_conf_q_1.txt"
 # write_conf_U3(V, conf_path)
 # v = read_config_U3(conf_path);
 

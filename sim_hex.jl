@@ -2,9 +2,9 @@ using LinearAlgebra
 using StatsBase
 using DelimitedFiles
 
-include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_hex.jl")
 
 
 
@@ -58,8 +58,8 @@ for beta in [12] # [2.0,4,0,6.0,8.0]
 
 
         ####    Handling directories    ####
-        base_path = "D:\\Physik Uni\\julia_projects\\"
-        last_base_path = "D:\\Physik Uni\\julia_projects\\"
+        base_path = "C:\\Physik Uni\\julia_projects\\"
+        last_base_path = "C:\\Physik Uni\\julia_projects\\"
         base_path = string(base_path, group)
         last_base_path = string(last_base_path, group)
         base_path = string(base_path,"_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ")
@@ -83,14 +83,14 @@ for beta in [12] # [2.0,4,0,6.0,8.0]
         end
         mkdir(base_path)
         
-        # actions_path     = "D:\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+        # actions_path     = "C:\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
         actions_path = string(base_path,"\\actions.txt")        
         params_path = string(base_path,"\\params.txt") #
-        acceptances_path = string(base_path,"\\acceptances.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-        last_conf_path   = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+        acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+        last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
         top_charge_path = string(base_path,"\\top_charge.txt")
-        corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-        mean_vals_path = string(base_path,"\\mean_vals.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+        corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+        mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
         # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
         rhomb_half_loop_means_path = string(base_path,"\\rhomb_half_loop_means.txt")
         edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
@@ -236,11 +236,11 @@ for beta in [12] # [2.0,4,0,6.0,8.0]
         # display(image)
 
 
-        # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\actions_hex_$N_t.txt", actions_hex)
-        # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_1x1_$N_t.txt", means_1x1)
-        # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_1x2_$N_t.txt", means_1x2)
-        # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_2x1_$N_t.txt", means_2x1)
-        # writedlm("D:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_2x2_$N_t.txt", means_2x2)
+        # writedlm("C:\\Physik Uni\\julia_projects\\SU2\\hex_data\\actions_hex_$N_t.txt", actions_hex)
+        # writedlm("C:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_1x1_$N_t.txt", means_1x1)
+        # writedlm("C:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_1x2_$N_t.txt", means_1x2)
+        # writedlm("C:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_2x1_$N_t.txt", means_2x1)
+        # writedlm("C:\\Physik Uni\\julia_projects\\SU2\\hex_data\\means_2x2_$N_t.txt", means_2x2)
         
         println(" ")
         println("We're done!")
@@ -252,7 +252,7 @@ end
 
 
 
-# acceptances = readdlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_6.0\\N_t_32.N_x_32\\n_stout_0._rho_0.12\\sim_count_1\\acceptances.txt")
+# acceptances = readdlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_6.0\\N_t_32.N_x_32\\n_stout_0._rho_0.12\\sim_count_1\\acceptances.txt")
 # last(acceptances)/1.5/N_t/N_x/(N_metro+N_over)/(N_meas+N_therm)
 # mod_acc = [(acceptances[i+1]-acceptances[i])/0.75/2/N_t/N_x/(N_metro+N_over) for i = 1:length(acceptances)-1]
 # plot(mod_acc)
@@ -339,7 +339,7 @@ for L in [16,32,64,96]
     # N_t = N_x = $N_t,  β = $β",
     # xlabel = "MC time")
     # display(image)
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\actions_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\actions_beta_$β._N_t_$N_t._N_x_$N_x._epsilon_$ϵ.pdf")
     
     # auto_chess = []
     # auto_lex = []
@@ -383,30 +383,30 @@ for L in [16,32,64,96]
     # N_t = N_x = $N_t,  β = $β",
     # xlabel = "MC time t")
     # display(image_auto)
-    # mkpath("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β")
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_N_t_$N_t._N_x_$N_x.pdf")
+    # mkpath("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_N_t_$N_t._N_x_$N_x.pdf")
     # println("chess: ", mean(auto_chess), " ± ", std(auto_chess)/sqrt(length(auto_chess)))
     # println("lexicog.: ", mean(auto_lex),  " ± ", std(auto_lex)/sqrt(length(auto_lex)))
     # println("random: ", mean(auto_ran),  " ± ", std(auto_ran)/sqrt(length(auto_ran)))
     # println(" ")
 
-    mkpath("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β")
+    mkpath("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β")
 
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt", ϵ_chess_write)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt", ϵ_lex_write)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt", ϵ_ran_write)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt", ϵ_chess_write)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt", ϵ_lex_write)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt", ϵ_ran_write)
 
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt", actions_lex)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt", actions_chess)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt", actions_ran)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt", actions_lex)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt", actions_chess)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt", actions_ran)
 
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt", acceptances_lex)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt", acceptances_chess)
-    writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt", acceptances_ran)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt", acceptances_lex)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt", acceptances_chess)
+    writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt", acceptances_ran)
 
-    # writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_lex_N_t_$N_t._N_x_$N_x.txt", auto_lex)
-    # writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_chess_N_t_$N_t._N_x_$N_x.txt", auto_chess)
-    # writedlm("D:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_ran_N_t_$N_t._N_x_$N_x.txt", auto_ran)
+    # writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_lex_N_t_$N_t._N_x_$N_x.txt", auto_lex)
+    # writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_chess_N_t_$N_t._N_x_$N_x.txt", auto_chess)
+    # writedlm("C:\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\auto_corr\\beta_$β\\auto_norm_ran_N_t_$N_t._N_x_$N_x.txt", auto_ran)
 end
 =#
 

@@ -1,8 +1,8 @@
-include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
 
 
 using Plots
@@ -285,7 +285,7 @@ let
     q_bound = 5
     resol = 0.05
     margin = 0.1
-    insta_actions = [insta_action_U2_min(1.0, L, L, q) for q = -q_bound:q_bound]
+    insta_actions = [insta_action_U2_min(1.0, L, L, q) for q = -q_bounC:q_bound]
     insta_curve = [insta_action_U2_min(1.0, L, L, q) for q = -(q_bound+margin):resol:q_bound+margin]
     image_insta = plot(
         -(q_bound+margin):resol:q_bound+margin,
@@ -296,7 +296,7 @@ let
         linewidth = 1.5
     )
     image_insta = scatter!(
-        -q_bound:q_bound,
+        -q_bounC:q_bound,
         insta_actions,
         label = "Insta Actions",
         color = palette(:default)[1],
@@ -307,7 +307,7 @@ let
         legend = :top,
         xlabel = latexstring("Top. Charge \$q\$"),
         ylabel = L"S/\beta",
-        xticks = -q_bound:q_bound,
+        xticks = -q_bounC:q_bound,
         tickfontsize = 10,
         labelfontsize = 17,
         legendfontsize = 11,
@@ -381,7 +381,7 @@ let
     N_sepa    = 100
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = string(data_path, "\\smearing") # "D:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
+    base_path = string(data_path, "\\smearing") # "C:\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
 
     acc_therm = [0.0]
     U = gaugefield(N_x, N_t, true, "U2", "square")
@@ -733,8 +733,8 @@ let
     x_bound_lower = -5.3
     x_bound_upper = 5.3
     q_vals = Array(-(q_bound+q_over):q_resol:(q_bound+q_over))
-    z_vals = Array(-z_bound:z_bound)
-    q_vals_insta = Array(-q_bound:q_bound)
+    z_vals = Array(-z_bounC:z_bound)
+    q_vals_insta = Array(-q_bounC:q_bound)
     actions     = [insta_action_U2(1, L, L, q, z) for q in q_vals, z in z_vals ]
     actions_min = [insta_action_U2_min(1, L, L, q) for q in q_vals]
     insta_actions = [insta_action_U2(1, L, L, q, z) for q in q_vals_insta, z in z_vals ]
@@ -746,7 +746,7 @@ let
             linestyle = :dash,
             linewidth = 1.2,
             label = latexstring("Eq.\$\\,\\,\$(7)"),
-            xticks = -q_bound:q_bound,
+            xticks = -q_bounC:q_bound,
             xlabel = latexstring("Top. Charge \$q\$"),
             ylabel = L"S/\beta",
             size = (700,200),
@@ -838,8 +838,8 @@ let
         # left_margin = 2mm,
     )
     # image_dist = plot!(
-    #     ρ.*Array(0:N_smear)[start_ind:end],
-    #     dist_actions[start_ind:end,1],
+    #     ρ.*Array(0:N_smear)[start_inC:end],
+    #     dist_actions[start_inC:end,1],
     #     label = latexstring("\$\\epsilon = 0.0\$"),
     #     color = cb_colors[7],
     #     linewidth = 2,
@@ -854,8 +854,8 @@ let
         j = length(epsilons)-i+1
         # j = i
         image_dist = plot!(
-            ρ.*Array(0:N_smear)[start_ind:end],
-            dist_actions[start_ind:end,j],
+            ρ.*Array(0:N_smear)[start_inC:end],
+            dist_actions[start_inC:end,j],
             label = latexstring("\$\\epsilon = $(epsilons[j])\$"),
             color = greys[i],
             linewidth = 2.5,
@@ -863,8 +863,8 @@ let
         )
     end
     image_dist = plot!(
-        ρ.*Array(0:N_smear)[start_ind:end],
-        dist_actions[start_ind:end,1],
+        ρ.*Array(0:N_smear)[start_inC:end],
+        dist_actions[start_inC:end,1],
         label = latexstring("\$\\epsilon = 0.0\$"),
         color = :black,
         linewidth = 2,

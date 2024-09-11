@@ -93,9 +93,9 @@ function metro_cube!(U, μ, x, y, t, step, β, acc)
     # old_coeffs = deepcopy(U[μ,t,x])
     new_coeffs = ran_SU2(step) * U[μ,x,y,t]
     staple_d = staple_dag_cube(U,μ,x,y,t)
-    S_old = β*0.5*tr(U[μ,x,y,t] * staple_d)
-    S_new = β*0.5*tr(new_coeffs * staple_d)
-    if rand() < exp(S_new-S_old)
+    S_old = -β*0.5*tr(U[μ,x,y,t] * staple_d)
+    S_new = -β*0.5*tr(new_coeffs * staple_d)
+    if rand() < exp(-(S_new-S_old))
         U[μ,x,y,t] = new_coeffs
         acc[1] += 1/(NX^2 * NT * 3)
     end
@@ -198,4 +198,42 @@ end
 # action_cube(bla,1)
 # parity_hit!(bla);
 # action_cube(bla,1)
+
+
+
+
+
+
+# function chess_metro_cube!(U, step, β, acc)
+#     NX = size(U,2)
+#     NT = size(U,4)
+#     acc[1] = 0.0
+#     for μ = 1:3
+#         for trip = 1:2
+#         for t = 1:NT
+#         for y = 1:NX
+#         for x = 1+mod(t+y+trip,2):2:NX
+#             new_coeffs = ran_SU2(step) * U[μ,x,y,t]
+#             staple_d = staple_dag_cube(U,μ,x,y,t)
+#             S_old = -β*0.5*tr(U[μ,x,y,t] * staple_d)
+#             S_new = -β*0.5*tr(new_coeffs * staple_d)
+#             if rand() < exp(-(S_new-S_old))
+#                 U[μ,x,y,t] = new_coeffs
+#                 acc[1] += 1/(NX^2 * NT * 3)
+#             end
+#         end
+#         end
+#         end
+#         end
+#     end
+#     return nothing
+# end
+
+# using BenchmarkTools
+# N_t = N_x = 8
+# step = 0.1
+# b = 1.0
+# a = [0.0]
+# bla = gaugefield_SU2_cube(N_t, N_x, true);
+# @benchmark chess_metro_cube!(bla, step, b, a)
 

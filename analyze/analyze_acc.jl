@@ -10,13 +10,13 @@ for L in [16,32,64,96]
         N_x = L
         N_t = L
     
-        acceptances_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
-        acceptances_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
-        acceptances_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
     
-        actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-        actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-        actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+        actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+        actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+        actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
         
         n_meas = length(actions_chess)
     
@@ -41,7 +41,7 @@ for L in [16,32,64,96]
         xlabel = "MC time t at which integration started")
     
         display(image_auto_time)
-        # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
+        # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
     end
     
     
@@ -52,13 +52,13 @@ for L in [16,32,64,96]
         N_x = L
         N_t = L
         
-        acceptances_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
-        acceptances_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
-        acceptances_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
+        acceptances_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
     
-        actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-        actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-        actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+        actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+        actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+        actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
         
         n_meas = length(actions_chess)
     
@@ -84,7 +84,7 @@ for L in [16,32,64,96]
         xlabel = "MC time t")
     
         display(image_auto)
-        # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
+        # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β._eps_0.2\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
     end
 
 
@@ -95,13 +95,13 @@ for L in [16,32,64,96]
         N_x = L
         N_t = L
     
-        eps_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
-        eps_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
-        eps_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
+        eps_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
+        eps_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
+        eps_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
     
-        actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-        actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-        actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+        actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+        actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+        actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
         
         n_meas = length(actions_chess)
     
@@ -126,7 +126,7 @@ for L in [16,32,64,96]
         xlabel = "MC time t at which integration started")
     
         display(image_auto_time)
-        # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
+        # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
     end
     
     
@@ -137,13 +137,13 @@ for L in [16,32,64,96]
         N_x = L
         N_t = L
     
-        eps_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
-        eps_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
-        eps_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
+        eps_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
+        eps_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
+        eps_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
     
-        actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-        actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-        actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+        actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+        actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+        actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
         
         n_meas = length(actions_chess)
     
@@ -170,7 +170,7 @@ for L in [16,32,64,96]
         xlabel = "MC time t")
     
         display(image_auto)
-        # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
+        # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\auto_corr\\beta_$β\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
     end
 
 
@@ -188,7 +188,7 @@ for L in [16,32,64,96]
 # # plaq_exps = []
 # for β in betas
 #     L = 128 # [32, 64, 96, 128]
-#     means = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$L.N_x_$L\\n_stout_0._rho_0.12\\sim_count_1\\mean_vals_mike.txt")
+#     means = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$L.N_x_$L\\n_stout_0._rho_0.12\\sim_count_1\\mean_vals_mike.txt")
 #     plaqs = 0.5 .* means[:,1]
 #     b_size = Int(round(2*auto_corr_time(plaqs) + 1, RoundUp))    
 #     push!(plaq_means,  mean(plaqs))
@@ -207,7 +207,7 @@ for L in [16,32,64,96]
 #     xticks = [2.0, 4.0, 6.0, 8.0]
 # )
 
-# savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\plaq_square_analytic.pdf")
+# savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\plaq_square_analytic.pdf")
 
 
 
@@ -237,13 +237,13 @@ for L in [16,32,64,96]
     N_x = L
     N_t = 2*L
 
-    acceptances_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
-    acceptances_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
-    acceptances_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
 
-    actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-    actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-    actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+    actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+    actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+    actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
     
     n_meas = length(actions_chess)
 
@@ -268,7 +268,7 @@ for L in [16,32,64,96]
     xlabel = "MC time t at which integration started")
 
     display(image_auto_time)
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
 end
 
 
@@ -279,13 +279,13 @@ for L in [16,32,64,96]
     N_x = L
     N_t = 2*L
     
-    acceptances_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
-    acceptances_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
-    acceptances_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_chess_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_lex_N_t_$N_t._N_x_$N_x.txt")
+    acceptances_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\acceptances_ran_N_t_$N_t._N_x_$N_x.txt")
 
-    actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-    actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-    actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+    actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+    actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+    actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
     
     n_meas = length(actions_chess)
 
@@ -311,7 +311,7 @@ for L in [16,32,64,96]
     xlabel = "MC time t")
 
     display(image_auto)
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β._eps_0.2\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
 end
 
 
@@ -329,13 +329,13 @@ for L in [16,32,64,96]
     N_x = L
     N_t = 2*L
 
-    eps_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
-    eps_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
-    eps_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
+    eps_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
+    eps_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
+    eps_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
 
-    actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-    actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-    actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+    actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+    actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+    actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
     
     n_meas = length(actions_chess)
 
@@ -360,7 +360,7 @@ for L in [16,32,64,96]
     xlabel = "MC time t at which integration started")
 
     display(image_auto_time)
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\auto_time_N_t_$N_t._N_x_$N_x.pdf")
 end
 
 
@@ -371,13 +371,13 @@ for L in [16,32,64,96]
     N_x = L
     N_t = 2*L
 
-    eps_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
-    eps_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
-    eps_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
+    eps_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_chess_$N_t._N_x_$N_x.txt")
+    eps_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_lex_$N_t._N_x_$N_x.txt")
+    eps_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\eps_ran_$N_t._N_x_$N_x.txt")
 
-    actions_chess = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
-    actions_lex = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
-    actions_ran = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
+    actions_chess = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_chess_N_t_$N_t._N_x_$N_x.txt")
+    actions_lex = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_lex_N_t_$N_t._N_x_$N_x.txt")
+    actions_ran = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\actions_ran_N_t_$N_t._N_x_$N_x.txt")
     
     n_meas = length(actions_chess)
 
@@ -404,7 +404,7 @@ for L in [16,32,64,96]
     xlabel = "MC time t")
 
     display(image_auto)
-    # savefig("D:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
+    # savefig("C:\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\auto_corr\\beta_$β\\auto_corr_N_t_$N_t._N_x_$N_x.pdf")
 end
 
 

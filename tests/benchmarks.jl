@@ -160,7 +160,7 @@ step = 0.5*rand()
 
 
 
-@benchmark mywrite("D:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt", 5.0) # (247 ± 177)μs
+@benchmark mywrite("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt", 5.0) # (247 ± 177)μs
 test_array = []
 @benchmark push!(test_array,5.0)                                                                                             # (54 ± 316)ns
 
@@ -170,12 +170,12 @@ test_array = []
 #     a::Float64
 #     b::Float64
 #     c::Float64
-#     d::Float64
+#     C::Float64
 #     function SU2_coeffs(
 #         a::Float64,
 #         b::Float64,
 #         c::Float64,
-#         d::Float64
+#         C::Float64
 #         )
 #         return new(a,b,c,d)
 #     end
@@ -584,13 +584,13 @@ mutable struct coeffs_U2{T <: Real}
     a::T
     b::T
     c::T
-    d::T
+    C::T
     ϕ::T
     function coeffs_U2(
         a::T,
         b::T,
         c::T,
-        d::T,
+        C::T,
         ϕ::T
         ) where {T <: Real}
         return new{T}(a,b,c,d,ϕ)
@@ -632,12 +632,12 @@ mutable struct coeffs_U2{T <: Number}
     a::T
     b::T
     c::T
-    d::T
+    C::T
     function coeffs_U2(
         a::T,
         b::T,
         c::T,
-        d::T
+        C::T
         ) where {T <: Number}
         return new{T}(a,b,c,d)
     end

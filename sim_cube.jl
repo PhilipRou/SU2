@@ -2,9 +2,9 @@ using LinearAlgebra
 using StatsBase 
 using DelimitedFiles
 
-include("D:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 
 
 
@@ -15,7 +15,7 @@ include("D:\\Physik Uni\\julia_projects\\SU2\\updates\\updates_cube.jl")
 ####    Observable params   ####    
 for β in [8.0]
     # for N_stout in [7]
-    comment = "Large statistics for s_wil at different smearing levels and smear-cross-correlation"
+    comment = "Sanity check... smeared s_wil and cross-corr..."
     ####    Update params   ####
     global N_t = N_x = 32
     global hot       = true
@@ -23,7 +23,7 @@ for β in [8.0]
     global N_metro   = 1        # N_metro-many Metropolois sweeps followed by...
     global N_over    = 3        # ...N_over-many overrelaxation sweeps will be performed...
     global N_therm   = 100      # ...for N_therm times,
-    global N_meas    = 500
+    global N_meas    = 1500
     global N_sepa    = 10
     global ϵ         = 0.2
     global acc_wish  = 0.85
@@ -43,8 +43,8 @@ for β in [8.0]
 
 
     ####    Handling directories    ####
-    base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
-    # last_base_path = "D:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
+    base_path = "C:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
+    # last_base_path = "C:\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ"
     count_path = string(base_path, "\\sim_count.txt")
 
     # Have we already simulated with these parameters (excluding "loops")? If so,
@@ -63,14 +63,14 @@ for β in [8.0]
     end
     mkdir(base_path)
     
-    # actions_path     = "D:\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
+    # actions_path     = "C:\\Physik Uni\\julia_projects\\SU2_data\\para_data\\actions_eps_$ϵ._beta_$β._L_$N_t._Nr_$run.txt"
     params_path = string(base_path,"\\params.txt") #
-    acceptances_path = string(base_path,"\\acceptances.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    last_conf_path   = string(base_path,"\\last_config.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-    mean_vals_path = string(base_path,"\\mean_vals.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
-    corr_mat_clover_paths = [string(base_path,"\\corrs_clover_t_$t.txt") for t = 1:N_t] #["D:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
-    mean_vals_clover_path = string(base_path,"\\mean_vals_clover.txt") #"D:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    acceptances_path = string(base_path,"\\acceptances.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    last_conf_path   = string(base_path,"\\last_config.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\last_config_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    corr_mat_paths = [string(base_path,"\\corrs_t_$t.txt") for t = 1:N_t] #["C:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+    mean_vals_path = string(base_path,"\\mean_vals.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
+    corr_mat_clover_paths = [string(base_path,"\\corrs_clover_t_$t.txt") for t = 1:N_t] #["C:\\Physik Uni\\julia_projects\\SU2_data\\corrs_t_$t._eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt" for t = 1:N_t]
+    mean_vals_clover_path = string(base_path,"\\mean_vals_clover.txt") #"C:\\Physik Uni\\julia_projects\\SU2_data\\mean_vals_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
     # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
     # last_conf_path = string(last_base_path,"\\last_config.txt")
 
@@ -139,8 +139,9 @@ for β in [8.0]
         # results = measure_RT_loops_corrs_cube(U, loops, n_stout, ρ)
         # results = measure_RT_loops_corrs_cube_selfonly(U, loops, n_stout, ρ)
         # results_plaq = measure_plaq_12(U, n_stout, ρ)
-        results = measure_s_wil(U, smear_nums, ρ)
         # results_clover = measure_clover(U, n_stout, ρ)
+        results = measure_s_wil(U, smear_nums, ρ)
+        # results = measure_s_wil_x_clover(U, smear_nums, ρ)
         corr_mats = results[1]
         mean_vals = results[2]
         # corr_mats_plaq = results_plaq[1]

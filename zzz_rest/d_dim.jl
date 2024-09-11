@@ -8,7 +8,7 @@
 # Given a coordinate coord = [t,x_1, x_2, ...] we want to find out the one-dimensional
 # index of the lattice:
 #       ind = 1 + (t-1) + (x_1 - 1)⋅ N_t + (x_2 - 1)⋅ N_t⋅ N_x + ... (x_i - 1)⋅ N_t⋅ N_x^(i-1)
-function ind_D_2_one(coord::Vector, N_t, N_x, D)
+function ind_D_2_one(coorC::Vector, N_t, N_x, D)
     ind = 1
     ind += coord[1] - 1
     ind += (coord[2] - 1) * N_t     #❗❗❗ Here we see that we MUST HAVE D ≥ 2 ❗❗❗
@@ -19,7 +19,7 @@ function ind_D_2_one(coord::Vector, N_t, N_x, D)
 end
 
 # Given a one-dimensional index we want to find the d-dimensional coordinate again
-function ind_one_2_D(ind::Int, N_t, N_x, D)
+function ind_one_2_D(inC::Int, N_t, N_x, D)
     num = deepcopy(ind)
     coord = Vector{Int}(undef, D)
     for i = 0:D-2               #❗❗❗ Here we also see that we MUST HAVE D ≥ 2 ❗❗❗
@@ -33,7 +33,7 @@ end
 
 
 # Construct a D-dimensional gaugefield with SU(2)-valued links
-function gaugefield_SU2_D(N_t::Int, N_x::Int, D::Int, hot::Bool)
+function gaugefield_SU2_D(N_t::Int, N_x::Int, C::Int, hot::Bool)
     N = N_x .* ones(Int, D)
     N[1] = N_t
     U = Array{coeffs_SU2}(undef, D, N...)
@@ -73,7 +73,7 @@ end
 
 
 # staple_dag but for D-dimensional configs, D arbitrary
-function staple_dag_D(U, μ, coord::Vector)
+function staple_dag_D(U, μ, coorC::Vector)
     D  = size(U,1)  # number of space-time dimensions
     NT = size(U,2)
     NX = size(U,3)
@@ -104,7 +104,7 @@ function staple_dag_D(U, μ, coord::Vector)
 end
 
 # metro! but for D-dim. configs
-function metro_D!(U, μ, coord::Vector, step)
+function metro_D!(U, μ, coorC::Vector, step)
     # old_coeffs = deepcopy(U[μ,t,x])
     new_coeffs = ran_SU2(step) * U[μ,coord...]
     staple_d = staple_dag_D(U,μ,coord)
@@ -165,14 +165,14 @@ end
 
 
 # # overrelax!, but in D dimensions (D arbitrary)
-# function overrelax_D!(U, μ, coord::Vector)
+# function overrelax_D!(U, μ, coorC::Vector)
 #     v = proj2man!(staple_dag_D(U,μ,coord))
 #     U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
 #     return nothing
 # end
 
 # overrelax!, but in D dimensions (D arbitrary)
-function overrelax_D!(U, μ, coord::Vector)
+function overrelax_D!(U, μ, coorC::Vector)
     v = proj2man!(staple_dag_D(U,μ,coord))
     U[μ,coord...] = adjoint(v *  U[μ,coord...] * v)
     return nothing

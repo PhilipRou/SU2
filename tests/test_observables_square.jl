@@ -19,11 +19,11 @@ mod1_homebrew_test()
 =#
 
 # function test_mywrite()
-#     rm("D:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
+#     rm("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
 #     for i = 1:10
-#         mywrite("D:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt",i)
+#         mywrite("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt",i)
 #     end
-#     bla = readdlm("D:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
+#     bla = readdlm("C:\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
 #     @assert Int.(bla[:,1]) == collect(1:10)
 #     return true
 # end
@@ -33,8 +33,8 @@ mod1_homebrew_test()
 #=
 function mywrite_last_conf_test()
     V = gaugefield_SU2(N_t,N_x,true)
-    mywrite("D:\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt", V)
-    W = read_last_conf("D:\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt")
+    mywrite("C:\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt", V)
+    W = read_last_conf("C:\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt")
     for μ = 1:2
         for t = 1:N_t
             for x = 1:N_x

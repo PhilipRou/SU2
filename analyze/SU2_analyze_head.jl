@@ -6,9 +6,9 @@ using SpecialFunctions
 using LaTeXStrings
 using Measures
 
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
-include("D:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
+include("C:\\Physik Uni\\julia_projects\\SU2\\observables\\observables_cube.jl")
 
 
 
