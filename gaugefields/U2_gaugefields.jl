@@ -12,12 +12,12 @@ mutable struct coeffs_U2{T <: Number}
     a::T
     b::T
     c::T
-    C::T
+    d::T
     function coeffs_U2(
         a::T,
         b::T,
         c::T,
-        C::T
+        d::T
         ) where {T <: Number}
         return new{T}(a,b,c,d)
     end

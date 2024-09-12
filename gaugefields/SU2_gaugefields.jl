@@ -33,12 +33,12 @@ mutable struct coeffs_SU2{T <: Real}
     a::T
     b::T
     c::T
-    C::T
+    d::T
     function coeffs_SU2(
         a::T,
         b::T,
         c::T,
-        C::T
+        d::T
         ) where {T <: Real}
         return new{T}(a,b,c,d)
     end
