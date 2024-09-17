@@ -7,7 +7,7 @@ include("SU2_jackknives.jl")
 N_t = N_x   = 32
 smear_nums  = [0,1,3,7,15]
 ρ           = 0.24
-sim_count   = 4
+sim_count   = 2
 
 base_path           = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\3d_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\smear_nums_$smear_nums._rho_$ρ\\sim_count_$sim_count"
 acceptances_path    = string(base_path,"\\acceptances.txt") #"C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\acceptances_eps_$ϵ._beta_$β._L_$N_t._n_stout_$n_stout._rho_$ρ.txt"
@@ -21,8 +21,8 @@ L_smear = length(smear_nums)
 
 corr_mats_list = []
 corr_mats_small_list = []
-small_inds = collect(2:L_smear)
-# small_inds = vcat(collect(2:L_smear), collect(2:L_smear).+L_smear)
+# small_inds = collect(2:L_smear)
+small_inds = vcat(collect(2:L_smear), collect(2:L_smear).+L_smear)
 for t = 1:N_t
     raw_corrs = readdlm(corr_mat_paths[t])
     corr_mats       = [(raw_corrs[(i-1)*n_smear+1:i*n_smear , :] + transpose(raw_corrs[(i-1)*n_smear+1:i*n_smear , :])) / 2 for i = 1:n_meas]
@@ -41,9 +41,9 @@ jacks = [jackknife(mean_vals[:,i], b_sizes[i]) for i = 1:n_smear]
 loop_means = [jacks[i][1] for i = 1:n_smear];
 loop_errs = [jacks[i][2] for i = 1:n_smear];
 
-image_expvals = scatter(smear_nums,loop_means, yerror = loop_errs, label = "Smeared s_wil exp. values", xticks = smear_nums, xlabel = "N_smear")
-# image_expvals = scatter(smear_nums, loop_means[1:n_smear>>1], yerror = loop_errs[1:n_smear>>1], label = "Smeared s_wil exp. values", xticks = smear_nums, xlabel = "N_smear")
-# image_expvals = scatter!(smear_nums,loop_means[n_smear>>1+1:n_smear], yerror = loop_errs[n_smear>>1+1:n_smear], label = "Smeared clover exp. values", xticks = smear_nums)
+# image_expvals = scatter(smear_nums,loop_means, yerror = loop_errs, label = "Smeared s_wil exp. values", xticks = smear_nums, xlabel = "N_smear")
+image_expvals = scatter(smear_nums, loop_means[1:n_smear>>1], yerror = loop_errs[1:n_smear>>1], label = "Smeared s_wil exp. values", xticks = smear_nums, xlabel = "N_smear")
+image_expvals = scatter!(smear_nums,loop_means[n_smear>>1+1:n_smear], yerror = loop_errs[n_smear>>1+1:n_smear], label = "Smeared clover exp. values", xticks = smear_nums)
 
 
 
@@ -121,7 +121,7 @@ for smear = start_ind+1:end_ind
     image_conn_evs = plot_corrs!(N_t, conn_evs[:,smear], conn_evs_errs[:,smear], "EV nr. $smear", image_conn_evs, palette(:default)[smear])
 end
 image_conn_evs = plot!(
-    title = "EV's of connected corr. mats. of s_wil\n β = $β, L = $N_t, n_smear = $smear_nums, ρ = $ρ",
+    title = "EV's of connected corr. mats. of s_wil AND clover\n β = $β, L = $N_t, n_smear = $smear_nums, ρ = $ρ",
     xlabel = latexstring("\$ t \$"),
     right_margin = 10mm,
     yaxis = :log,

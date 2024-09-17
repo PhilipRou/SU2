@@ -15,7 +15,7 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 ####    Observable params   ####    
 for β in [8.0]
     # for N_stout in [7]
-    comment = "Sanity check... smeared s_wil and cross-corr..."
+    comment = "Try to measure cross corr. between s_wil and clover including different smearing levels"
     ####    Update params   ####
     global N_t = N_x = 32
     global hot       = true
@@ -140,8 +140,8 @@ for β in [8.0]
         # results = measure_RT_loops_corrs_cube_selfonly(U, loops, n_stout, ρ)
         # results_plaq = measure_plaq_12(U, n_stout, ρ)
         # results_clover = measure_clover(U, n_stout, ρ)
-        results = measure_s_wil(U, smear_nums, ρ)
-        # results = measure_s_wil_x_clover(U, smear_nums, ρ)
+        # results = measure_s_wil(U, smear_nums, ρ)
+        results = measure_s_wil_x_clover(U, smear_nums, ρ)
         corr_mats = results[1]
         mean_vals = results[2]
         # corr_mats_plaq = results_plaq[1]

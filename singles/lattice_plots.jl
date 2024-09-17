@@ -16,8 +16,9 @@ using Statistics
 using QuadGK
 using Measures
 
-data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\data" 
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\plots"
+data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\data" 
+# fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\plots"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS"
 
 function insta_action_U2_min(β, N_x, N_t, q)
     return β*N_x*N_t*(1-cos(q*π/N_x/N_t))
@@ -197,14 +198,17 @@ cb_blue, cb_orange, cb_green, cb_pink, cb_grey, cb_purple, cb_red = cb_colors;
 
 
 beta_16 = 1.0
-N_meas = 5000
+N_meas_16 = 50000
 N_sepa = 10
 Ls = Array(16:8:48)
 betas = beta_16/16^2 .* Ls.^2
-queues = Array{Float64}(undef, N_meas, length(Ls))
+N_meas = round.(Int, N_meas_16 * 16^2 .* (Ls.^(-2)))
+# queues = Array{Float64}(undef, N_meas, length(Ls))
+queues = []
 
 for i in eachindex(Ls)
     # i = 1
+    push!(queues, [])
     L = Ls[i]
     U = gaugefield_U2(L,L,true)
     ϵ = 0.1
@@ -215,27 +219,42 @@ for i in eachindex(Ls)
         ϵ *=   sqrt(acc_therm[1] / acc_wish)
     end
     count = 0
-    for meas = 1:N_meas
+    for meas = 1:N_meas[i]
         for sepa = 1:N_sepa
             chess_metro!(U, ϵ, betas[i], [0.0], "U2")
         end
-        queues[meas,i] = top_charge_U2(U)
-        if meas%Int(N_meas/100) == 0
-            count += 1
-            println("L = $(L[i]), Progress: $count%")
+        # queues[meas,i] = top_charge_U2(U)
+        push!(queues[i], top_charge_U2(U))
+        # if meas%Int(N_meas[i]/100) == 0
+        #     count += 1
+        #     println("L = $(L[i]), Progress: $count%")
+        # end
+        if meas%Int(N_meas[i]/2) == 0
+            count += 50
+            println("L = $(Ls[i]), Progress: $count%")
         end
     end
 end
 
-queues_path = string(data_path, "\\queues.txt")
-# writedlm(queues_path, queues)
-queues = readdlm(queues_path)
+# queues_path = string(data_path, "\\queues.txt")
+# # writedlm(queues_path, queues)
+# queues = readdlm(queues_path)
 
-qsq = queues.^2 
-b_sizes = [round(Int,2*auto_corr_time(qsq[:,i])+1) for i in eachindex(Ls)]
-susc_vals = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[1] for i in eachindex(Ls)]
-susc_errs = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[2] for i in eachindex(Ls)]
+# qsq = queues.^2 
+# b_sizes = [round(Int,2*auto_corr_time(qsq[:,i])+1) for i in eachindex(Ls)]
+# susc_vals = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[1] for i in eachindex(Ls)]
+# susc_errs = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[2] for i in eachindex(Ls)]
 susc_anal = [analytic_susc_U2(β) for β in minimum(betas):0.1:maximum(betas)]
+
+susc_vals = []
+susc_errs = []
+for i in eachindex(Ls)
+    b_size = round(Int, 2*auto_corr_time(queues[i])+1)
+    jack = jackknife(queues[i].^2 ./ Ls[i]^2, b_size)
+    push!(susc_vals, jack[1])
+    push!(susc_errs, jack[2])
+end
+
 
 image_susc = plot(
     minimum(betas):0.1:maximum(betas),
@@ -248,7 +267,8 @@ image_susc = scatter!(
     betas,
     susc_vals,
     yerror = susc_errs,
-    label = latexstring("Num. result for \$L=32\$"),
+    # label = latexstring("Num. result for \$L=32\$"),
+    label = "Num. results",
     markershape = :diamond,
     markersize = 6,
     # markercolor = palette(:default)[1], # cb_red, #cb_blue
@@ -266,6 +286,7 @@ image_susc = plot!(
     legendfontsize = 11,
     left_margin = 2mm
 )
+display(image_susc)
 
 image_susc_path = string(fig_path, "\\susc.pdf")
 # savefig(image_susc_path)
@@ -285,18 +306,19 @@ let
     q_bound = 5
     resol = 0.05
     margin = 0.1
-    insta_actions = [insta_action_U2_min(1.0, L, L, q) for q = -q_bounC:q_bound]
+    insta_actions = [insta_action_U2_min(1.0, L, L, q) for q = -q_bound:q_bound]
     insta_curve = [insta_action_U2_min(1.0, L, L, q) for q = -(q_bound+margin):resol:q_bound+margin]
     image_insta = plot(
         -(q_bound+margin):resol:q_bound+margin,
         insta_curve,
         # label = L"N_{x} N_{t} \left(1 - \cos\left\{\frac{q\pi}{N_x N_t} \right\}\right)",
-        label = latexstring("Eq.\$\\,\\,\$(7)"),
+        # label = latexstring("Eq.\$\\,\\,\$(7)"),
+        label = "Lower bound",
         color = palette(:default)[2],
         linewidth = 1.5
     )
     image_insta = scatter!(
-        -q_bounC:q_bound,
+        -q_bound:q_bound,
         insta_actions,
         label = "Insta Actions",
         color = palette(:default)[1],
@@ -307,7 +329,7 @@ let
         legend = :top,
         xlabel = latexstring("Top. Charge \$q\$"),
         ylabel = L"S/\beta",
-        xticks = -q_bounC:q_bound,
+        xticks = -q_bound:q_bound,
         tickfontsize = 10,
         labelfontsize = 17,
         legendfontsize = 11,
@@ -555,12 +577,12 @@ let
         # xticks = 0:resol:τ,
         xlabel = latexstring("Flow Time \$\\tau\$"),
         # ylabel = L"(S-S_{\textrm{insta}})\,/\,\beta",
-        ylabel = L"s-\mathrm{Eq.}(7)/V",
+        ylabel = latexstring("\$ s-s_{\\mathrm{lower bound}} \$"), # L"s-\mathrm{Eq.}(7)/V",
         tickfontsize = 10,
         labelfontsize = 17,
         legendfontsize = 11,
         yaxis = :log,
-        # left_margin = 2mm
+        left_margin = 2mm
     )
 
     col_ind = 0
@@ -733,8 +755,8 @@ let
     x_bound_lower = -5.3
     x_bound_upper = 5.3
     q_vals = Array(-(q_bound+q_over):q_resol:(q_bound+q_over))
-    z_vals = Array(-z_bounC:z_bound)
-    q_vals_insta = Array(-q_bounC:q_bound)
+    z_vals = Array(-z_bound:z_bound)
+    q_vals_insta = Array(-q_bound:q_bound)
     actions     = [insta_action_U2(1, L, L, q, z) for q in q_vals, z in z_vals ]
     actions_min = [insta_action_U2_min(1, L, L, q) for q in q_vals]
     insta_actions = [insta_action_U2(1, L, L, q, z) for q in q_vals_insta, z in z_vals ]
@@ -745,16 +767,17 @@ let
             color = :black,
             linestyle = :dash,
             linewidth = 1.2,
-            label = latexstring("Eq.\$\\,\\,\$(7)"),
-            xticks = -q_bounC:q_bound,
+            # label = latexstring("Eq.\$\\,\\,\$(7)"),
+            label = "Lower bound",
+            xticks = -q_bound:q_bound,
             xlabel = latexstring("Top. Charge \$q\$"),
             ylabel = L"S/\beta",
-            size = (700,200),
+            size = (700,300),
             # tickfontsize = 9,
-            # labelfontsize = 13,
-            # legendfontsize = 10,
-            ylim = (y_bound_lower, y_bound_upper),
-            xlim = (x_bound_lower, x_bound_upper),
+            labelfontsize = 13,
+            legendfontsize = 9,
+            # ylim = (y_bound_lower, y_bound_upper),
+            # xlim = (x_bound_lower, x_bound_upper),
             grid = :false,
             legend = :outerright,
             # foreground_color_legend = :false,
@@ -767,20 +790,30 @@ let
         image_local = plot!(
             q_vals,
             actions[:,z+z_bound+1],
-            label = latexstring("\$z = $z\$"),
+            label = :false, # latexstring("\$z = $z\$"),
             color = palette(:default)[z+z_bound+1],
             linewidth = 1.2
         )
         image_local = scatter!(
             q_vals_insta,
             insta_actions[:,z+z_bound+1],
-            label = :false,
+            label = latexstring("\$z = $z\$"), # :false,
             markershape = markers[mod(z,length(markers))+1],
             markersize = 5,
             color = palette(:default)[z+z_bound+1],
             alpha = 0.6,
         )
     end
+    image_local = lens!(
+        [0.9,1.1],
+        [0.0,0.015],
+        inset = (1, bbox(0.15,0.0,0.15,0.15)),
+    )
+    image_local = lens!(
+        [1.9,2.1],
+        [0.015,0.025],
+        inset = (1, bbox(0.45,0.0,0.15,0.15)),
+    )
     display(image_local)
 end
 
@@ -838,8 +871,8 @@ let
         # left_margin = 2mm,
     )
     # image_dist = plot!(
-    #     ρ.*Array(0:N_smear)[start_inC:end],
-    #     dist_actions[start_inC:end,1],
+    #     ρ.*Array(0:N_smear)[start_ind:end],
+    #     dist_actions[start_ind:end,1],
     #     label = latexstring("\$\\epsilon = 0.0\$"),
     #     color = cb_colors[7],
     #     linewidth = 2,
@@ -854,8 +887,8 @@ let
         j = length(epsilons)-i+1
         # j = i
         image_dist = plot!(
-            ρ.*Array(0:N_smear)[start_inC:end],
-            dist_actions[start_inC:end,j],
+            ρ.*Array(0:N_smear)[start_ind:end],
+            dist_actions[start_ind:end,j],
             label = latexstring("\$\\epsilon = $(epsilons[j])\$"),
             color = greys[i],
             linewidth = 2.5,
@@ -863,8 +896,8 @@ let
         )
     end
     image_dist = plot!(
-        ρ.*Array(0:N_smear)[start_inC:end],
-        dist_actions[start_inC:end,1],
+        ρ.*Array(0:N_smear)[start_ind:end],
+        dist_actions[start_ind:end,1],
         label = latexstring("\$\\epsilon = 0.0\$"),
         color = :black,
         linewidth = 2,
@@ -872,11 +905,11 @@ let
     )
     image_dist = hline!(
         [insta_action_U2_min(1,L,L,q)],
-        label = latexstring("Eq. (7) for \$q=1\$"),
+        label = latexstring("Lower bound for \$q=1\$"),
         color = cb_red,
-        linestyle = :dash,
+        linestyle = :dot,
         legend = :right,
-        linewidth = 3,
+        linewidth = 2.5,
         alpha = 0.8,
         # grid = :false
     )
@@ -896,7 +929,7 @@ image_dist_path = string(fig_path,"\\disturbed_locals.pdf")
 
 
 # let
-    N_meas = 1000
+    N_meas = 10000
     L = 32
     q = 1
     z = 5
