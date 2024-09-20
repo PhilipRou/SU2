@@ -3,6 +3,7 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\u
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_jackknives.jl")
 
 
 using Plots
@@ -43,7 +44,13 @@ end
 function analytic_susc_U2(β)
     nasty(α)   = besseli(1,β*cos(α))/cos(α)
     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
-    return quadgk(nastier,-π/2,π/2)[1] / quadgk(nasty,-π/2,π/2)[1] / π^2
+    return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
+end
+
+function analytic_plaq_U2(β)
+    numer(α) = besseli(0,β*cos(α)) + besseli(2,β*cos(α))
+    denom(α) = 2*besseli(1,β*cos(α))/cos(α)
+    return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/β
 end
 
 function insta_U2_z(N_x, N_t, q, z)
@@ -202,13 +209,17 @@ N_meas_16 = 50000
 N_sepa = 10
 Ls = Array(16:8:48)
 betas = beta_16/16^2 .* Ls.^2
-N_meas = round.(Int, N_meas_16 * 16^2 .* (Ls.^(-2)))
+N_meas = round.(Int, N_meas_16 * 16^2 .* (Ls.^(-2)) )
+# N_meas = round.(Int, N_meas_16 * 16^2 .* (Ls.^(-2)) .* betas.^2 )
 # queues = Array{Float64}(undef, N_meas, length(Ls))
-queues = []
+queues  = []
+actions = []
 
 for i in eachindex(Ls)
     # i = 1
+    N_meas = 5000 # N_meas[i]
     push!(queues, [])
+    push!(actions, [])
     L = Ls[i]
     U = gaugefield_U2(L,L,true)
     ϵ = 0.1
@@ -219,78 +230,139 @@ for i in eachindex(Ls)
         ϵ *=   sqrt(acc_therm[1] / acc_wish)
     end
     count = 0
-    for meas = 1:N_meas[i]
+    for meas = 1:N_meas
         for sepa = 1:N_sepa
             chess_metro!(U, ϵ, betas[i], [0.0], "U2")
         end
-        # queues[meas,i] = top_charge_U2(U)
-        push!(queues[i], top_charge_U2(U))
-        # if meas%Int(N_meas[i]/100) == 0
-        #     count += 1
-        #     println("L = $(L[i]), Progress: $count%")
-        # end
-        if meas%Int(N_meas[i]/2) == 0
-            count += 50
+        # push!(queues[i], top_charge_U2(U))
+        push!(actions[i], action(U, 1.0))
+        if meas%Int(N_meas/100) == 0
+            count += 1
             println("L = $(Ls[i]), Progress: $count%")
         end
+        # if meas%Int(N_meas/2) == 0
+        #     count += 50
+        #     println("L = $(Ls[i]), Progress: $count%")
+        # end
     end
 end
 
-# queues_path = string(data_path, "\\queues.txt")
-# # writedlm(queues_path, queues)
-# queues = readdlm(queues_path)
+# for i in eachindex(Ls)
+#     queues_path = string(fig_path, "\\queues_L_$(Ls[i]).txt")
+#     writedlm(queues_path, queues[i])
+# end
 
-# qsq = queues.^2 
-# b_sizes = [round(Int,2*auto_corr_time(qsq[:,i])+1) for i in eachindex(Ls)]
-# susc_vals = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[1] for i in eachindex(Ls)]
-# susc_errs = [jackknife(qsq[:,i]./Ls[i]^2,b_sizes[i])[2] for i in eachindex(Ls)]
-susc_anal = [analytic_susc_U2(β) for β in minimum(betas):0.1:maximum(betas)]
+# queues = []
+# for i in eachindex(Ls)
+#     push!(queues, readdlm(string(fig_path, "\\queues_L_$(Ls[i]).txt"))[:,1])
+# end
 
 susc_vals = []
 susc_errs = []
 for i in eachindex(Ls)
     b_size = round(Int, 2*auto_corr_time(queues[i])+1)
-    jack = jackknife(queues[i].^2 ./ Ls[i]^2, b_size)
+    println("Block size of q at L = $(Ls[i]): ", b_size)
+    jack = jackknife(queues[i].^2 ./ Ls[i]^2 .* betas[i] ./2, b_size)
     push!(susc_vals, jack[1])
     push!(susc_errs, jack[2])
 end
 
+# beta_range = Array(minimum(betas):0.01:maximum(betas))
+# beta_range = Array(0.8:0.01:9.5)
+beta_range = Array(1/1.05:0.01:700) # previous upper limit: 10
+susc_anal = [analytic_susc_U2(β)*β/2 for β in beta_range]
+beta_range_inv = 1 ./ beta_range
 
-image_susc = plot(
-    minimum(betas):0.1:maximum(betas),
-    susc_anal,
-    label = "Analytical result",
-    linecolor = palette(:default)[2], # cb_grey # cb_orange
-    linewidth = 1.5,
-)
-image_susc = scatter!(
-    betas,
-    susc_vals,
-    yerror = susc_errs,
-    # label = latexstring("Num. result for \$L=32\$"),
-    label = "Num. results",
-    markershape = :diamond,
-    markersize = 6,
-    # markercolor = palette(:default)[1], # cb_red, #cb_blue
-    # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
-    color = palette(:default)[1],
-)
-image_susc = plot!(
-    xlabel = latexstring("\$\\beta\$"),
-    # ylabel = latexstring("\$\\chi_\\text{top}\$")
-    # ylabel = latexstring("\$a^2\$ χₜₒₚ"),
-    ylabel = L"a^2 \, \chi_{\textbf{top}}",
-    xticks = (Array(1:2:9), string.(Array(1.0:2:9.0))),
-    tickfontsize = 10,
-    labelfontsize = 17,
-    legendfontsize = 11,
-    left_margin = 2mm
-)
-display(image_susc)
+let
+    image_susc = plot(
+        beta_range_inv,
+        susc_anal,
+        label = "Analytical result",
+        linecolor = palette(:default)[2], # cb_grey # cb_orange
+        linewidth = 1.5,
+    )
+    image_susc = scatter!(
+        1 ./ betas,
+        susc_vals,
+        yerror = susc_errs,
+        # label = latexstring("Num. result for \$L=32\$"),
+        label = "Num. results",
+        markershape = :diamond,
+        markersize = 6,
+        # markercolor = palette(:default)[1], # cb_red, #cb_blue
+        # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
+        color = palette(:default)[1],
+    )
+    image_susc = plot!(
+        xlabel = latexstring("\$1 / \\beta\$"),
+        # ylabel = latexstring("\$\\frac{\\chi_\\mathrm{top}}{g^2}\$"),
+        ylabel = L"\chi_{\textbf{top}} \, / g^2",
+        # xticks = (Array(1:2:9), string.(Array(1.0:2:9.0))),
+        legend = :topright,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 11,
+        left_margin = 2mm,
+        # xlim = (0.0,1.1),
+    )
+    display(image_susc)
+end
 
-image_susc_path = string(fig_path, "\\susc.pdf")
+image_susc_path = string(fig_path, "\\susc_over_beta_inv.pdf")
 # savefig(image_susc_path)
 
+
+s_wil_vals = []
+s_wil_errs = []
+for i in eachindex(Ls)
+    b_size = round(Int, 2*auto_corr_time(actions[i])+1)
+    println("Block size of s_wil at L = $(Ls[i]): ", b_size)
+    jack = jackknife(actions[i] ./ Ls[i]^2 .* betas[i] ./ 2, b_size)
+    push!(s_wil_vals, jack[1])
+    push!(s_wil_errs, jack[2])
+end
+
+beta_range = Array(1/1.05:0.01:700) # previous upper limit: 10
+s_wil_anal = [(1-analytic_plaq_U2(β))*β/2 for β in beta_range]
+beta_range_inv = 1 ./ beta_range
+
+let
+    image_s_wil = plot(
+        beta_range_inv,
+        s_wil_anal,
+        label = "Analytical result",
+        linecolor = palette(:default)[2], # cb_grey # cb_orange
+        linewidth = 1.5,
+    )
+    image_s_wil = scatter!(
+        1 ./ betas,
+        s_wil_vals,
+        yerror = s_wil_errs,
+        # label = latexstring("Num. result for \$L=32\$"),
+        label = "Num. results",
+        markershape = :square,
+        markersize = 4,
+        # markercolor = palette(:default)[1], # cb_red, #cb_blue
+        # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
+        color = palette(:default)[1],
+    )
+    image_s_wil = plot!(
+        xlabel = latexstring("\$1 / \\beta\$"),
+        # ylabel = latexstring("\$\\frac{\\chi_\\mathrm{top}}{g^2}\$"),
+        ylabel = L"s_{\mathrm{wil}} \, / g^2",
+        # xticks = (Array(1:2:9), string.(Array(1.0:2:9.0))),
+        legend = :topright,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 11,
+        left_margin = 2mm,
+        # xlim = (0.0,1.1),
+    )
+    display(image_s_wil)
+end
+
+image_s_wil_path = string(fig_path, "\\s_wil_over_beta_inv.pdf")
+# savefig(image_s_wil_path)
 
 
 
@@ -765,7 +837,7 @@ let
             q_vals,
             actions_min,
             color = :black,
-            linestyle = :dash,
+            # linestyle = :dash,
             linewidth = 1.2,
             # label = latexstring("Eq.\$\\,\\,\$(7)"),
             label = "Lower bound",
@@ -792,6 +864,7 @@ let
             actions[:,z+z_bound+1],
             label = :false, # latexstring("\$z = $z\$"),
             color = palette(:default)[z+z_bound+1],
+            linestyle = :dash,
             linewidth = 1.2
         )
         image_local = scatter!(
@@ -805,14 +878,14 @@ let
         )
     end
     image_local = lens!(
-        [0.9,1.1],
+        [0.8,1.201],
         [0.0,0.015],
-        inset = (1, bbox(0.15,0.0,0.15,0.15)),
+        inset = (1, bbox(0.16,0.0,0.15,0.15)),
     )
     image_local = lens!(
-        [1.9,2.1],
-        [0.015,0.025],
-        inset = (1, bbox(0.45,0.0,0.15,0.15)),
+        [1.8,2.2],
+        [0.01,0.025],
+        inset = (1, bbox(0.44,0.0,0.15,0.15)),
     )
     display(image_local)
 end
