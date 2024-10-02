@@ -41,16 +41,29 @@ function analytic_susc_U1(β)
     return quadgk(kern, -π, π)[1] / besseli(0,β) / (2*π)^3
 end
 
+function analytic_plaq_U2(β)
+    # b = big(β)
+    b = β
+    numer(α) = besseli(0,b*cos(α)) + besseli(2,b*cos(α))
+    denom(α) = 2*besseli(1,b*cos(α))/cos(α)
+    return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/b
+end
+
 function analytic_susc_U2(β)
-    nasty(α)   = besseli(1,β*cos(α))/cos(α)
-    nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
+    # b = big(β)
+    # b::Float32 = β
+    b = β
+    nasty(α)   = besseli(1,b*cos(α))/cos(α)
+    nastier(α) = α^2 * besseli(1,b*cos(α))/cos(α)
     return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
 end
 
-function analytic_plaq_U2(β)
-    numer(α) = besseli(0,β*cos(α)) + besseli(2,β*cos(α))
-    denom(α) = 2*besseli(1,β*cos(α))/cos(α)
-    return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/β
+function analytic_susc_U2_naive(β)
+    b = big(β)
+    # b = β
+    nasty(α)   = exp(b*cos(α)) * cos(α)^(3/2)
+    nastier(α) = α^2 * exp(b*cos(α)) * cos(α)^(3/2)
+    return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
 end
 
 function insta_U2_z(N_x, N_t, q, z)
@@ -249,12 +262,16 @@ end
 
 # for i in eachindex(Ls)
 #     queues_path = string(fig_path, "\\queues_L_$(Ls[i]).txt")
-#     writedlm(queues_path, queues[i])
+#     actions_path = string(fig_path, "\\actions_L_$(Ls[i]).txt")
+#     # # writedlm(queues_path, queues[i])
+#     # # writedlm(actions_path, actions[i])
 # end
 
 # queues = []
+# actions = []
 # for i in eachindex(Ls)
 #     push!(queues, readdlm(string(fig_path, "\\queues_L_$(Ls[i]).txt"))[:,1])
+#     push!(actions, readdlm(string(fig_path, "\\actions_L_$(Ls[i]).txt"))[:,1])
 # end
 
 susc_vals = []
@@ -262,7 +279,7 @@ susc_errs = []
 for i in eachindex(Ls)
     b_size = round(Int, 2*auto_corr_time(queues[i])+1)
     println("Block size of q at L = $(Ls[i]): ", b_size)
-    jack = jackknife(queues[i].^2 ./ Ls[i]^2 .* betas[i] ./2, b_size)
+    jack = jackknife(queues[i].^2 ./ Ls[i]^2 .* betas[i] ./4, b_size)
     push!(susc_vals, jack[1])
     push!(susc_errs, jack[2])
 end
@@ -270,7 +287,7 @@ end
 # beta_range = Array(minimum(betas):0.01:maximum(betas))
 # beta_range = Array(0.8:0.01:9.5)
 beta_range = Array(1/1.05:0.01:700) # previous upper limit: 10
-susc_anal = [analytic_susc_U2(β)*β/2 for β in beta_range]
+susc_anal = [analytic_susc_U2(β)*β/4 for β in beta_range]
 beta_range_inv = 1 ./ beta_range
 
 let
@@ -317,13 +334,13 @@ s_wil_errs = []
 for i in eachindex(Ls)
     b_size = round(Int, 2*auto_corr_time(actions[i])+1)
     println("Block size of s_wil at L = $(Ls[i]): ", b_size)
-    jack = jackknife(actions[i] ./ Ls[i]^2 .* betas[i] ./ 2, b_size)
+    jack = jackknife(actions[i] ./ Ls[i]^2 .* betas[i] ./ 4, b_size)
     push!(s_wil_vals, jack[1])
     push!(s_wil_errs, jack[2])
 end
 
 beta_range = Array(1/1.05:0.01:700) # previous upper limit: 10
-s_wil_anal = [(1-analytic_plaq_U2(β))*β/2 for β in beta_range]
+s_wil_anal = [(1-analytic_plaq_U2(β))*β/4 for β in beta_range]
 beta_range_inv = 1 ./ beta_range
 
 let
@@ -340,8 +357,8 @@ let
         yerror = s_wil_errs,
         # label = latexstring("Num. result for \$L=32\$"),
         label = "Num. results",
-        markershape = :square,
-        markersize = 4,
+        markershape = :rtriangle,
+        markersize = 7,
         # markercolor = palette(:default)[1], # cb_red, #cb_blue
         # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
         color = palette(:default)[1],
@@ -385,21 +402,21 @@ let
         insta_curve,
         # label = L"N_{x} N_{t} \left(1 - \cos\left\{\frac{q\pi}{N_x N_t} \right\}\right)",
         # label = latexstring("Eq.\$\\,\\,\$(7)"),
-        label = "Lower bound",
+        label = "lower bound",
         color = palette(:default)[2],
         linewidth = 1.5
     )
     image_insta = scatter!(
         -q_bound:q_bound,
         insta_actions,
-        label = "Insta Actions",
+        label = "insta actions",
         color = palette(:default)[1],
         markershape = :diamond,
         markersize = 6,
     )
     image_insta = plot!(
         legend = :top,
-        xlabel = latexstring("Top. Charge \$q\$"),
+        xlabel = latexstring("top. charge \$q\$"),
         ylabel = L"S/\beta",
         xticks = -q_bound:q_bound,
         tickfontsize = 10,
@@ -581,7 +598,7 @@ let
         # [insta_action_U2_min(1, N_x, N_t, 1)],
         # color = cb_red,
         # xticks = 0:resol:τ,
-        xlabel = latexstring("Flow Time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau\$"),
         ylabel = L"S/\beta",
         tickfontsize = 10,
         labelfontsize = 17,
@@ -633,9 +650,11 @@ let
     N_x = L
     N_t = L
     τ   = 10000
-    τ0  = 500
-    τ1  = 2000
+    τ0  = 1
+    τ1  = 1500
     rhos = [0.1, 0.05]
+    alpha_for_rhos = [1.0, 0.5]
+    linestyle_for_rhos = [:dash, :solid]
     N_smears =   Int.(τ ./ rhos)
     start_inds = Int.(τ0./ rhos)
     end_inds = Int.(τ1./ rhos)
@@ -647,7 +666,7 @@ let
         # [insta_action_U2_min(1, N_x, N_t, 1)],
         # color = cb_red,
         # xticks = 0:resol:τ,
-        xlabel = latexstring("Flow Time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau\$"),
         # ylabel = L"(S-S_{\textrm{insta}})\,/\,\beta",
         ylabel = latexstring("\$ s-s_{\\mathrm{lower bound}} \$"), # L"s-\mathrm{Eq.}(7)/V",
         tickfontsize = 10,
@@ -673,8 +692,9 @@ let
                 color = cb_colors[col_ind],
                 # label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$"),
                 label = latexstring("Conf. Nr. $col_ind, \$\\rho = $(rhos[i])\$"),
-                alpha = 1/i,
-                yticks = [10.0^(-i) for i = 4:12],
+                alpha = alpha_for_rhos[i],
+                linestyle = linestyle_for_rhos[i],
+                yticks = [10.0^(-i) for i = 0:2:12],
                 linewidth = 1.5,
             )
         end
@@ -840,9 +860,9 @@ let
             # linestyle = :dash,
             linewidth = 1.2,
             # label = latexstring("Eq.\$\\,\\,\$(7)"),
-            label = "Lower bound",
+            label = "lower bound",
             xticks = -q_bound:q_bound,
-            xlabel = latexstring("Top. Charge \$q\$"),
+            xlabel = latexstring("top. charge \$q\$"),
             ylabel = L"S/\beta",
             size = (700,300),
             # tickfontsize = 9,
@@ -933,7 +953,7 @@ let
     τ0 = 2
     start_ind = Int(τ0/ρ)
     image_dist = plot(
-        xlabel = latexstring("Flow time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau\$"),
         ylabel = L"S/\beta",
         tickfontsize = 10,
         labelfontsize = 17,
@@ -978,7 +998,7 @@ let
     )
     image_dist = hline!(
         [insta_action_U2_min(1,L,L,q)],
-        label = latexstring("Lower bound for \$q=1\$"),
+        label = latexstring("lower bound for \$q=1\$"),
         color = cb_red,
         linestyle = :dot,
         legend = :right,
@@ -1001,22 +1021,22 @@ image_dist_path = string(fig_path,"\\disturbed_locals.pdf")
 
 
 
-# let
+let
     N_meas = 10000
     L = 32
     q = 1
     z = 5
     insta = insta_U2_z(L, L, q, z);
     epsilons = round.([10.0^(-i) for i = 1:7], digits = 8)
-    prop_actions = []
-    prop_errs = []
+    global prop_actions = []
+    global prop_errs = []
     for ϵ in epsilons
         actions = []
         for meas = 1:N_meas
-            push!(actions, action([ran_U2(ϵ*rand()) for μ = 1:2, x = 1:L, t = 1:L ].*insta,1))
+            push!(actions, action([ran_U2(ϵ) for μ = 1:2, x = 1:L, t = 1:L ].*insta,1))
         end
         push!(prop_actions, mean(actions))
-        push!(prop_errs, std(actions))
+        push!(prop_errs, std(actions)/sqrt(N_meas))
     end
     image_props = scatter(
         epsilons,
@@ -1025,13 +1045,13 @@ image_dist_path = string(fig_path,"\\disturbed_locals.pdf")
         xaxis = :log,
         yaxis = :log,
         xticks = [10.0^(-i) for i = 1:9],
-        yticks = [10.0^(-i) for i = 0:2:12],
+        yticks = [10.0^(-i) for i = -2:2:12],
         legend = :false,
         # size = (700,200),
         tickfontsize = 10,
         labelfontsize = 17,
         legendfontsize = 11,
-        xlabel = latexstring("Step Size \$\\epsilon\$"),
+        xlabel = latexstring("step size \$\\epsilon\$"),
         ylabel = L"\Delta S/\beta",
         left_margin = 1mm,
         bottom_margin = 1mm,
@@ -1041,8 +1061,122 @@ image_dist_path = string(fig_path,"\\disturbed_locals.pdf")
         # markercolor = cb_blue,
         # markerstrokecolor = cb_blue,
         )
-# end
+end
 # last(prop_actions)
 # last(prop_errs)
 image_props_path = string(fig_path,"\\props.pdf")
 # savefig(image_props_path)
+
+
+
+
+
+######## Yet another, less planned endeavor 🎩 ########
+
+
+
+
+
+# let
+    N_meas = 100
+    L = 16
+    q = 1
+    z = 5
+    insta = insta_U2_z(L, L, q, z);
+    epsilons = [0.01] # round.([10.0^(-i) for i = 1:7], digits = 8)
+    prop_actions = Array{Float64}(undef, 2, L, L)
+    prop_errs = Array{Float64}(undef, 2, L, L)
+    for ϵ in epsilons
+        for μ = 1:2
+        for x = 1:L
+        for t = 1:L
+        stap = staple_dag(insta, μ, x, t)
+        link_old = insta[μ,x,t]
+        s_old = -0.5*real(tr(link_old * stap))
+        actions = []
+            for meas = 1:N_meas
+                link_new = ran_U2(ϵ) * link_old
+                s_new = -0.5*real((tr(link_new * stap)))
+                push!(actions, s_new - s_old)
+            end
+        prop_actions[μ,x,t] = mean(actions)
+        prop_errs[μ,x,t] = std(actions)/sqrt(N_meas)
+        end
+        end
+        end
+    end
+    image_props_2 = heatmap(prop_actions[2,:,:].*100, bins = 16^2, right_margin = 10mm)
+# end
+display(image_props_2)
+
+image_props_2_path = string(fig_path,"\\props_2.pdf")
+# savefig(image_props_2_path)
+
+
+
+
+
+
+
+# function analytic_susc_U2(β)
+#     nasty(α)   = besseli(1,β*cos(α))/cos(α)
+#     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
+#     return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
+# end
+
+function analytic_susc_U2_integrand(α, β)
+    nasty(α)   = besseli(1,β*cos(α))/cos(α)
+    nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
+    return nastier(α)
+end
+
+betas = [1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0]
+
+image_int = plot(
+    0.0:0.01:π/2,
+    [analytic_susc_U2_integrand(α,betas[1]) for α = 0.0:0.01:π/2],
+    label = "β = $(betas[1])",
+    title = "Denominator of χ",
+)
+for beta in betas[2:end]
+    image_int = plot!(
+        0.0:0.01:π/2,
+        [analytic_susc_U2_integrand(α,beta) for α = 0.0:0.01:π/2],
+        label = "β = $beta",
+        
+    )
+end
+display(image_int)
+
+for beta in betas
+    # beta = 1
+    alpha_range = 0.0:0.01:π/2
+    numerator_vals = [analytic_susc_U2_integrand(α,beta) for α in alpha_range]
+    last_numerator = round(last(numerator_vals), sigdigits = 3)
+    image_int = plot(
+        alpha_range,
+        numerator_vals,
+        xticks = (Vector(0:π/8:π/2), ["0.0", "π/8", "π/4", "3π/8", "π/2"]),
+        label = "β = $(beta)\nlast val: $last_numerator",
+        title = "Numerator of χ",
+    )
+    display(image_int)
+end
+
+for beta in betas
+    # beta = 1
+    alpha_range = 0.0:0.01:π/2
+    denominator_vals = [analytic_susc_U2_integrand(α,beta)/α^2 for α in alpha_range]
+    last_denominator = round(last(denominator_vals), sigdigits = 3)
+    image_int = plot(
+        alpha_range,
+        denominator_vals,
+        xticks = (Vector(0:π/8:π/2), ["0.0", "π/8", "π/4", "3π/8", "π/2"]),
+        label = "β = $(beta)\nlast val: $last_denominator",
+        title = "Numerator of χ",
+    )
+    display(image_int)
+end
+
+
+analytic_susc_U2_integrand(π/2,500)/pi^2*4^2
