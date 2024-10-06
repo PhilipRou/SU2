@@ -46,24 +46,56 @@ function analytic_plaq_U2(β)
     b = β
     numer(α) = besseli(0,b*cos(α)) + besseli(2,b*cos(α))
     denom(α) = 2*besseli(1,b*cos(α))/cos(α)
-    return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/b
+    return quadgk(numer,0,π/2)[1]/quadgk(denom,0,π/2)[1] - 1/b
+end
+
+function analytic_plaq_U2_approx(β)
+    b = big(β)
+    numer(α) = exp(b*cos(α)) / sqrt(cos(α)) * 2
+    denom(α) = 2 * exp(b*cos(α)) / sqrt(cos(α))^3
+    return quadgk(numer,0,π/2)[1]/quadgk(denom,0,π/2)[1] - 1/b
+end
+
+function analytic_plaq_U2_approx_2(β)
+    b = big(β)
+    numer(α) = exp(b*cos(α)) / sqrt(cos(α)) * (2 - 14/(8*b*cos(α)))
+    denom(α) = 2 * exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)))
+    return quadgk(numer,0,π/2)[1]/quadgk(denom,0,π/2)[1] - 1/b
+end
+
+function analytic_plaq_U2_approx_3(β)
+    b = big(β)
+    numer(α) = exp(b*cos(α)) / sqrt(cos(α)) * (2 - 14/(8*b*cos(α)) + 21/(32*(b*cos(α))^2))
+    denom(α) = 2 * exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)) -15/(128*(b*cos(α))^2))
+    return quadgk(numer,0,π/2)[1]/quadgk(denom,0,π/2)[1] - 1/b
 end
 
 function analytic_susc_U2(β)
-    # b = big(β)
-    # b::Float32 = β
     b = β
-    nasty(α)   = besseli(1,b*cos(α))/cos(α)
-    nastier(α) = α^2 * besseli(1,b*cos(α))/cos(α)
-    return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
+    denom(α)   = besseli(1,b*cos(α))/cos(α)
+    numer(α) = α^2 * besseli(1,b*cos(α))/cos(α)
+    return quadgk(numer,0,π/2)[1] / quadgk(denom,0,π/2)[1] / π^2
 end
 
-function analytic_susc_U2_naive(β)
+function analytic_susc_U2_approx(β)
     b = big(β)
-    # b = β
-    nasty(α)   = exp(b*cos(α)) * cos(α)^(3/2)
-    nastier(α) = α^2 * exp(b*cos(α)) * cos(α)^(3/2)
-    return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
+    denom(α)   = exp(b*cos(α)) / sqrt(cos(α))^3
+    numer(α) = α^2 * exp(b*cos(α)) / sqrt(cos(α))^3
+    return quadgk(numer,0,π/2)[1] / quadgk(denom,0,π/2)[1] / π^2
+end
+
+function analytic_susc_U2_approx_2(β)
+    b = big(β)
+    denom(α)   = exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)))
+    numer(α) = α^2 * exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)))
+    return quadgk(numer,0,π/2)[1] / quadgk(denom,0,π/2)[1] / π^2
+end
+
+function analytic_susc_U2_approx_3(β)
+    b = big(β)
+    denom(α)   = exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)) - 15/(128*(b*cos(α))^2))
+    numer(α) = α^2 * exp(b*cos(α)) / sqrt(cos(α))^3 * (1 - 3/(8*b*cos(α)) - 15/(128*(b*cos(α))^2))
+    return quadgk(numer,0,π/2)[1] / quadgk(denom,0,π/2)[1] / π^2
 end
 
 function insta_U2_z(N_x, N_t, q, z)
@@ -1117,17 +1149,11 @@ image_props_2_path = string(fig_path,"\\props_2.pdf")
 
 
 
-
-# function analytic_susc_U2(β)
-#     nasty(α)   = besseli(1,β*cos(α))/cos(α)
-#     nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
-#     return quadgk(nastier,0,π/2)[1] / quadgk(nasty,0,π/2)[1] / π^2
-# end
-
+#=
 function analytic_susc_U2_integrand(α, β)
-    nasty(α)   = besseli(1,β*cos(α))/cos(α)
-    nastier(α) = α^2 * besseli(1,β*cos(α))/cos(α)
-    return nastier(α)
+    denom(α)   = besseli(1,β*cos(α))/cos(α)
+    numer(α) = α^2 * besseli(1,β*cos(α))/cos(α)
+    return numer(α)
 end
 
 betas = [1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0]
@@ -1178,5 +1204,132 @@ for beta in betas
     display(image_int)
 end
 
-
 analytic_susc_U2_integrand(π/2,500)/pi^2*4^2
+
+=#
+
+beta_range_anal = Array(300:1:700) # previous upper limit: 10
+susc_anal = [analytic_susc_U2(β)*β/4 for β in beta_range_anal]
+beta_range_approx = Array(300:1:1e4)
+susc_approx = [analytic_susc_U2_approx(β)*β/4 for β in beta_range_approx]
+beta_range_approx_2 = Array(300:1:1e4)
+susc_approx_2 = [analytic_susc_U2_approx_2(β)*β/4 for β in beta_range_approx_2]
+beta_range_approx_3 = Array(300:1:1e4)
+susc_approx_3 = [analytic_susc_U2_approx_3(β)*β/4 for β in beta_range_approx_3]
+
+let
+    image_susc_approx = plot(
+        1 ./beta_range_anal,
+        susc_anal,
+        label = "full anal. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+        xlabel = latexstring("\$1 / \\beta\$"),
+        ylabel = L"\chi_{\textbf{top}} \, / g^2",
+        legend = :topleft,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 10,
+        left_margin = 2mm,
+        right_margin = 2mm,
+        xlim = (-0.0001, 0.0036),
+        xticks = 0.0:0.0005:0.0035,
+    )
+    image_susc_approx = plot!(
+        1 ./ beta_range_approx,
+        susc_approx,
+        label = "large arg. expan. k = 0",
+        linecolor = palette(:default)[2], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dash,
+    )
+    image_susc_approx = plot!(
+        1 ./ beta_range_approx_2,
+        susc_approx_2,
+        label = "large arg. expan. k = 0,1",
+        linecolor = palette(:default)[3], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dashdot,
+    )
+    image_susc_approx = plot!(
+        1 ./ beta_range_approx_3,
+        susc_approx_3,
+        label = "large arg. expan. k = 0,1,2",
+        linecolor = palette(:default)[4], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dashdotdot,
+    )
+    image_susc_approx = plot!(
+        1 ./beta_range_anal,
+        susc_anal,
+        label = :false,# "full analyt. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+    )
+    display(image_susc_approx)
+end
+
+
+
+
+
+beta_range_anal = Array(300:1:700) # previous upper limit: 10
+s_wil_anal = [(1-analytic_plaq_U2(β))*β/4 for β in beta_range_anal]
+beta_range_approx = Array(300:1:1e4)
+s_wil_approx = [(1-analytic_plaq_U2_approx(β))*β/4 for β in beta_range_approx]
+beta_range_approx_2 = Array(300:1:1e4)
+s_wil_approx_2 = [(1-analytic_plaq_U2_approx_2(β))*β/4 for β in beta_range_approx_2]
+beta_range_approx_3 = Array(300:1:1e4)
+s_wil_approx_3 = [(1-analytic_plaq_U2_approx_3(β))*β/4 for β in beta_range_approx_3]
+
+let
+    image_s_wil_approx = plot(
+        1 ./beta_range_anal,
+        s_wil_anal,
+        label = "full anal. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+        xlabel = latexstring("\$1 / \\beta\$"),
+        ylabel = L"s_{\mathrm{wil}} \, / g^2",
+        legend = :right,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 11,
+        left_margin = 2mm,
+        xlim = (-0.0001, 0.0036),
+        xticks = 0.0:0.0005:0.0035,
+        # xlim = (0.0,1.1),
+    )
+    image_s_wil_approx = plot!(
+        1 ./beta_range_approx,
+        s_wil_approx,
+        label = "large arg. expan. k = 0",
+        linecolor = palette(:default)[2], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dash
+    )
+    image_s_wil_approx = plot!(
+        1 ./beta_range_approx_2,
+        s_wil_approx_2,
+        label = "large arg. expan. k = 0,1",
+        linecolor = palette(:default)[3], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dashdot
+    )
+    image_s_wil_approx = plot!(
+        1 ./beta_range_approx_3,
+        s_wil_approx_3,
+        label = "large arg. expan. k = 0,1",
+        linecolor = palette(:default)[4], # cb_grey # cb_orange
+        linewidth = 1.5,
+        linestyle = :dashdotdot
+    )
+    image_s_wil_approx = plot!(
+        1 ./beta_range_anal,
+        s_wil_anal,
+        label = :false,# "full anal. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+    )
+    display(image_s_wil_approx)
+end
