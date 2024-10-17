@@ -100,7 +100,6 @@ function log_U2(X::coeffs_U2)
     return grp2coeffs_u2(A * V * A_inv)
 end 
 
-const ϵ_for_exp = 10^(-15) # for exp_u2() below
 # Map a u(2)-element (from the physicists' Lie-algebra) onto the
 # manifold U(2) via the exponential function
 function exp_u2(Y::coeffs_U2)
@@ -134,9 +133,8 @@ end
 # Create a random element of u(2), i.e. the Lie algebra (mind the
 # lower case letter!)
 function ran_u2(ϵ)
-    r = ϵ .* (2 .* rand(4) .- 1) .+ 0.0im
-    r[1] = im*r[1]
-    return coeffs_U2(r[1], r[2], r[3], r[4])
+    r = complex.(ϵ .* (2 .* rand(4) .- 1))
+    return coeffs_U2(im*r[1], r[2], r[3], r[4])
 end
 
 # Quickly get the coefficients of the identity element

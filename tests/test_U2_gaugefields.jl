@@ -52,6 +52,7 @@ proj2man_test()
 function log_U2_test()
     bla = ran_U2(rand())
     @assert isapprox(proj2man(log_U2(bla)), grp2coeffs_U2(proj2man_mat_U2(log(coeffs2grp(bla)))))
+    @assert isapprox(coeffs2grp(log_U2(bla)), log(coeffs2grp(bla)))
     return true
 end
 
@@ -60,6 +61,9 @@ log_U2_test()
 function exp_u2_test()
     bla = ran_U2(rand())
     @assert isapprox(bla, exp_u2(log_U2(bla)))
+    bli = ran_u2(rand())
+    @assert isapprox(bli, log_U2(exp_u2(bli)))
+    @assert isapprox(coeffs2grp(exp_u2(bli)), exp(coeffs2grp(bli)))
     return true
 end
 

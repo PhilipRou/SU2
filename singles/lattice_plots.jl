@@ -7,7 +7,7 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\a
 
 
 using Plots
-# using LsqFit
+using LsqFit
 using LaTeXStrings
 using LinearAlgebra
 # using Roots
@@ -17,7 +17,8 @@ using Statistics
 using QuadGK
 using Measures
 
-data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\data" 
+data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\data"
+# data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS" 
 # fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\plots"
 fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS"
 
@@ -107,8 +108,8 @@ function insta_U2_z(N_x, N_t, q, z)
     return U
 end
 
-cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#f781bf", "#984ea3", "#999999", "#e41a1c"]);
-cb_blue, cb_orange, cb_green, cb_pink, cb_grey, cb_purple, cb_red = cb_colors;
+cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#e41a1c", "#999999", "#984ea3", "#f781bf"]);
+cb_blue, cb_orange, cb_green, cb_red, cb_grey, cb_purple, cb_pink  = cb_colors;
 
 
 
@@ -322,25 +323,29 @@ beta_range = Array(1/1.05:0.01:700) # previous upper limit: 10
 susc_anal = [analytic_susc_U2(β)*β/4 for β in beta_range]
 beta_range_inv = 1 ./ beta_range
 
+fits_executed = true
+
 let
+    lw = 1.8
+    b_inv_fit_range = 0.0:0.05:0.25
     image_susc = plot(
         beta_range_inv,
         susc_anal,
         label = "Analytical result",
-        linecolor = palette(:default)[2], # cb_grey # cb_orange
-        linewidth = 1.5,
+        linecolor = cb_orange, # palette(:default)[2], # cb_grey # cb_orange
+        linewidth = lw,
     )
     image_susc = scatter!(
         1 ./ betas,
         susc_vals,
         yerror = susc_errs,
         # label = latexstring("Num. result for \$L=32\$"),
-        label = "Num. results",
+        label = "Simulation data",
         markershape = :diamond,
         markersize = 6,
         # markercolor = palette(:default)[1], # cb_red, #cb_blue
         # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
-        color = palette(:default)[1],
+        color = cb_blue, # palette(:default)[1],
     )
     image_susc = plot!(
         xlabel = latexstring("\$1 / \\beta\$"),
@@ -354,6 +359,23 @@ let
         left_margin = 2mm,
         # xlim = (0.0,1.1),
     )
+    if fits_executed
+        image_susc = plot!(
+            b_inv_fit_range,
+            [model_lin(b_inv,fit_susc.param) for b_inv in b_inv_fit_range], 
+            color = cb_green,
+            label = "Slope at continuum value",
+            linewidth = lw
+        )
+        image_susc = scatter!(
+            [0.0],
+            [1/4/π^2],
+            label = "Continuum value 1/(2π)²",
+            markersize = 8,
+            markershape = :star5,
+            color = cb_grey
+        )
+    end
     display(image_susc)
 end
 
@@ -376,24 +398,26 @@ s_wil_anal = [(1-analytic_plaq_U2(β))*β/4 for β in beta_range]
 beta_range_inv = 1 ./ beta_range
 
 let
+    lw = 1.8
+    b_inv_fit_range = 0.0:0.05:0.2
     image_s_wil = plot(
         beta_range_inv,
         s_wil_anal,
         label = "Analytical result",
-        linecolor = palette(:default)[2], # cb_grey # cb_orange
-        linewidth = 1.5,
+        linecolor = cb_orange, # palette(:default)[2], # cb_grey # cb_orange
+        linewidth = lw,
     )
     image_s_wil = scatter!(
         1 ./ betas,
         s_wil_vals,
         yerror = s_wil_errs,
         # label = latexstring("Num. result for \$L=32\$"),
-        label = "Num. results",
+        label = "Simulation data",
         markershape = :rtriangle,
         markersize = 7,
         # markercolor = palette(:default)[1], # cb_red, #cb_blue
         # markerstrokecolor = :black # palette(:default)[1], # cb_red, #cb_blue
-        color = palette(:default)[1],
+        color = cb_blue, # palette(:default)[1],
     )
     image_s_wil = plot!(
         xlabel = latexstring("\$1 / \\beta\$"),
@@ -407,6 +431,23 @@ let
         left_margin = 2mm,
         # xlim = (0.0,1.1),
     )
+    if fits_executed
+        image_s_wil = plot!(
+            b_inv_fit_range,
+            [model_lin(b_inv,fit_s_wil.param) for b_inv in b_inv_fit_range], 
+            color = cb_green,
+            label = "Slope at continuum value",
+            linewidth = lw
+        )
+        image_s_wil = scatter!(
+            [0.0],
+            [1/2],
+            label = "Continuum value",
+            markersize = 7,
+            markershape = :star5,
+            color = cb_grey,
+        )
+    end
     display(image_s_wil)
 end
 
@@ -435,14 +476,14 @@ let
         # label = L"N_{x} N_{t} \left(1 - \cos\left\{\frac{q\pi}{N_x N_t} \right\}\right)",
         # label = latexstring("Eq.\$\\,\\,\$(7)"),
         label = "lower bound",
-        color = palette(:default)[2],
+        color = cb_orange,# palette(:default)[2],
         linewidth = 1.5
     )
     image_insta = scatter!(
         -q_bound:q_bound,
         insta_actions,
-        label = "insta actions",
-        color = palette(:default)[1],
+        label = "instanton action",
+        color = cb_blue,# palette(:default)[1],
         markershape = :diamond,
         markersize = 6,
     )
@@ -516,7 +557,7 @@ let
     L   = 32
     N_x = L
     N_t = L
-    τ   = 10000
+    τ   = 5000
     rhos = [0.1, 0.05]
     N_smears = Int.(τ ./ rhos)
     N_therm   = 500
@@ -608,72 +649,72 @@ end
 
 
 
-let
-    L   = 32
-    β   = 6.0
-    N_x = L
-    N_t = L
-    τ   = 10000 # 5000 is enough bro...
-    τ0  = 500
-    resol = 5
-    # rhos = [0.2, 0.1, 0.05]
-    rhos = [0.1, 0.05]
-    N_smears =   Int.(τ ./ rhos)
-    start_inds = Int.(τ0./ rhos)
-    N_measurements = 3
+# let
+#     L   = 32
+#     β   = 6.0
+#     N_x = L
+#     N_t = L
+#     τ   = 10000 # 5000 is enough bro...
+#     τ0  = 500
+#     resol = 5
+#     # rhos = [0.2, 0.1, 0.05]
+#     rhos = [0.1, 0.05]
+#     N_smears =   Int.(τ ./ rhos)
+#     start_inds = Int.(τ0./ rhos)
+#     N_measurements = 3
 
-    greys = [:grey30, :grey50, :grey69]
-    base_path = string(data_path, "\\smearing")
-    # base_path = data_path
-    # let
-    image_smear = plot(
-        # [insta_action_U2_min(1, N_x, N_t, 1)],
-        # color = cb_red,
-        # xticks = 0:resol:τ,
-        xlabel = latexstring("flow time \$\\tau\$"),
-        ylabel = L"S/\beta",
-        tickfontsize = 10,
-        labelfontsize = 17,
-        legendfontsize = 11,
-        # left_margin = 2mm
-    )
-    for i in eachindex(rhos)
-        x_vals = rhos[i] .* Array(0:N_smears[i])
-        sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt")) ./β
-        image_smear = plot!(
-            x_vals[start_inds[i]:end],
-            sms[start_inds[i]:end],
-            # color = greys[i],
-            color = palette(:default)[1],
-            label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$"),
-            alpha = 1/i,
-        )
-        for meas = 2:N_measurements
-            sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt")) ./β
-            image_smear = plot!(
-                x_vals[start_inds[i]:end],
-                sms[start_inds[i]:end],
-                # color = greys[i],
-                color = palette(:default)[meas],
-                label = :false,
-                alpha = 1/i
-            )
-        end
-        # println("$(greys[i])")
-    end
-    image_smear = hline!(
-        [insta_action_U2_min(1, N_x, N_t, 1)],
-        # label = latexstring("\$S_{\\textrm{Insta}}\$ with \$|q| = 1\$"),
-        label = latexstring("Eq.\$\\,\\,\$(7)"),
-        color = cb_red,
-        linestyle = :dash,
-    )
-    display(image_smear)
-    # end
-end
+#     greys = [:grey30, :grey50, :grey69]
+#     base_path = string(data_path, "\\smearing")
+#     # base_path = data_path
+#     # let
+#     image_smear = plot(
+#         # [insta_action_U2_min(1, N_x, N_t, 1)],
+#         # color = cb_red,
+#         # xticks = 0:resol:τ,
+#         xlabel = latexstring("flow time \$\\tau\$"),
+#         ylabel = L"S/\beta",
+#         tickfontsize = 10,
+#         labelfontsize = 17,
+#         legendfontsize = 11,
+#         # left_margin = 2mm
+#     )
+#     for i in eachindex(rhos)
+#         x_vals = rhos[i] .* Array(0:N_smears[i])
+#         sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt")) ./β
+#         image_smear = plot!(
+#             x_vals[start_inds[i]:end],
+#             sms[start_inds[i]:end],
+#             # color = greys[i],
+#             color = palette(:default)[1],
+#             label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$"),
+#             alpha = 1/i,
+#         )
+#         for meas = 2:N_measurements
+#             sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt")) ./β
+#             image_smear = plot!(
+#                 x_vals[start_inds[i]:end],
+#                 sms[start_inds[i]:end],
+#                 # color = greys[i],
+#                 color = palette(:default)[meas],
+#                 label = :false,
+#                 alpha = 1/i
+#             )
+#         end
+#         # println("$(greys[i])")
+#     end
+#     image_smear = hline!(
+#         [insta_action_U2_min(1, N_x, N_t, 1)],
+#         # label = latexstring("\$S_{\\textrm{Insta}}\$ with \$|q| = 1\$"),
+#         label = latexstring("Eq.\$\\,\\,\$(7)"),
+#         color = cb_red,
+#         linestyle = :dash,
+#     )
+#     display(image_smear)
+#     # end
+# end
 
-image_smear_path = string(fig_path,"\\smeared_actions.pdf")
-# savefig(image_smear_path)
+# image_smear_path = string(fig_path,"\\smeared_actions.pdf")
+# # savefig(image_smear_path)
 
 
 let
@@ -738,125 +779,123 @@ image_smear_path = string(fig_path,"\\smeared_actions.pdf")
 # savefig(image_smear_path)
 
 
-        # i = 1
-        # x_vals = rhos[i] .* Array(0:N_smears[i])
-        # sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-        # image_smear = plot!(
-        #     x_vals[start_inds[i]:end],
-        #     sms[start_inds[i]:end],
-        #     color = :grey30,
-        #     label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
-        # )
-        # for meas = 2:N_measurements
-        #     sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        #     image_smear = plot!(
-        #         x_vals[start_inds[i]:end],
-        #         sms[start_inds[i]:end],
-        #         color = :grey30,
-        #         label = :false
-        #     )
-        # end
-        
-        # i = 2
-        # x_vals = rhos[i] .* Array(0:N_smears[i])
-        # sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-        # image_smear = plot!(
-        #     x_vals[start_inds[i]:end],
-        #     sms[start_inds[i]:end],
-        #     color = :grey50,
-        #     label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
-        # )
-        # for meas = 2:N_measurements
-        #     sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        #     image_smear = plot!(
-        #         x_vals[start_inds[i]:end],
-        #         sms[start_inds[i]:end],
-        #         color = :grey50,
-        #         label = :false
-        #     )
-        # end
-        
-        # i = 3
-        # x_vals = rhos[i] .* Array(0:N_smears[i])
-        # sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-        # image_smear = plot!(
-        #     x_vals[start_inds[i]:end],
-        #     sms[start_inds[i]:end],
-        #     color = :grey69,
-        #     label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
-        # )
-        # for meas = 2:N_measurements
-        #     sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        #     image_smear = plot!(
-        #         x_vals[start_inds[i]:end],
-        #         sms[start_inds[i]:end],
-        #         color = :grey69,
-        #         label = :false
-        #     )
-        # end
 
 
 
+let
+    # @assert 1==0 "Do we really want to start a smearing run???"
+    β   = 6.0
+    L   = 32
+    N_x = L
+    N_t = L
+    τ   = 5000
+    rhos = [0.1, 0.05]
+    N_smears = Int.(τ ./ rhos)
+    N_therm   = 500
+    N_meas    = 10
+    N_sepa    = 100
+    acc_wish  = 0.8
+    ϵ         = 0.1
+    base_path = string(data_path, "\\smearing_new") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
 
-
-#=
-i = 1
-    x_vals = rhos[i] .* Array(0:N_smears[i])
-    sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-    image_smear = plot!(
-        x_vals[start_inds[i]:end],
-        sms[start_inds[i]:end],
-        color = :grey30,
-        label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
-    )
-    for meas = 2:N_measurements
-        sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        image_smear = plot!(
-            x_vals[start_inds[i]:end],
-            sms[start_inds[i]:end],
-            color = :grey30,
-            label = :false
-        )
+    acc_therm = [0.0]
+    U = gaugefield(N_x, N_t, true, "U2", "square")
+    for therm = 1:N_therm
+        chess_metro!(U,ϵ,β,acc_therm,"U2")
+        ϵ *= sqrt(acc_therm[1] / acc_wish) # only update ϵ acc. to Metropolis
     end
-    
-    i = 2
-    x_vals = rhos[i] .* Array(0:N_smears[i])
-    sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-    image_smear = plot!(
-        x_vals[start_inds[i]:end],
-        sms[start_inds[i]:end],
-        color = :grey50,
-        label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
-    )
-    for meas = 2:N_measurements
-        sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        image_smear = plot!(
-            x_vals[start_inds[i]:end],
-            sms[start_inds[i]:end],
-            color = :grey50,
-            label = :false
-        )
+
+    for meas = 1:N_meas
+        for sepa = 1:N_sepa
+            chess_metro!(U,ϵ,β,[0.0],"U2")
+        end
+        for rho_ind = 1:length(rhos)
+            ρ = rhos[rho_ind]
+            N_smear = N_smears[rho_ind]
+            S_path = string(base_path,"\\sms_$meas.rho_nr_$rho_ind.txt")
+            Q_path = string(base_path,"\\smq_$meas.rho_nr_$rho_ind.txt")
+            smeared_actions = [action(U,β)]
+            smeared_charges = [top_charge_U2(U)]
+            V = stout_midpoint(U,ρ)
+            count = 0
+            for smear = 1:N_smear
+                push!(smeared_actions,action(V,β))
+                push!(smeared_charges,top_charge_U2(V))
+                V = stout_midpoint(V,ρ)
+                if smear%Int(N_smear/100) == 0
+                    count += 1
+                    println("Measurement Nr.: $meas, rho_nr.: $rho_ind, Smearing Progress: $count%")
+                end
+            end # smear
+            writedlm(S_path,smeared_actions)
+            writedlm(Q_path,smeared_charges)
+        end # rho_ind
     end
-    
-    i = 3
-    x_vals = rhos[i] .* Array(0:N_smears[i])
-    sms = readdlm(string(base_path,"\\sms_1.rho_nr_$i.txt"))
-    image_smear = plot!(
-        x_vals[start_inds[i]:end],
-        sms[start_inds[i]:end],
-        color = :grey69,
-        label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$")
+    println("We're done here!")
+end
+
+let
+    L   = 32
+    β   = 6.0
+    N_x = L
+    N_t = L
+    τ   = 5000
+    τ0  = 1
+    τ1  = 1200
+    rhos = [0.1, 0.05]
+    alpha_for_rhos = [1.0, 0.5]
+    linestyle_for_rhos = [:dash, :solid]
+    N_smears =   Int.(τ ./ rhos)
+    start_inds = Int.(τ0./ rhos)
+    end_inds = Int.(τ1./ rhos)
+
+    base_path = string(data_path, "\\smearing_new")
+
+    image_smear = plot(
+        # [insta_action_U2_min(1, N_x, N_t, 1)],
+        # color = cb_red,
+        # xticks = 0:resol:τ,
+        xlabel = latexstring("flow time \$\\tau\$"),
+        # ylabel = L"(S-S_{\textrm{insta}})\,/\,\beta",
+        ylabel = latexstring("\$ s-s_{\\mathrm{lower bound}} \$"), # L"s-\mathrm{Eq.}(7)/V",
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 11,
+        yaxis = :log,
+        xticks = 0:200:1200,
+        left_margin = 2mm
     )
-    for meas = 2:N_measurements
-        sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt"))
-        image_smear = plot!(
-            x_vals[start_inds[i]:end],
-            sms[start_inds[i]:end],
-            color = :grey69,
-            label = :false
-        )
+
+    col_ind = 0
+    for meas in [1,3,5,6,9]
+        col_ind +=1
+        for i in eachindex(rhos)
+            N_meas = N_smears[i]
+            x_vals = rhos[i] .* Array(0:N_smears[i])
+            sms = readdlm(string(base_path,"\\sms_$meas.rho_nr_$i.txt")) 
+            smq = readdlm(string(base_path,"\\smq_$meas.rho_nr_$i.txt"))
+            q = round(Int,last(smq))
+            sms = (sms.-insta_action_U2_min(β,L,L,q)) ./ (L^2) .+ 1e-12
+            image_smear = plot!(
+                x_vals[start_inds[i]:end_inds[i]],
+                sms[start_inds[i]:end_inds[i]],
+                # color = greys[i],
+                # color = palette(:default)[meas],
+                color = cb_colors[col_ind],
+                # label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$"),
+                label = latexstring("Nr. $col_ind, \$q\$ = $q, \$\\rho = $(rhos[i])\$"),
+                alpha = alpha_for_rhos[i],
+                linestyle = linestyle_for_rhos[i],
+                yticks = [10.0^(-i) for i = 0:2:12],
+                linewidth = 1.5,
+            )
+        end
     end
-=#
+    display(image_smear)
+end
+
+image_smear_path = string(fig_path,"\\smeared_actions.pdf")
+# savefig(image_smear_path)
 
 
 
@@ -915,7 +954,7 @@ let
             q_vals,
             actions[:,z+z_bound+1],
             label = :false, # latexstring("\$z = $z\$"),
-            color = palette(:default)[z+z_bound+1],
+            color = cb_colors[z+z_bound+1],# palette(:default)[z+z_bound+1],
             linestyle = :dash,
             linewidth = 1.2
         )
@@ -925,7 +964,7 @@ let
             label = latexstring("\$z = $z\$"), # :false,
             markershape = markers[mod(z,length(markers))+1],
             markersize = 5,
-            color = palette(:default)[z+z_bound+1],
+            color = cb_colors[z+z_bound+1],# palette(:default)[z+z_bound+1],
             alpha = 0.6,
         )
     end
@@ -1049,6 +1088,7 @@ image_dist_path = string(fig_path,"\\disturbed_locals.pdf")
 
 
 ######## An unplanned endeavor 👀 ########
+
 
 
 
@@ -1273,7 +1313,7 @@ end
 
 
 
-beta_range_anal = Array(300:1:700) # previous upper limit: 10
+# beta_range_anal = Array(300:1:700) # previous upper limit: 10
 s_wil_anal = [(1-analytic_plaq_U2(β))*β/4 for β in beta_range_anal]
 beta_range_approx = Array(300:1:1e4)
 s_wil_approx = [(1-analytic_plaq_U2_approx(β))*β/4 for β in beta_range_approx]
@@ -1298,6 +1338,7 @@ let
         left_margin = 2mm,
         xlim = (-0.0001, 0.0036),
         xticks = 0.0:0.0005:0.0035,
+        yticks = 0.38:0.02:0.5,
         # xlim = (0.0,1.1),
     )
     image_s_wil_approx = plot!(
@@ -1319,7 +1360,7 @@ let
     image_s_wil_approx = plot!(
         1 ./beta_range_approx_3,
         s_wil_approx_3,
-        label = "large arg. expan. k = 0,1",
+        label = "large arg. expan. k = 0,1,2",
         linecolor = palette(:default)[4], # cb_grey # cb_orange
         linewidth = 1.5,
         linestyle = :dashdotdot
@@ -1332,4 +1373,214 @@ let
         linewidth = 1.5,
     )
     display(image_s_wil_approx)
+end
+
+model_lin(x, p) = p[1] .+ p[2]*x
+p_susc  = [(2*π)^2, 0.1]
+p_s_wil = [0.5, 0.0]
+fit_susc = curve_fit(model_lin, 1 ./beta_range_anal, susc_anal, p_susc)
+fit_s_wil = curve_fit(model_lin, 1 ./beta_range_anal, s_wil_anal, p_s_wil)
+params_s_wil = round.(fit_s_wil.param, sigdigits = 3)
+params_susc = round.(fit_susc.param, sigdigits = 3)
+
+inv_beta_range_fit = Vector(0.0:1e-4:0.0025)
+
+let
+    image_susc_fit = plot(
+        1 ./beta_range_anal,
+        susc_anal,
+        label = "full anal. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+        xlabel = latexstring("\$1 / \\beta\$"),
+        ylabel = L"\chi_{\textbf{top}} \, / g^2",
+        legend = :topleft,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 10,
+        left_margin = 2mm,
+        right_margin = 2mm,
+        xlim = (-0.0001, 0.0036),
+        xticks = 0.0:0.0005:0.0035,
+    )
+    image_susc_fit = plot!(
+        inv_beta_range_fit,
+        [model_lin(b_inv,fit_susc.param) for b_inv in inv_beta_range_fit],
+        label = latexstring("\$\\mathrm{fit}(\\beta^{-1}) = a + b\\cdot \\beta^{-1} \$\n\$ a = $(params_susc[1]), b = $(params_susc[2])\$\n\$a\\cdot(2\\pi)^2 = $(fit_susc.param[1]*(2*pi)^2)\$ ")
+    )
+    display(image_susc_fit)
+end
+
+let
+    image_s_wil_fit = plot(
+        1 ./beta_range_anal,
+        s_wil_anal,
+        label = "full anal. result",
+        linecolor = palette(:default)[1], # cb_grey # cb_orange
+        linewidth = 1.5,
+        xlabel = latexstring("\$1 / \\beta\$"),
+        ylabel = L"s_{\mathrm{wil}} \, / g^2",
+        legend = :topleft,
+        tickfontsize = 10,
+        labelfontsize = 17,
+        legendfontsize = 10,
+        left_margin = 2mm,
+        xlim = (-0.0001, 0.0036),
+        xticks = 0.0:0.0005:0.0035,
+        # yticks = 0.38:0.02:0.5,
+        # xlim = (0.0,1.1),
+    )
+    image_s_wil_fit = plot!(
+        inv_beta_range_fit,
+        [model_lin(b_inv,fit_s_wil.param) for b_inv in inv_beta_range_fit],
+        label = latexstring("\$\\mathrm{fit}(\\beta^{-1}) = a + b\\cdot \\beta^{-1} \$\n\$ a = $(params_s_wil[1]), b = $(params_s_wil[2])\$")
+    )
+    display(image_s_wil_fit)
+end
+
+
+
+
+
+########  *How* special are our special configs?  ########
+
+
+
+
+
+function ran_U2_group_direction(grp_dir, ϵ)
+    v = [0.0, 0.0, 0.0]
+    if grp_dir == 0
+        return coeffs_U2(exp(im*ϵ/2), complex(0.0), complex(0.0), complex(0.0))
+    elseif grp_dir == 1
+        return coeffs_U2(complex(cos(ϵ/2)), complex(sin(ϵ/2)), complex(0.0),    complex(0.0))
+    elseif grp_dir == 2
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(sin(ϵ/2)), complex(0.0))
+    elseif grp_dir == 3
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(0.0),    complex(sin(ϵ/2)))
+    else
+        error("Group directions 'grp_dir' are labeled from 0 to 3")
+    end
+end
+
+# abs(det(ran_U2_group_direction(rand(0:3),rand())))
+# bla = ran_U2_group_direction(rand(0:3),rand())
+# coeffs2grp(bla * adjoint(bla))
+# for r = 0:3
+    # reps = rand()
+    # @assert isapprox(coeffs2grp(ran_U2_group_direction(r,reps)), exp(im*reps*Σ[r+1]))
+# end
+
+function vary_config_U2(U, ϵ)
+    NX = size(U,2)
+    NT = size(U,3)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                stap_dag = staple_dag(U, μ, x, t)
+                old_link = U[μ,x,t]
+                s_old = -real(tr(old_link*stap_dag))
+                for grp_dir in [0,1,2,3]
+                    new_link_p = ran_U2_group_direction(grp_dir,+ϵ) * old_link
+                    new_link_m = ran_U2_group_direction(grp_dir,-ϵ) * old_link
+                    delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
+                    delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
+                    if delta_s_p < 0
+                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in pos. group direction $grp_dir")
+                    elseif delta_s_m < 0
+                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in neg. group direction $grp_dir")
+                    end
+                end
+            end
+        end
+    end
+    return nothing
+end
+
+function vary_config_ran_U2(U, ϵ, N_prop)
+    NX = size(U,2)
+    NT = size(U,3)
+    for t = 1:NT
+        for x = 1:NX
+            for μ = 1:2
+                stap_dag = staple_dag(U, μ, x, t)
+                old_link = U[μ,x,t]
+                s_old = -real(tr(old_link*stap_dag))
+                for N = 1:N_prop
+                    # r = ran_U2(ϵ*(2*rand()-1))
+                    r = ran_U2(ϵ)
+                    new_link = r * old_link
+                    s_new = -real(tr(new_link*stap_dag))
+                    if s_new-s_old < 0 
+                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ for random element $(coeffs2grp(r))")
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+N_x = N_t = 32
+for q = -10:10
+    for z = -10:10
+        insta = insta_U2_z(N_x, N_t, q, z)
+        for pow = 8:8
+            vary_config_U2(insta,10.0^(-pow))
+            # vary_config_ran_U2(insta,10.0^(-pow),10)
+        end
+    end
+end
+
+let
+    N_x = N_t = 32
+    q = 2
+    z = 1
+    ϵ = 1e-7
+    insta = insta_U2_z(N_x, N_t, q, z)
+    vary_config_U2(insta,ϵ)
+end
+
+# bla = ran_U2_group_direction(rand(0:3),1e-3); coeffs2grp(bla)[1,1]
+
+function vary_special_config_U2(tol, L, q_vals, z_vals, ϵ_powers, file_name)
+    mac_prec = eps()
+    for q in q_vals
+    for z in z_vals; insta = insta_U2_z(L, L, q, z)
+    for pow in ϵ_powers; ϵ = 10.0^(-pow)
+        for t = 1:L
+        for x = 1:L
+        for μ = 1:2
+            stap_dag = staple_dag(insta, μ, x, t)
+            old_link = insta[μ,x,t]
+            s_old    = -real(tr(old_link*stap_dag))
+            for grp_dir in [0,1,2,3]
+                new_link_p = ran_U2_group_direction(grp_dir,+ϵ) * old_link
+                new_link_m = ran_U2_group_direction(grp_dir,-ϵ) * old_link
+                delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
+                delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
+                if abs(delta_s_p) < tol * mac_prec
+                    open(file_name, "a") do io
+                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, grp_dir = +$grp_dir, ΔS/eps = $(delta_s_p/mac_prec)\n")
+                    end
+                end
+                if abs(delta_s_p) < tol * mac_prec
+                    open(file_name, "a") do io
+                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, grp_dir = -$grp_dir, ΔS/eps = $(delta_s_m/mac_prec) \n")
+                    end
+                end
+            end
+        end # t
+        end # x
+        end # μ
+    end # q
+    end # z
+    end # pow
+    return nothing
+end
+
+for hitsize_pow = 1:7
+    # hitsize = 11
+    vary_file_name = string(data_path, "\\vary_hitsize_$hitsize_pow.txt")
+    vary_special_config_U2(10, 32, 0:5, 0:5, hitsize_pow:hitsize_pow, vary_file_name)
 end
