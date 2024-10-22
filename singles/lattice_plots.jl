@@ -348,7 +348,7 @@ let
         color = cb_blue, # palette(:default)[1],
     )
     image_susc = plot!(
-        xlabel = latexstring("\$1 / \\beta\$"),
+        xlabel = latexstring("\$1 / \\beta = (ag)^2/4\$"),
         # ylabel = latexstring("\$\\frac{\\chi_\\mathrm{top}}{g^2}\$"),
         ylabel = L"\chi_{\textbf{top}} \, / g^2",
         # xticks = (Array(1:2:9), string.(Array(1.0:2:9.0))),
@@ -370,7 +370,7 @@ let
         image_susc = scatter!(
             [0.0],
             [1/4/π^2],
-            label = "Continuum value 1/(2π)²",
+            label = latexstring("Continuum value \$1/(2\\pi)^2\$"),
             markersize = 8,
             markershape = :star5,
             color = cb_grey
@@ -420,7 +420,7 @@ let
         color = cb_blue, # palette(:default)[1],
     )
     image_s_wil = plot!(
-        xlabel = latexstring("\$1 / \\beta\$"),
+        xlabel = latexstring("\$1 / \\beta = (ag)^2/4 \$"),
         # ylabel = latexstring("\$\\frac{\\chi_\\mathrm{top}}{g^2}\$"),
         ylabel = L"s_{\mathrm{wil}} \, / g^2",
         # xticks = (Array(1:2:9), string.(Array(1.0:2:9.0))),
@@ -442,7 +442,7 @@ let
         image_s_wil = scatter!(
             [0.0],
             [1/2],
-            label = "Continuum value",
+            label = "Continuum value \$1/2\$",
             markersize = 7,
             markershape = :star5,
             color = cb_grey,
@@ -671,7 +671,7 @@ end
 #         # [insta_action_U2_min(1, N_x, N_t, 1)],
 #         # color = cb_red,
 #         # xticks = 0:resol:τ,
-#         xlabel = latexstring("flow time \$\\tau\$"),
+#         xlabel = latexstring("flow time \$\\tau/a^2\$"),
 #         ylabel = L"S/\beta",
 #         tickfontsize = 10,
 #         labelfontsize = 17,
@@ -739,7 +739,7 @@ let
         # [insta_action_U2_min(1, N_x, N_t, 1)],
         # color = cb_red,
         # xticks = 0:resol:τ,
-        xlabel = latexstring("flow time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau/a^2\$"),
         # ylabel = L"(S-S_{\textrm{insta}})\,/\,\beta",
         ylabel = latexstring("\$ s-s_{\\mathrm{lower bound}} \$"), # L"s-\mathrm{Eq.}(7)/V",
         tickfontsize = 10,
@@ -855,9 +855,9 @@ let
         # [insta_action_U2_min(1, N_x, N_t, 1)],
         # color = cb_red,
         # xticks = 0:resol:τ,
-        xlabel = latexstring("flow time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau/a^2\$"),
         # ylabel = L"(S-S_{\textrm{insta}})\,/\,\beta",
-        ylabel = latexstring("\$ s-s_{\\mathrm{lower bound}} \$"), # L"s-\mathrm{Eq.}(7)/V",
+        ylabel = latexstring("\$ s-s_{\\mathrm{inst}}(q) \$"), # L"s-\mathrm{Eq.}(7)/V",
         tickfontsize = 10,
         labelfontsize = 17,
         legendfontsize = 11,
@@ -883,7 +883,7 @@ let
                 # color = palette(:default)[meas],
                 color = cb_colors[col_ind],
                 # label = latexstring("\$\\rho = $(rhos[i]), \\, N_{\\textrm{smear}} = $(N_smears[i]) \$"),
-                label = latexstring("Nr. $col_ind, \$q\$ = $q, \$\\rho = $(rhos[i])\$"),
+                label = latexstring("Nr. $meas, \$q = $q\$, \$\\rho = $(rhos[i])\$"),
                 alpha = alpha_for_rhos[i],
                 linestyle = linestyle_for_rhos[i],
                 yticks = [10.0^(-i) for i = 0:2:12],
@@ -1024,7 +1024,7 @@ let
     τ0 = 2
     start_ind = Int(τ0/ρ)
     image_dist = plot(
-        xlabel = latexstring("flow time \$\\tau\$"),
+        xlabel = latexstring("flow time \$\\tau/a^2\$"),
         ylabel = L"S/\beta",
         tickfontsize = 10,
         labelfontsize = 17,
@@ -1448,27 +1448,28 @@ end
 
 
 
-function ran_U2_group_direction(grp_dir, ϵ)
+#=
+function ran_U2_lie_direction(lie_dir, ϵ)
     v = [0.0, 0.0, 0.0]
-    if grp_dir == 0
+    if lie_dir == 0
         return coeffs_U2(exp(im*ϵ/2), complex(0.0), complex(0.0), complex(0.0))
-    elseif grp_dir == 1
+    elseif lie_dir == 1
         return coeffs_U2(complex(cos(ϵ/2)), complex(sin(ϵ/2)), complex(0.0),    complex(0.0))
-    elseif grp_dir == 2
+    elseif lie_dir == 2
         return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(sin(ϵ/2)), complex(0.0))
-    elseif grp_dir == 3
+    elseif lie_dir == 3
         return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(0.0),    complex(sin(ϵ/2)))
     else
-        error("Group directions 'grp_dir' are labeled from 0 to 3")
+        error("Group directions 'lie_dir' are labeled from 0 to 3")
     end
 end
 
-# abs(det(ran_U2_group_direction(rand(0:3),rand())))
-# bla = ran_U2_group_direction(rand(0:3),rand())
+# abs(det(ran_U2_lie_direction(rand(0:3),rand())))
+# bla = ran_U2_lie_direction(rand(0:3),rand())
 # coeffs2grp(bla * adjoint(bla))
 # for r = 0:3
     # reps = rand()
-    # @assert isapprox(coeffs2grp(ran_U2_group_direction(r,reps)), exp(im*reps*Σ[r+1]))
+    # @assert isapprox(coeffs2grp(ran_U2_lie_direction(r,reps)), exp(im*reps*Σ[r+1]))
 # end
 
 function vary_config_U2(U, ϵ)
@@ -1480,15 +1481,15 @@ function vary_config_U2(U, ϵ)
                 stap_dag = staple_dag(U, μ, x, t)
                 old_link = U[μ,x,t]
                 s_old = -real(tr(old_link*stap_dag))
-                for grp_dir in [0,1,2,3]
-                    new_link_p = ran_U2_group_direction(grp_dir,+ϵ) * old_link
-                    new_link_m = ran_U2_group_direction(grp_dir,-ϵ) * old_link
+                for lie_dir in [0,1,2,3]
+                    new_link_p = ran_U2_lie_direction(lie_dir,+ϵ) * old_link
+                    new_link_m = ran_U2_lie_direction(lie_dir,-ϵ) * old_link
                     delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
                     delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
                     if delta_s_p < 0
-                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in pos. group direction $grp_dir")
+                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in pos. group direction $lie_dir")
                     elseif delta_s_m < 0
-                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in neg. group direction $grp_dir")
+                        error("Action decrease in μ = $μ, x = $x, t = $t, ϵ = $ϵ in neg. group direction $lie_dir")
                     end
                 end
             end
@@ -1541,7 +1542,7 @@ let
     vary_config_U2(insta,ϵ)
 end
 
-# bla = ran_U2_group_direction(rand(0:3),1e-3); coeffs2grp(bla)[1,1]
+# bla = ran_U2_lie_direction(rand(0:3),1e-3); coeffs2grp(bla)[1,1]
 
 function vary_special_config_U2(tol, L, q_vals, z_vals, ϵ_powers, file_name)
     mac_prec = eps()
@@ -1554,19 +1555,19 @@ function vary_special_config_U2(tol, L, q_vals, z_vals, ϵ_powers, file_name)
             stap_dag = staple_dag(insta, μ, x, t)
             old_link = insta[μ,x,t]
             s_old    = -real(tr(old_link*stap_dag))
-            for grp_dir in [0,1,2,3]
-                new_link_p = ran_U2_group_direction(grp_dir,+ϵ) * old_link
-                new_link_m = ran_U2_group_direction(grp_dir,-ϵ) * old_link
+            for lie_dir in [0,1,2,3]
+                new_link_p = ran_U2_lie_direction(lie_dir,+ϵ) * old_link
+                new_link_m = ran_U2_lie_direction(lie_dir,-ϵ) * old_link
                 delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
                 delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
-                if abs(delta_s_p) < tol * mac_prec
+                if delta_s_p < tol * mac_prec
                     open(file_name, "a") do io
-                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, grp_dir = +$grp_dir, ΔS/eps = $(delta_s_p/mac_prec)\n")
+                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, lie_dir = +$lie_dir, ΔS/eps = $(delta_s_p/mac_prec)\n")
                     end
                 end
-                if abs(delta_s_p) < tol * mac_prec
+                if delta_s_p < tol * mac_prec
                     open(file_name, "a") do io
-                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, grp_dir = -$grp_dir, ΔS/eps = $(delta_s_m/mac_prec) \n")
+                        write(io, "q = $q, z = $z, μ = $μ, x = $x, t = $t, pow = -$pow, lie_dir = -$lie_dir, ΔS/eps = $(delta_s_m/mac_prec) \n")
                     end
                 end
             end
@@ -1583,4 +1584,125 @@ for hitsize_pow = 1:7
     # hitsize = 11
     vary_file_name = string(data_path, "\\vary_hitsize_$hitsize_pow.txt")
     vary_special_config_U2(10, 32, 0:5, 0:5, hitsize_pow:hitsize_pow, vary_file_name)
+end
+=#
+
+
+function ran_U2_lie_direction(lie_dir, ϵ)
+    v = [0.0, 0.0, 0.0]
+    if lie_dir == 0
+        return coeffs_U2(exp(im*ϵ/2), complex(0.0), complex(0.0), complex(0.0))
+    elseif lie_dir == 1
+        return coeffs_U2(complex(cos(ϵ/2)), complex(sin(ϵ/2)), complex(0.0),    complex(0.0))
+    elseif lie_dir == 2
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(sin(ϵ/2)), complex(0.0))
+    elseif lie_dir == 3
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(0.0),    complex(sin(ϵ/2)))
+    else
+        error("Group directions 'lie_dir' are labeled from 0 to 3")
+    end
+end
+
+function sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir)
+    insta    = insta_U2_z(L, L, q, z)
+    old_link = insta[μ,x,t]
+    stap_dag = staple_dag(insta,μ,x,t)
+    s_old    = -real(tr(old_link*stap_dag))
+    s_diffs  = []
+    for hitsize in hitsize_range
+        new_link = ran_U2_lie_direction(lie_dir, hitsize) * old_link
+        s_new    = -real(tr(new_link*stap_dag))
+        push!(s_diffs, s_new-s_old)
+    end
+    return s_diffs
+end
+
+model_sq(x, p) = p[1] .*x.^2
+p_sdiff = [1.0]
+all_params = []
+
+let
+    L = 32
+    # q = 0 #  rand(1:5)
+    # z = 0 #  rand(1:5)
+    for q = 0:3
+    for z = 0:3
+    μ_vals = rand(1:2, 4)
+    x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
+    t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
+    hitsize_range  = Vector(-3.5e-7:1e-7:3.5e-7)
+    fit_plot_xvals = Vector(-4e-7:1e-8:4e-7)
+    for site_ind = 1:4
+        μ = μ_vals[site_ind]
+        x = x_vals[site_ind]
+        t = t_vals[site_ind]
+        for lie_dir = 0:3
+            sdiff        = sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir) ./ eps()
+            fit_sdiff    = curve_fit(model_sq, 1e7 .* hitsize_range, sdiff, p_sdiff)
+            params_sdiff = round.(fit_sdiff.param .* 1e14, sigdigits = 3)
+            image_sdiff = plot(
+                title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
+                xlabel = "hitsize",
+                ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
+                rightmargin = 5mm,
+                labelfontsize = 15,
+                tickfontsize = 10,
+                legend = :top
+            )
+            image_sdiff = plot!(
+                fit_plot_xvals,
+                model_sq(fit_plot_xvals, 1e14.*fit_sdiff.param),
+                label = latexstring("\$\\mathrm{fit}(x) = a\\cdot x^2\$ \n \$a = $(params_sdiff[1])\$"),
+                color = cb_orange
+            )
+            image_sdiff = scatter!(
+                hitsize_range,
+                sdiff,
+                label = "Measurements",
+                color = cb_blue
+            )
+            # display(image_sdiff)
+            push!(all_params, fit_sdiff.param[1])
+        end # lie_dir
+    end # site_ind
+    end # z
+    end # q
+end # let
+
+# mean(all_params)
+# std(all_params)/16
+
+
+
+let
+    L = 32
+    q = rand(1:5)
+    z = rand(1:5)
+    μ = rand(1:2)
+    x = rand(1:L)
+    t = rand(1:L)
+    hitsize_range =  Vector(1e-8:1e-9:5e-7)
+    for lie_dir = 0:3
+        sdiff_plu = sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir) ./ eps()
+        sdiff_min = sdiff_min_of_special_config(L, q, z, μ, x, t, -hitsize_range, lie_dir) ./ eps()
+        image_sdiff = plot(
+            hitsize_range,
+            sdiff_plu,
+            title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
+            label = :false,
+            xlabel = "hitsize",
+            ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
+            rightmargin = 5mm,
+            labelfontsize = 15,
+            tickfontsize = 10,
+            color = palette(:default)[1]
+        )
+        image_sdiff = plot!(
+            -hitsize_range,
+            sdiff_min,
+            color = palette(:default)[1],
+            label = :false
+        )
+        display(image_sdiff)
+    end
 end

@@ -21,6 +21,7 @@ L_smear = length(smear_nums)
 
 corr_mats_list = []
 corr_mats_small_list = []
+unsm_plaq_corrs = Array{Float64}(undef,n_meas,N_t)        # To see the unsmeared plaq corrs without any matrix shenanigans
 # small_inds = collect(2:L_smear)
 small_inds = vcat(collect(2:L_smear), collect(2:L_smear).+L_smear)
 for t = 1:N_t
@@ -29,7 +30,22 @@ for t = 1:N_t
     corr_mats_small = [(raw_corrs[(i-1)*n_smear.+small_inds, small_inds] + transpose(raw_corrs[(i-1)*n_smear.+small_inds , small_inds])) / 2 for i = 1:n_meas]
     push!(corr_mats_list, corr_mats)
     push!(corr_mats_small_list, corr_mats_small)
+    unsm_plaq_corrs[:,t] = [raw_corrs[(i-1)*n_smear+2,2] for i = 1:n_meas]
 end
+
+plaq_corr_con_mean = Vector{Float64}(undef,N_t);
+plaq_corr_con_err = Vector{Float64}(undef,N_t);
+b_sizes = Vector{Float64}(undef,N_t);
+for t = 1:N_t
+    # t = 1
+    plaq_corrs = unsm_plaq_corrs[:,t]
+    plaq_means = mean_vals[:,2]
+    b_size = maximum([round(Int, 2*auto_corr_time(plaq_corrs)+1), round(Int, 2*auto_corr_time(plaq_means)+1)])
+    b_sizes[t] = b_size
+    plaq_corr_con_mean[t], plaq_corr_con_err[t] = jack_conn_corr_self(plaq_corrs, plaq_means, b_size)
+end
+
+# scatter(plaq_corr_con_mean, yerror = plaq_corr_con_err)
 
 # corr_mats_list[1][1]
 # corr_mats_small_list[1][1]
