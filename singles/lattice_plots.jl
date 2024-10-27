@@ -108,8 +108,8 @@ function insta_U2_z(N_x, N_t, q, z)
     return U
 end
 
-cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#e41a1c", "#999999", "#984ea3", "#f781bf"]);
-cb_blue, cb_orange, cb_green, cb_red, cb_grey, cb_purple, cb_pink  = cb_colors;
+cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#e41a1c", "#f781bf", "#999999", "#984ea3"]);;
+cb_blue, cb_orange, cb_green, cb_red, cb_pink, cb_grey, cb_purple  = cb_colors;
 
 
 
@@ -781,7 +781,7 @@ image_smear_path = string(fig_path,"\\smeared_actions.pdf")
 
 
 
-
+#=
 let
     # @assert 1==0 "Do we really want to start a smearing run???"
     β   = 6.0
@@ -833,6 +833,7 @@ let
     end
     println("We're done here!")
 end
+=#
 
 let
     L   = 32
@@ -1004,8 +1005,9 @@ dist_actions = Array{Float64}(undef,N_smear+1,length(epsilons))
 
 #=
 for i in eachindex(epsilons)
+    println("Started smearing at i = $i")
     ϵ = epsilons[i]
-    U = [ran_U2(ϵ*rand()) for μ = 1:2, x = 1:L, t = 1:L ] .* insta_U2_z(L, L, q, z)
+    U = [ran_U2(ϵ) for μ = 1:2, x = 1:L, t = 1:L] .* insta_U2_z(L, L, q, z)
     smeared_actions = [action(U,1)]
     V = stout_midpoint(U,ρ)
     for smear = 1:N_smear
@@ -1015,6 +1017,7 @@ for i in eachindex(epsilons)
     dist_actions[:,i] = smeared_actions
 end
 =#
+
 
 dist_actions_path = string(data_path,"\\dist_actions.txt")
 # # writedlm(dist_actions_path, dist_actions)
@@ -1449,7 +1452,7 @@ end
 
 
 #=
-function ran_U2_lie_direction(lie_dir, ϵ)
+function small_U2_single_lie_direction(lie_dir, ϵ)
     v = [0.0, 0.0, 0.0]
     if lie_dir == 0
         return coeffs_U2(exp(im*ϵ/2), complex(0.0), complex(0.0), complex(0.0))
@@ -1464,12 +1467,12 @@ function ran_U2_lie_direction(lie_dir, ϵ)
     end
 end
 
-# abs(det(ran_U2_lie_direction(rand(0:3),rand())))
-# bla = ran_U2_lie_direction(rand(0:3),rand())
+# abs(det(small_U2_single_lie_direction(rand(0:3),rand())))
+# bla = small_U2_single_lie_direction(rand(0:3),rand())
 # coeffs2grp(bla * adjoint(bla))
 # for r = 0:3
     # reps = rand()
-    # @assert isapprox(coeffs2grp(ran_U2_lie_direction(r,reps)), exp(im*reps*Σ[r+1]))
+    # @assert isapprox(coeffs2grp(small_U2_single_lie_direction(r,reps)), exp(im*reps*Σ[r+1]))
 # end
 
 function vary_config_U2(U, ϵ)
@@ -1482,8 +1485,8 @@ function vary_config_U2(U, ϵ)
                 old_link = U[μ,x,t]
                 s_old = -real(tr(old_link*stap_dag))
                 for lie_dir in [0,1,2,3]
-                    new_link_p = ran_U2_lie_direction(lie_dir,+ϵ) * old_link
-                    new_link_m = ran_U2_lie_direction(lie_dir,-ϵ) * old_link
+                    new_link_p = small_U2_single_lie_direction(lie_dir,+ϵ) * old_link
+                    new_link_m = small_U2_single_lie_direction(lie_dir,-ϵ) * old_link
                     delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
                     delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
                     if delta_s_p < 0
@@ -1542,7 +1545,7 @@ let
     vary_config_U2(insta,ϵ)
 end
 
-# bla = ran_U2_lie_direction(rand(0:3),1e-3); coeffs2grp(bla)[1,1]
+# bla = small_U2_single_lie_direction(rand(0:3),1e-3); coeffs2grp(bla)[1,1]
 
 function vary_special_config_U2(tol, L, q_vals, z_vals, ϵ_powers, file_name)
     mac_prec = eps()
@@ -1556,8 +1559,8 @@ function vary_special_config_U2(tol, L, q_vals, z_vals, ϵ_powers, file_name)
             old_link = insta[μ,x,t]
             s_old    = -real(tr(old_link*stap_dag))
             for lie_dir in [0,1,2,3]
-                new_link_p = ran_U2_lie_direction(lie_dir,+ϵ) * old_link
-                new_link_m = ran_U2_lie_direction(lie_dir,-ϵ) * old_link
+                new_link_p = small_U2_single_lie_direction(lie_dir,+ϵ) * old_link
+                new_link_m = small_U2_single_lie_direction(lie_dir,-ϵ) * old_link
                 delta_s_p = -real(tr(new_link_p*stap_dag)) - s_old
                 delta_s_m = -real(tr(new_link_m*stap_dag)) - s_old
                 if delta_s_p < tol * mac_prec
@@ -1588,58 +1591,63 @@ end
 =#
 
 
-function ran_U2_lie_direction(lie_dir, ϵ)
-    v = [0.0, 0.0, 0.0]
+
+
+function small_U2_single_lie_direction(lie_dir, ϵ)
+    # "ϵ" is short for "hitsize"
     if lie_dir == 0
         return coeffs_U2(exp(im*ϵ/2), complex(0.0), complex(0.0), complex(0.0))
     elseif lie_dir == 1
-        return coeffs_U2(complex(cos(ϵ/2)), complex(sin(ϵ/2)), complex(0.0),    complex(0.0))
+        return coeffs_U2(complex(cos(ϵ/2)), complex(sin(ϵ/2)), complex(0.0),      complex(0.0))
     elseif lie_dir == 2
-        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(sin(ϵ/2)), complex(0.0))
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),      complex(sin(ϵ/2)), complex(0.0))
     elseif lie_dir == 3
-        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),    complex(0.0),    complex(sin(ϵ/2)))
+        return coeffs_U2(complex(cos(ϵ/2)), complex(0.0),      complex(0.0),      complex(sin(ϵ/2)))
     else
         error("Group directions 'lie_dir' are labeled from 0 to 3")
     end
 end
 
-function sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir)
+function sdiff_min_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir)
     insta    = insta_U2_z(L, L, q, z)
     old_link = insta[μ,x,t]
     stap_dag = staple_dag(insta,μ,x,t)
     s_old    = -real(tr(old_link*stap_dag))
     s_diffs  = []
     for hitsize in hitsize_range
-        new_link = ran_U2_lie_direction(lie_dir, hitsize) * old_link
+        new_link = small_U2_single_lie_direction(lie_dir, hitsize) * old_link
         s_new    = -real(tr(new_link*stap_dag))
         push!(s_diffs, s_new-s_old)
     end
     return s_diffs
 end
 
-model_sq(x, p) = p[1] .*x.^2
-p_sdiff = [1.0]
-all_params = []
-
+all_as = []
+last_fit_converged = true
 let
     L = 32
-    # q = 0 #  rand(1:5)
-    # z = 0 #  rand(1:5)
-    for q = 0:3
-    for z = 0:3
+    resol = 1e-1
+    magnif = 1/resol
+    model_sq(x, p) = p[1] .* (magnif .* (x .- p[2])) .^2 .+ p[3]
+    p_sdiff = [1.0, 0.0, 0.0]
+    hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
+    fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
+    for q = 5:5
+    for z = 3:3
     μ_vals = rand(1:2, 4)
     x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
     t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
-    hitsize_range  = Vector(-3.5e-7:1e-7:3.5e-7)
-    fit_plot_xvals = Vector(-4e-7:1e-8:4e-7)
-    for site_ind = 1:4
-        μ = μ_vals[site_ind]
-        x = x_vals[site_ind]
-        t = t_vals[site_ind]
+    for link_ind = 1:4
+        μ = μ_vals[link_ind]
+        x = x_vals[link_ind]
+        t = t_vals[link_ind]
         for lie_dir = 0:3
-            sdiff        = sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir) ./ eps()
-            fit_sdiff    = curve_fit(model_sq, 1e7 .* hitsize_range, sdiff, p_sdiff)
-            params_sdiff = round.(fit_sdiff.param .* 1e14, sigdigits = 3)
+            sdiff     = sdiff_min_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir) ./ eps()
+            fit_sdiff = curve_fit(model_sq, hitsize_range, sdiff, p_sdiff)
+            a = round.(fit_sdiff.param[1]*magnif^2, sigdigits = 3)
+            b = round.(fit_sdiff.param[2], sigdigits = 3)
+            c = round.(fit_sdiff.param[3], sigdigits = 3)
+            last_fit_converged = fit_sdiff.converged
             image_sdiff = plot(
                 title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
                 xlabel = "hitsize",
@@ -1651,8 +1659,8 @@ let
             )
             image_sdiff = plot!(
                 fit_plot_xvals,
-                model_sq(fit_plot_xvals, 1e14.*fit_sdiff.param),
-                label = latexstring("\$\\mathrm{fit}(x) = a\\cdot x^2\$ \n \$a = $(params_sdiff[1])\$"),
+                model_sq(fit_plot_xvals, fit_sdiff.param),
+                label = latexstring("\$\\mathrm{fit}(x) = a\\cdot (x-b)^2 + c\$ \n \$a = $a\$ \n \$b = $b\$ \n \$c = $c\$"),
                 color = cb_orange
             )
             image_sdiff = scatter!(
@@ -1661,48 +1669,212 @@ let
                 label = "Measurements",
                 color = cb_blue
             )
-            # display(image_sdiff)
-            push!(all_params, fit_sdiff.param[1])
+            display(image_sdiff)
+            push!(all_as, fit_sdiff.param[1])
         end # lie_dir
-    end # site_ind
+    end # link_ind
     end # z
     end # q
 end # let
 
-# mean(all_params)
-# std(all_params)/16
+mean(all_params) * 1e14
+std(all_params)/sqrt(length(all_params)) * 1e14
 
 
 
+
+
+function sdiff_min_pert_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir, pert_dir, pert_size)
+    insta = insta_U2_z(L, L, q, z)
+    insta[μ,x,t] = small_U2_single_lie_direction(pert_dir, pert_size) * insta[μ,x,t]
+    old_link = insta[μ,x,t]
+    stap_dag = staple_dag(insta,μ,x,t)
+    s_old    = -real(tr(old_link*stap_dag))
+    s_diffs  = []
+    for hitsize in hitsize_range
+        new_link = small_U2_single_lie_direction(lie_dir, hitsize) * old_link
+        s_new    = -real(tr(new_link*stap_dag))
+        push!(s_diffs, s_new-s_old)
+    end
+    return s_diffs
+end
+
+last_fit_converged = true
 let
     L = 32
-    q = rand(1:5)
-    z = rand(1:5)
-    μ = rand(1:2)
-    x = rand(1:L)
-    t = rand(1:L)
-    hitsize_range =  Vector(1e-8:1e-9:5e-7)
-    for lie_dir = 0:3
-        sdiff_plu = sdiff_min_of_special_config(L, q, z, μ, x, t, hitsize_range, lie_dir) ./ eps()
-        sdiff_min = sdiff_min_of_special_config(L, q, z, μ, x, t, -hitsize_range, lie_dir) ./ eps()
-        image_sdiff = plot(
-            hitsize_range,
-            sdiff_plu,
-            title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
-            label = :false,
-            xlabel = "hitsize",
-            ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
-            rightmargin = 5mm,
-            labelfontsize = 15,
-            tickfontsize = 10,
-            color = palette(:default)[1]
-        )
-        image_sdiff = plot!(
-            -hitsize_range,
-            sdiff_min,
-            color = palette(:default)[1],
-            label = :false
-        )
-        display(image_sdiff)
-    end
+    pert_size = 1e-3
+    resol = 1e-7
+    magnif = 1/resol
+    model_sq_pert(x, p) = p[1] .* (magnif .* (x .- p[2])) .^2 .+ p[3]
+    p_sdiff_pert = [1.0, 1e-8, -1e-2]
+    hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
+    fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
+    for q = 5:5
+    for z = 0:3
+        μ_vals = rand(1:2, 4)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
+        for link_ind = 1:4
+            μ = μ_vals[link_ind]
+            x = x_vals[link_ind]
+            t = t_vals[link_ind]
+            for pert_dir = 0:3
+                lie_directions = [0,1,2,3]
+                popat!(lie_directions, pert_dir+1)
+                for lie_dir in lie_directions
+                    sdiff     = sdiff_min_pert_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir, pert_dir, pert_size) ./ eps()
+                    fit_sdiff = curve_fit(model_sq_pert, hitsize_range, sdiff, p_sdiff_pert)
+                    a = round.(fit_sdiff.param[1]*magnif^2, sigdigits = 3)
+                    b = round.(fit_sdiff.param[2], sigdigits = 3)
+                    c = round.(fit_sdiff.param[3], sigdigits = 3)
+                    last_fit_converged = fit_sdiff.converged
+                    image_sdiff = plot(
+                        title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, pert. size: \$ $pert_size\$ \n pert. dir.: \$ $pert_dir\$ Lie-dir.: \$ $lie_dir\$"),
+                        xlabel = "hitsize",
+                        ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
+                        rightmargin = 5mm,
+                        labelfontsize = 15,
+                        tickfontsize = 10,
+                        legend = :inside
+                    )
+                    image_sdiff = plot!(
+                        fit_plot_xvals,
+                        model_sq_pert(fit_plot_xvals, fit_sdiff.param),
+                        label = latexstring("\$\\mathrm{fit}(x) = a\\cdot (x-b)^2 + c\$ \n \$a = $a\$ \n \$b = $b\$ \n \$c = $c\$"),
+                        color = cb_orange
+                    )
+                    image_sdiff = scatter!(
+                        hitsize_range,
+                        sdiff,
+                        label = "Measurements",
+                        color = cb_blue
+                    )
+                    display(image_sdiff)
+                end # lie_dir
+            end # pert_dir
+        end # link_ind
+    end # z
+    end # q
+end # let
+
+### Findings:
+### pert.size 1e-3, z = 0:3 
+### indepently of (μ,x,t)
+### q = 0
+###     parabolas without significant b, c
+### q = 1
+###     same and:
+###     for pert_dir, lie_dir ∈ {0,3}
+###     z = 0: b ~ -8.9e-9
+###     z = 1: b ~ +9.3e-9
+###     z = 2: b ~ +2.8e-8
+###     z = 3: b ~ +4.7e-8
+### q = 2
+###     for pert_dir, lie_dir ∈ {0,3}
+###     z = 0: b ~ -3.8e-8
+###     z = 1: b ~ +/-0.0   (O(1e-23), embedding of instanton config)
+###     z = 2: b ~ +3.8e-8
+###     z = 3: b ~ +7.5e-8
+### q = 3
+###     for pert_dir, lie_dir ∈ {0,3}
+###     z = 0: b ~ -8.5e-8
+###     z = 1: b ~ -2.8e-8
+###     z = 2: b ~ +2.8e-8
+###     z = 3: b ~ +8.5e-8
+### q = 4
+###     for pert_dir, lie_dir ∈ {0,3}
+###     z = 0: b ~ -1.5e-7
+###     z = 1: b ~ -7.5e-8
+###     z = 2: b ~ +/-0.0   (O(1e-10), embedding of instanton config)
+###     z = 3: b ~ +7.5e-8
+### q = 5
+###     for pert_dir, lie_dir ∈ {0,3}
+###     z = 0: b ~ -2.4e-7
+###     z = 1: b ~ -1.4e-7
+###     z = 2: b ~ -4.6e-8
+###     z = 3: b ~ +4.6e-8
+
+
+
+
+
+
+function small_U2_lie_direction_vec(hitsize, v)
+    w = sqrt(hitsize/(v'*v)) .* v
+    return grp2coeffs_U2(exp(im*sum(w.*Σ)/2))
 end
+
+function sdiff_min_pert_spec_conf_vec(L, q, z, μ, x, t, hitsize_range, lie_dir, v, pert_size)
+    insta = insta_U2_z(L, L, q, z)
+    insta[μ,x,t] = small_U2_lie_direction_vec(pert_size, v) * insta[μ,x,t]
+    old_link = insta[μ,x,t]
+    stap_dag = staple_dag(insta,μ,x,t)
+    s_old    = -real(tr(old_link*stap_dag))
+    s_diffs  = []
+    for hitsize in hitsize_range
+        new_link = small_U2_single_lie_direction(lie_dir, hitsize) * old_link
+        s_new    = -real(tr(new_link*stap_dag))
+        push!(s_diffs, s_new-s_old)
+    end
+    return s_diffs
+end
+
+
+last_fit_converged = true
+let
+    L = 32
+    pert_size = 1e-3
+    resol = 5e-6
+    magnif = 1/resol
+    model_sq_pert(x, p) = p[1] .* (magnif .* (x .- p[2])) .^2 .+ p[3]
+    p_sdiff_pert = [1.0, 1e-8, -1e-2]
+    hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
+    fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
+    for q = 5:5
+    for z = 0:3
+        μ_vals = rand(1:2, 4)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
+        for link_ind = 1:4
+            μ = μ_vals[link_ind]
+            x = x_vals[link_ind]
+            t = t_vals[link_ind]
+            for num_perturbations = 1:1
+                w = 2 .* rand(4) .- 1
+                for lie_dir = 0:3
+                    v = copy(w)
+                    v[lie_dir+1] = 0.0
+                    sdiff     = sdiff_min_pert_spec_conf_vec(L, q, z, μ, x, t, hitsize_range, lie_dir, v, pert_size) ./ eps()
+                    fit_sdiff = curve_fit(model_sq_pert, hitsize_range, sdiff, p_sdiff_pert)
+                    a = round.(fit_sdiff.param[1]*magnif^2, sigdigits = 3)
+                    b = round.(fit_sdiff.param[2], sigdigits = 3)
+                    c = round.(fit_sdiff.param[3], sigdigits = 3)
+                    last_fit_converged = fit_sdiff.converged
+                    image_sdiff = plot(
+                        title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, pert. size: \$ $pert_size\$ \n pert. vec.: \$ $(round.(v,digits=2))\$ Lie-dir.: \$ $lie_dir\$"),
+                        xlabel = "hitsize",
+                        ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
+                        rightmargin = 5mm,
+                        labelfontsize = 15,
+                        tickfontsize = 10,
+                        legend = :inside
+                    )
+                    image_sdiff = plot!(
+                        fit_plot_xvals,
+                        model_sq_pert(fit_plot_xvals, fit_sdiff.param),
+                        label = latexstring("\$\\mathrm{fit}(x) = a\\cdot (x-b)^2 + c\$ \n \$a = $a\$ \n \$b = $b\$ \n \$c = $c\$"),
+                        color = cb_orange
+                    )
+                    image_sdiff = scatter!(
+                        hitsize_range,
+                        sdiff,
+                        label = "Measurements",
+                        color = cb_blue
+                    )
+                    display(image_sdiff)
+                end # lie_dir
+            end # num_perturbations
+        end # link_ind
+    end # z
+    end # q
+end # let
