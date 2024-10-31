@@ -14,7 +14,7 @@ include("SU2_jackknives.jl")
     n_op = length(smearlist)
     small_inds = 2:length(smearlist)
 
-    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_n_stout_$(n_stout)_rho_2D_$(rho_2D)"
+    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
     timeseries_path   = base_path * ".txt"
     corr_path         = base_path * "_crosscorr.txt"
     swil_smeared_path = base_path * "_swil_smeared.txt"
@@ -103,7 +103,7 @@ include("SU2_jackknives.jl")
 
 
     
-    ### EVs of correlation matrices
+    # ### EVs of correlation matrices
     # small    = true
     # evs      = Array{Float64}(undef, Nz>>1+1, n_op)
     # evs_errs = Array{Float64}(undef, Nz>>1+1, n_op)
@@ -155,7 +155,7 @@ include("SU2_jackknives.jl")
         GEVs      = Array{Float64}(undef, Nz>>1-t0, length(small_inds))
         GEVs_errs = Array{Float64}(undef, Nz>>1-t0, length(small_inds))
     end
-    for t = t0+1:Nz>>1
+    @time for t = t0+1:Nz>>1
         # t = 1
         jack = [zeros(n_op), zeros(n_op)]
         if small
@@ -179,8 +179,8 @@ include("SU2_jackknives.jl")
                 yerror = GEVs_errs[:,i],
                 label = latexstring("GEV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                # ylim = (1e-16, 0.5),
-                # yaxis = :log,
+                ylim = (1e-5, 1.0),
+                yaxis = :log,
                 # legend = :bottomright
             )
         end

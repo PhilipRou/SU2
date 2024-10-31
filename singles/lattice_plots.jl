@@ -966,7 +966,7 @@ let
             actions[:,z+z_bound+1],
             label = :false, # latexstring("\$z = $z\$"),
             color = cb_colors[z+z_bound+1],# palette(:default)[z+z_bound+1],
-            linestyle = :dash,
+            linestyle = :dashdotdot,
             linewidth = 1.2
         )
         image_local = scatter!(
@@ -1040,8 +1040,8 @@ let
         xlabel = latexstring("flow time \$\\tau/a^2\$"),
         ylabel = L"S/\beta",
         tickfontsize = 10,
-        labelfontsize = 17,
-        legendfontsize = 12,
+        labelfontsize = 15,
+        legendfontsize = 11,
         legend = :top,
         # foreground_color_legend = :false,
         background_color_legend = RGBA(1.0,1.0,1.0,0.8),

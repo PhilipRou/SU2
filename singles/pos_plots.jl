@@ -122,14 +122,13 @@ function small_U2_single_lie_direction(lie_dir::Int, ϵ)
     end
 end
 
-function small_U2_lie_direction_vec(hitsize, v::Vector{Float64})
+function small_U2_lie_direction_vec(hitsize, v::Vector)
     w = hitsize * sqrt(1/(v'*v)) .* v
     return grp2coeffs_U2(exp(im*sum(w.*Σ)/2))
 end
 
 cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#e41a1c", "#f781bf", "#999999", "#984ea3"]);;
 cb_blue, cb_orange, cb_green, cb_red, cb_pink, cb_grey, cb_purple  = cb_colors;;
-l_styles = [:solid, :dash, :dashdot, :dashdotdot]
 
 
 
@@ -148,51 +147,51 @@ N_smear  = Int(1e4)
 ρ        = 0.1
 pertsize = 1e-1
 
-for q = 0:5
-for z = 0:3
-    dist_actions = Array{Float64}(undef,N_smear+1,4)
-    dist_charges = Array{Float64}(undef,N_smear+1,4)
-    U = insta_U2_z(L, L, q, z)
-    μ = rand(1:2)
-    x = rand(1:L)
-    t = rand(1:L)
+dist_actions = Array{Float64}(undef,N_smear+1,4)
+dist_charges = Array{Float64}(undef,N_smear+1,4)
+U = insta_U2_z(L, L, q, z)
+μ = rand(1:2)
+x = rand(1:L)
+t = rand(1:L)
 
-    for lie_dir = 0:3
-        count = 0
-        println("Perturbation Lie direction: $lie_dir")
-        V = deepcopy(U)
-        V[μ,x,t] = small_U2_single_lie_direction(lie_dir, pertsize) * V[μ,x,t]
-        dist_actions[1,lie_dir+1] = action(V,1)
-        dist_charges[1,lie_dir+1] = top_charge_U2(V)
-        for smear = 1:N_smear
-            V = stout_midpoint(V,ρ)
-            dist_actions[smear+1,lie_dir+1] = action(V,1)
-            dist_charges[smear+1,lie_dir+1] = top_charge_U2(V)
-            if smear%(N_smear/20) == 0
-                count += 5
-                println("    Smearing progress: $count%")
-            end
+#=
+for lie_dir = 0:3
+    count = 0
+    println("    Perturbation Lie direction: $lie_dir")
+    V = deepcopy(U)
+    V[μ,x,t] = small_U2_single_lie_direction(lie_dir, pertsize) * V[μ,x,t]
+    dist_actions[1,lie_dir+1] = action(V,1)
+    dist_charges[1,lie_dir+1] = top_charge_U2(V)
+    for smear = 1:N_smear
+        V = stout_midpoint(V,ρ)
+        dist_actions[smear+1,lie_dir+1] = action(V,1)
+        dist_charges[smear+1,lie_dir+1] = top_charge_U2(V)
+        if smear%(N_smear/20) == 0
+            count += 5
+            println("        Smearing progress: $count%")
         end
     end
-
-    dist_actions_path = string(data_path,"\\dist_actions\\dist_actions_q_$(q)_z_$(z)_pertsize_$pertsize.txt")
-    writedlm(dist_actions_path, dist_actions)
 end
-end
-# dist_actions = readdlm(dist_actions_path)
+=#
 
-
+dist_actions_path = string(data_path,"\\dist_actions\\dist_actions_q_$(q)_z_$(z)_pertsize_$pertsize.txt")
+# # writedlm(dist_actions_path, dist_actions)
+dist_actions = readdlm(dist_actions_path)
 
 let
+    # l_styles = [:solid, :dash, :dashdot, :dashdotdot]
+    l_styles = [:solid, :solid, :dash, :dash]
+    l_widths = [2, 2, 1, 1]
+    alphas   = [0.7, 0.7, 1, 1]
     τ0 = 2
     start_ind = Int(τ0/ρ)
     image_dist = plot(
-        title  = latexstring("\$L = $L, q = $q, z = $z, \\mathrm{pert.\\ size} = $pertsize\$"),
+        # title  = latexstring("\$L = $L, q = $q, z = $z, \\mathrm{pert.\\ size} = $pertsize\$"),
         xlabel = latexstring("flow time \$\\tau/a^2\$"),
         ylabel = latexstring("\$S/\\beta\$"),
-        tickfontsize = 10,
-        labelfontsize = 17,
-        legendfontsize = 12,
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 11,
         legend = :top,
         # foreground_color_legend = :false,
         background_color_legend = RGBA(1.0,1.0,1.0,0.8),
@@ -204,12 +203,26 @@ let
         image_dist = plot!(
             ρ.*Array(0:N_smear)[start_ind:end],
             dist_actions[start_ind:end,lie_dir+1],
-            label = latexstring("Lie dir.\$\\, = $lie_dir\$"),
+            label = latexstring("\$j = $lie_dir\$"),
             # color = greys[2*lie_dir+1],
             color = cb_colors[lie_dir+1],
-            linewidth = 2,
-            alpha = 1,
+            # markershape = m_shapes[lie_dir+1],
+            # markersize = 2,
+            linewidth = l_widths[lie_dir+1], # 1.2,
+            alpha = alphas[lie_dir+1],
             linestyle = l_styles[lie_dir+1]
+        )
+    end
+    for z_prime = 1:z-1
+        j = z-z_prime
+        image_dist = hline!(
+            [insta_action_U2(1,L,L,q,j)],
+            label = latexstring("\$S\$ for \$q=$q, z=$j\$"),
+            color = greys[j+length(greys)-z+1],
+            linestyle = :dot,
+            legend = :right,
+            linewidth = 1.5,
+            alpha = 0.8,
         )
     end
     image_dist = hline!(
@@ -221,23 +234,14 @@ let
         linewidth = 2.5,
         alpha = 0.8,
     )
-    for z_prime = 1:z-1
-        j = z-z_prime
-        image_dist = hline!(
-            [insta_action_U2(1,L,L,q,j)],
-            label = latexstring("\$S\$ for \$q=1, z=$j\$"),
-            color = greys[j+length(greys)-z+1],
-            linestyle = :dot,
-            legend = :right,
-            linewidth = 2.5,
-            alpha = 0.8,
-        )
-    end
     # image_dist = plot!(ylim = (0.0, 0.02))
+    image_dist = plot!(yaxis = :log)
     display(image_dist)
-end
+end # let
+# end # z
+# end # q
 
-image_dist_path = string(fig_path,"\\disturbed_locals_SINGLE_LINK.pdf")
+image_dist_path = string(fig_path,"\\dist_actions\\dist_actions_q_$(q)_z_$(z)_pertsize_$pertsize.pdf")
 # savefig(image_dist_path)
 
 
@@ -247,8 +251,8 @@ image_dist_path = string(fig_path,"\\disturbed_locals_SINGLE_LINK.pdf")
 
 
 L        = 32
-q        = 1
-z        = 6
+q        = 5
+z        = 3
 N_smear  = Int(1e4)
 ρ        = 0.1
 pertsize = 1e-1
@@ -259,8 +263,8 @@ U = insta_U2_z(L, L, q, z)
 μ = rand(1:2)
 x = rand(1:L)
 t = rand(1:L)
-v = 2 .* rand(4) .- 0.5
-# v = [0,0,0,1]
+# v = 2 .* rand(4) .- 0.5
+v = [1,0,0,-1]
 
 let
     count = 0
@@ -282,7 +286,7 @@ end
 
 
 
-dist_actions_path = string(data_path,"\\dist_actions_VEC_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
+# dist_actions_path = string(data_path,"\\dist_actions_VEC_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
 # # writedlm(dist_actions_path, dist_actions)
 # dist_actions = readdlm(dist_actions_path)
 
@@ -322,21 +326,22 @@ let
         linewidth = 2.5,
         alpha = 0.8,
     )
-    for z_prime = 1:z
-        j = z-z_prime+1
-        image_dist = hline!(
-            [insta_action_U2(1,L,L,q,j)],
-            label = latexstring("\$S\$ for \$q=1, z=$j\$"),
-            color = greys[j],
-            linestyle = :dot,
-            legend = :right,
-            linewidth = 2.5,
-            alpha = 0.8,
-        )
-    end
+    # for z_prime = 1:z
+    #     j = z-z_prime+1
+    #     image_dist = hline!(
+    #         [insta_action_U2(1,L,L,q,j)],
+    #         label = latexstring("\$S\$ for \$q=1, z=$j\$"),
+    #         color = greys[j],
+    #         linestyle = :dot,
+    #         legend = :right,
+    #         linewidth = 2.5,
+    #         alpha = 0.8,
+    #     )
+    # end
     # image_dist = plot!(ylim = (0.0, 0.02))
     display(image_dist)
 end
+
 
 image_dist_path = string(fig_path,"\\disturbed_locals_SINGLE_LINK.pdf")
 # savefig(image_dist_path)
@@ -511,7 +516,6 @@ function sdiff_min_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir)
     return s_diff
 end
 
-# all_as = []
 last_fit_converged = true
 let
     L = 32
@@ -521,12 +525,12 @@ let
     p_sdiff = [1.0, 0.0, 0.0]
     hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
     fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
-    for q = 5:5
-    for z = 3:3
-    μ_vals = rand(1:2, 4)
-    x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
-    t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
-    for link_ind = 1:4
+    for q = 1:1
+    for z = 5:5
+    μ_vals = rand(1:2, 5)
+    x_vals = [rand(1:L-1), rand(1:L-1), L,           L, rand(1:L)]
+    t_vals = [rand(1:L-1), L,           rand(1:L-1), L, rand(1:L)]
+    for link_ind = 5:5
         μ = μ_vals[link_ind]
         x = x_vals[link_ind]
         t = t_vals[link_ind]
@@ -538,12 +542,13 @@ let
             c = round.(fit_sdiff.param[3], sigdigits = 3)
             last_fit_converged = fit_sdiff.converged
             image_sdiff = plot(
-                title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
-                xlabel = "hitsize",
+                # title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
+                xlabel = latexstring("step size \$\\epsilon\$"),
                 ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
                 rightmargin = 5mm,
                 labelfontsize = 15,
                 tickfontsize = 10,
+                legendfontsize = 10,
                 legend = :top
             )
             image_sdiff = plot!(
@@ -559,15 +564,14 @@ let
                 color = cb_blue
             )
             display(image_sdiff)
-            # push!(all_as, fit_sdiff.param[1])
         end # lie_dir
     end # link_ind
     end # z
     end # q
 end # let
 
-mean(all_params) * 1e14
-std(all_params)/sqrt(length(all_params)) * 1e14
+image_sdiff_liedir_path = string(fig_path, "\\sdiff_q_1_z_5_lie_dir_3.pdf")
+# savefig(image_sdiff_liedir_path)
 
 
 
@@ -599,18 +603,20 @@ let
     p_sdiff = [1.0, 0.0, 0.0]
     hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
     fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
-    for q = 0:5
-    for z = 0:3
-        μ_vals = rand(1:2, 4)
-        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
-        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
-        for link_ind = 1:4
+    for q = 1:1
+    for z = 5:5
+        μ_vals = rand(1:2, 5)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L, rand(1:L)]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L, rand(1:L)]
+        for link_ind = 5:5
             μ = μ_vals[link_ind]
             x = x_vals[link_ind]
             t = t_vals[link_ind]
             for num_pert = 1:1
-                # v = 2 .* rand(4) .- 1
-                v = [rand().-0.5, 0.0, 0.0, rand().-0.5]
+                v = 2 .* rand(4) .- 1
+                println("v = $(round.(v,digits=3))")
+                # v = [rand().-0.5, 0.0, 0.0, rand().-0.5]
+                # v = [0.0, rand().-0.5, rand().-0.5, 0.0]
                 sdiff     = sdiff_min_spec_conf_vec(L, q, z, μ, x, t, hitsize_range, v) ./ eps()
                 fit_sdiff = curve_fit(model_sq, hitsize_range, sdiff, p_sdiff)
                 a = round.(fit_sdiff.param[1]*magnif^2, sigdigits = 3)
@@ -618,18 +624,20 @@ let
                 c = round.(fit_sdiff.param[3], sigdigits = 3)
                 last_fit_converged = fit_sdiff.converged
                 image_sdiff = plot(
-                    title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$ \n Lie vec.: \$ $(round.(v,digits=2))\$"),
-                    xlabel = "hitsize",
+                    # title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$ \n Lie vec.: \$ $(round.(v,digits=2))\$"),
+                    xlabel = latexstring("step size \$\\epsilon\$"),
                     ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
                     rightmargin = 5mm,
                     labelfontsize = 15,
                     tickfontsize = 10,
-                    legend = :inside
+                    legendfontsize = 10,
+                    # legend = :inside,
+                    legend = :top
                 )
                 image_sdiff = plot!(
                     fit_plot_xvals,
                     model_sq(fit_plot_xvals, fit_sdiff.param),
-                    label = latexstring("\$\\mathrm{fit}(x) = a\\cdot |x-b| + c \$ \n \$a = $a\$ \n \$b = $b\$ \n \$c = $c\$"),
+                    label = latexstring("\$\\mathrm{fit}(x) = a\\cdot (x-b)^2 + c \$ \n \$a = $a\$ \n \$b = $b\$ \n \$c = $c\$"),
                     color = cb_orange
                 )
                 image_sdiff = scatter!(
@@ -646,6 +654,8 @@ let
 end # let
 
 
+image_sdiff_lievec_path = string(fig_path, "\\sdiff_q_1_z_5_lie_vec.pdf")
+# savefig(image_sdiff_lievec_path)
 
 
 
@@ -679,19 +689,19 @@ let
     p_sdiff_pert = [1.0, 1e-8, -1e-2]
     hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
     fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
-    for q = 5:5
-    for z = 3:3
-        μ_vals = rand(1:2, 4)
-        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
-        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
-        for link_ind = 1:4
+    for q = 1:1
+    for z = 5:5
+        μ_vals = rand(1:2, 5)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L, rand(1:L)]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L, rand(1:L)]
+        for link_ind = 5:5
             μ = μ_vals[link_ind]
             x = x_vals[link_ind]
             t = t_vals[link_ind]
-            for pert_dir = 0:3
+            for pert_dir = 3:3
                 lie_directions = [0,1,2,3]
                 popat!(lie_directions, pert_dir+1)
-                for lie_dir in lie_directions
+                for lie_dir = 0:0
                     sdiff     = sdiff_min_pert_spec_conf(L, q, z, μ, x, t, hitsize_range, lie_dir, pert_dir, pert_size) ./ eps()
                     fit_sdiff = curve_fit(model_sq_pert, hitsize_range, sdiff, p_sdiff_pert)
                     a = round.(fit_sdiff.param[1]*magnif^2, sigdigits = 3)
@@ -699,13 +709,14 @@ let
                     c = round.(fit_sdiff.param[3], sigdigits = 3)
                     last_fit_converged = fit_sdiff.converged
                     image_sdiff = plot(
-                        title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, pert. size: \$ $pert_size\$ \n pert. dir.: \$ $pert_dir\$, Lie-dir.: \$ $lie_dir\$"),
-                        xlabel = "hitsize",
+                        # title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, pert. size: \$ $pert_size\$ \n pert. dir.: \$ $pert_dir\$, Lie-dir.: \$ $lie_dir\$"),
+                        xlabel = latexstring("step size \$\\epsilon_2\$"),
                         ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
                         rightmargin = 5mm,
                         labelfontsize = 15,
                         tickfontsize = 10,
-                        legend = :inside
+                        legendfontsize = 10,
+                        legend = :top
                     )
                     image_sdiff = plot!(
                         fit_plot_xvals,
@@ -726,6 +737,9 @@ let
     end # z
     end # q
 end # let
+
+image_sdiff_lievec_path = string(fig_path, "\\sdiff_q_1_z_5_second_pert.pdf")
+# savefig(image_sdiff_lievec_path)
 
 ### Observations:
 ### pert. size 1e-3, z = 0:3 
@@ -797,11 +811,11 @@ let
     p_sdiff_pert = [1.0, 1e-8, -1e-2]
     hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
     fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
-    for q = 5:5
-    for z = 3:3
-        μ_vals = rand(1:2, 4)
-        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
-        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
+    for q = 1:1
+    for z = 5:5
+        μ_vals = rand(1:2, 5)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L, rand(1:L)]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L, rand(1:L)]
         for link_ind = 1:4
             μ = μ_vals[link_ind]
             x = x_vals[link_ind]
@@ -888,18 +902,18 @@ last_fit_converged = true
 let
     L = 32
     pert_size = 1e-3
-    resol = 1e-6
+    resol = 1e-4
     magnif = 1/resol
     model_sq_pert(x, p) = p[1] .* (magnif .* (x .- p[2])) .^2 .+ p[3]
     p_sdiff_pert = [1.0, 1e-8, -1e-2]
     hitsize_range  = Vector(-3.5*resol:resol:3.5*resol)
     fit_plot_xvals = Vector(-4.0*resol:resol/10:4.0*resol)
-    for q = 5:5
-    for z = 3:3
-        μ_vals = rand(1:2, 4)
-        x_vals = [rand(1:L-1), rand(1:L-1), L,           L]
-        t_vals = [rand(1:L-1), L,           rand(1:L-1), L]
-        for link_ind = 1:4
+    for q = 1:1
+    for z = 5:5
+        μ_vals = rand(1:2, 5)
+        x_vals = [rand(1:L-1), rand(1:L-1), L,           L, rand(1:L)]
+        t_vals = [rand(1:L-1), L,           rand(1:L-1), L, rand(1:L)]
+        for link_ind = 5:5
             μ = μ_vals[link_ind]
             x = x_vals[link_ind]
             t = t_vals[link_ind]
