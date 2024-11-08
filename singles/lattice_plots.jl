@@ -112,14 +112,14 @@ cb_hexes  = [
     "#377eb8", # blue
     "#ff7f00", # orange
     "#4daf4a", # green
-    "#e41a1c", # red
     "#984ea3", # purple
-    "#a65628", # brown
+    "#e41a1c", # red
     "#f781bf", # pink
     "#999999", # grey
+    "#a65628", # brown
 ]
 cb_colors = parse.(Colorant, cb_hexes)
-cb_blue, cb_orange, cb_green, cb_red, cb_purple, cb_brown, cb_pink, cb_grey  = cb_colors
+cb_blue, cb_orange, cb_green, cb_purple, cb_red, cb_pink, cb_grey, cb_brown  = cb_colors
 
 
 
@@ -936,29 +936,29 @@ let
     insta_actions = [insta_action_U2(1, L, L, q, z) for q in q_vals_insta, z in z_vals ]
     markers = [:circle, :rect, :diamond, :star4]
     image_local = plot(
-            q_vals,
-            actions_min,
-            color = :black,
-            # linestyle = :dash,
-            linewidth = 1.2,
-            # label = latexstring("Eq.\$\\,\\,\$(7)"),
-            label = "lower bound",
-            xticks = -q_bound:q_bound,
-            xlabel = latexstring("top. charge \$q\$"),
-            ylabel = L"S/\beta",
-            size = (700,300),
-            # tickfontsize = 9,
-            labelfontsize = 13,
-            legendfontsize = 9,
-            # ylim = (y_bound_lower, y_bound_upper),
-            # xlim = (x_bound_lower, x_bound_upper),
-            grid = :false,
-            legend = :outerright,
-            # foreground_color_legend = :false,
-            # background_color_legend = :false,
-            # background_color_legend = RGBA(1.0,1.0,1.0,0.8),
-            left_margin = 3mm,
-            bottom_margin = 3mm,
+        q_vals,
+        actions_min,
+        color = :black,
+        label = :false,# "lower bound",
+        # linestyle = :dash,
+        linewidth = 1.2,
+        # label = latexstring("Eq.\$\\,\\,\$(7)"),
+        xticks = -q_bound:q_bound,
+        xlabel = latexstring("top. charge \$q\$"),
+        ylabel = L"S/\beta",
+        size = (700,300),
+        # tickfontsize = 9,
+        labelfontsize = 13,
+        legendfontsize = 9,
+        # ylim = (y_bound_lower, y_bound_upper),
+        # xlim = (x_bound_lower, x_bound_upper),
+        grid = :false,
+        legend = :outerright,
+        # foreground_color_legend = :false,
+        # background_color_legend = :false,
+        # background_color_legend = RGBA(1.0,1.0,1.0,0.8),
+        left_margin = 3mm,
+        bottom_margin = 3mm,
     )
     for z in z_vals
         image_local = plot!(
@@ -979,6 +979,12 @@ let
             alpha = 0.6,
         )
     end
+    image_local = plot!(
+        [q_vals[1]],
+        [actions_min[1]],
+        color = :black,
+        label = "lower bound",
+    )
     image_local = lens!(
         [0.8,1.201],
         [0.0,0.015],
@@ -1057,7 +1063,7 @@ let
     # )
     # greys = (:grey77, :grey70, :grey63, :grey56, :grey49, :grey42, :grey84)
     # greys = (:grey45, :grey40, :grey35, :grey30, :grey25, :grey20, :grey50)
-    greys = (:grey84, :grey77, :grey70, :grey63, :grey56, :grey49, :grey42)
+    # greys = (:grey84, :grey77, :grey70, :grey63, :grey56, :grey49, :grey42)
     greys = (:grey77, :grey70, :grey63, :grey56, :grey49, :grey42, :grey30)
     # greys = (:grey75, :grey70, :grey65, :grey60, :grey55, :grey50, :grey45)
     for i = 1:length(epsilons)-1 # in eachindex(epsilons)

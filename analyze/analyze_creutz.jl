@@ -1,4 +1,5 @@
 include("SU2_analyze_head.jl")
+include("SU2_jackknives.jl")
 
 function creutz(means::Vector, a, b, c, d)
     return means[a]*means[d]/(means[b]*means[c])

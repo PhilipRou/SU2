@@ -58,7 +58,7 @@ end
 
 # action(insta_U2_comb(N_x,N_t,1),1) - action(insta_U2(N_x,N_t,1),1)
 
-function insta_U2_comb(N_x, N_t, Q, M_rot)
+function insta_U2_comb_odd(N_x, N_t, Q, M_rot)
     insta = gaugefield_U2(N_x,N_t,false)
     x_vec = M_rot * complex.([π/(1+mod(Q,2)), 0.0, 0.0])
     t_vec = M_rot * complex.([0.0, π/(1+mod(Q,2)), 0.0])
@@ -70,12 +70,55 @@ function insta_U2_comb(N_x, N_t, Q, M_rot)
     return insta
 end
 
-function two_metric(M::Matrix,N::Matrix)
+function insta_U2_comb_even(N_x, N_t, Q, coeffs_α_and_vec)
+    ### coeffs_α_and_vec: first entry is alpha, second, third and fourth the vector. Needs to be
+    ### one vector for optim() to work
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = complex.(coeffs_α_and_vec[2:4])
+    t_vec = coeffs_α_and_vec[1] .* x_vec
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+function insta_U2_z_comb(N_x, N_t, Q, z)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * exp_u2(-(t-1)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x-1, t = 1:N_t]
+    U[1,N_x,:]     = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * exp_u2(-(t-1+N_x)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * exp_u2(x*2*π/N_x * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x]
+    return U
+end
+
+# q,z = rand(1:10,2)
+# @assert isapprox(action(insta_U2_z(32,32,q,z),1), action(insta_U2_z_comb(32,32,q,z),1))
+
+function insta_U2_z_comb(N_x, N_t, Q, z, coeffs)
+    ### coeffs: 2 real numbers telling how to stretch the outer slices with
+    ### the factor exp(i*coeffs[1]*σ_3) resp. exp(i*coeffs[2]*σ_3)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * exp_u2(-(t-1)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x-1, t = 1:N_t]
+    U[1,N_x,:]     = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * exp_u2(-(t-1+N_x)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * exp_u2(x*2*π/N_x * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x]
+    for t = 1:N_t
+        U[1,N_x,t] = exp_u2(coeffs[1]*coeffs_U2(0.0im,0.0im,0.0im,complex(1.0))) * U[1,N_x,t]
+    end
+    for x = 1:N_x
+        U[2,x,N_t] = exp_u2(coeffs[2]*coeffs_U2(0.0im,0.0im,0.0im,complex(1.0))) * U[2,x,N_t]
+    end
+    return U
+end
+
+function two_metric(M::Matrix, N::Matrix)
     O = M-N
     return real(sqrt(sum(O.*conj(O))))
 end
 
-function two_metric(X::coeffs_U2,Y::coeffs_U2)
+function two_metric(X::coeffs_U2, Y::coeffs_U2)
     Z = X-Y
     return real(sqrt(2)*sqrt(conj(Z.a)*Z.a + conj(Z.b)*Z.b + conj(Z.c)*Z.c + conj(Z.d)*Z.d))
 end
@@ -88,12 +131,12 @@ end
 function two_metric_field(U, V)
     NX = size(U,2)
     NT = size(U,3)
-    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / 2*NX*NT
 end
 
 # Needs M to be ∈ SU(2)!
 function Pauli_coeffs(M::Matrix)
-    N = -im*log(M)
+    N  = -im*log(M)
     v1 = real(N[2,1])
     v2 = imag(N[2,1])
     v3 = real(N[1,1])
@@ -162,10 +205,10 @@ function Pauli2vec(X::coeffs_U2)
     return [X.b, X.c, X.d]
 end
 
-# heatmap([real(tr(plaq(insta_U2_comb(N_x, N_t, 1, λ0),x,t))) for x = 1:N_x, t = 1:N_t])
-# action(insta_U2_comb(N_x, N_t, 1, λ0),1) - action(insta_max,1)
-# action(insta_U2_comb(N_x, N_t, 1, λ0),1) - action(insta_U2(N_x,N_t,1),1)
-# action(insta_U2_comb(N_x, N_t, 2, λ0),1) - action(insta_U2(N_x,N_t,2),1)
+# heatmap([real(tr(plaq(insta_U2_comb_odd(N_x, N_t, 1, λ0),x,t))) for x = 1:N_x, t = 1:N_t])
+# action(insta_U2_comb_odd(N_x, N_t, 1, λ0),1) - action(insta_max,1)
+# action(insta_U2_comb_odd(N_x, N_t, 1, λ0),1) - action(insta_U2(N_x,N_t,1),1)
+# action(insta_U2_comb_odd(N_x, N_t, 2, λ0),1) - action(insta_U2(N_x,N_t,2),1)
 
 function two_metric_field_insta_rot(U, M_rot_Lie_coeffs)
     NX = size(U,2)
@@ -175,8 +218,8 @@ function two_metric_field_insta_rot(U, M_rot_Lie_coeffs)
     L2 = [0 0 1; 0 0 0; -1 0 0]
     L3 = [0 -1 0; 1 0 0; 0 0 0]
     M_rot = exp(sum(M_rot_Lie_coeffs.*[L1,L2,L3]))
-    insta = insta_U2_comb(NX,NT,q,M_rot)
-    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
+    insta = insta_U2_comb_odd(NX,NT,q,M_rot)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / 2*NX*NT
 end
 
 # two_metric_field_insta_rot(blabla, [0.0,0.0,0.0])
@@ -190,8 +233,16 @@ function minimum_insta_metric(U)
     V = max_gauge(U,"U2")
     q = round(Int,top_charge_U2(U))
     if iseven(q)
-        V[1,NX,:] = [-exp(-im*q*π*(t-1+NX)/NX/NT) * coeffs_Id_U2() for t = 1:NT]
-        V[2,:,NT] = [-exp(im*q*x*π/NX) * coeffs_Id_U2() for x = 1:NX]
+        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT) / sqrt(det(V[1,NX,2])) 
+        for t = 1:NT
+            V[1,NX,t] = U1_fac_ratio_outer * V[1,NX,t]
+        end
+        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+        for x = 1:NX
+            V[2,x,NT] = U1_fac_ratio_outer * V[2,x,NT]
+        end
+        # V[1,NX,:] = [-exp(-im*q*π*(t-1+NX)/NX/NT) * coeffs_Id_U2() for t = 1:NT]
+        # V[2,:,NT] = [-exp(im*q*x*π/NX) * coeffs_Id_U2() for x = 1:NX]
     else # if isodd(q)
         v_x = Pauli2vec(V[1,NX,1]/sqrt(det(V[1,NX,1])))
         v_t = Pauli2vec(V[2,1,NT]/sqrt(det(V[2,1,NT])))
@@ -218,27 +269,58 @@ function minimum_insta_metric(U)
 end
 
 function optimize_insta_metric(U, start_coeffs)
+    @assert length(start_coeffs) == 4 "start_coeffs must number 4, the last 3 of which are the vector"
     NX = size(U,2)
     NT = size(U,3)
-    U_opt = max_gauge(U,"U2")
     q = round(Int,top_charge_U2(U))
+    
+    V = max_gauge(U,"U2")
+    U1_fac_ratio_outer_x = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(V[1,NX,2])) 
+    for t = 1:NT
+        V[1,NX,t] = U1_fac_ratio_outer_x * V[1,NX,t]
+    end
+    U1_fac_ratio_outer_t = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+    for x = 1:NX
+        V[2,x,NT] = U1_fac_ratio_outer_t * V[2,x,NT]
+    end
     if iseven(q)
-        return NaN
+        optim_metric_even(coeffs) = two_metric_field(V, insta_U2_comb_even(NX,NT,q,coeffs))
+        return optimize(optim_metric_even, start_coeffs,LBFGS()).minimum
     else
-        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(U_opt[1,NX,2])) 
-        for t = 1:NT
-            U_opt[1,NX,t] = U1_fac_ratio_outer * U_opt[1,NX,t]
-        end
-        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(U_opt[2,1,NT]))
-        for x = 1:NX
-            U_opt[2,x,NT] = U1_fac_ratio_outer * U_opt[2,x,NT]
-        end
-        optim_metric(coeffs) = two_metric_field_insta_rot(U_opt,coeffs)
-        return optimize(optim_metric, start_coeffs,LBFGS()).minimum
+        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V,coeffs)
+        return optimize(optim_metric_odd, start_coeffs[2:4],LBFGS()).minimum
     end
 end
 
+# bla = gaugefield_U2(32,32,true);
+# for i = 1:5000 chess_metro!(bla, 0.1, 5.0, [0.0], "U2") end
+# q_temp = top_charge_U2(bla)
+# for i = 1:5000 bla = stout_midpoint(bla,0.1) end
+# q_temp = top_charge_U2(bla)
+# two_metric_field(max_gauge(bla, "U2"), insta_U2_comb(32,32,q_temp))
+# minimum_insta_metric(bla)
+# minimum([optimize_insta_metric(bla,zeros(4)),optimize_insta_metric(bla,ones(4)),optimize_insta_metric(bla,rand(4))]) 
+# # coeffs2grp(bla[1,32,1]/sqrt(det(bla[1,32,1])))
 
+function optimize_special_metric(U, start_coeffs, z)
+    @assert length(start_coeffs) == 2 "start_coeffs must number 2, for each outer slice to be optimized by exp(i*start_coeffs[1/2]*σ_3)"
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    
+    V = max_gauge(U,"U2")
+    U1_fac_ratio_outer_x = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(V[1,NX,2])) 
+    for t = 1:NT
+        V[1,NX,t] = U1_fac_ratio_outer_x * V[1,NX,t]
+    end
+    U1_fac_ratio_outer_t = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+    for x = 1:NX
+        V[2,x,NT] = U1_fac_ratio_outer_t * V[2,x,NT]
+    end
+    
+    optim_metric(coeffs) = two_metric_field(V, insta_U2_z_comb(NX,NT,q,z,coeffs))
+    return optimize(optim_metric,start_coeffs,LBFGS()).minimum
+end
 
 
 
@@ -2406,61 +2488,7 @@ two_metric_field(blabla,insta_max)
 # scatter([imag(log(sqrt(det(V_max[2,x,N_t])))) for x = 1:N_x])
 
 
-function minimum_insta_metric(U)
-    NX = size(U,2)
-    NT = size(U,3)
-    V = max_gauge(U,"U2")
-    q = round(Int,top_charge_U2(U))
-    if iseven(q)
-        V[1,NX,:] = [-exp(-im*q*π*(t-1+NX)/NX/NT) * coeffs_Id_U2() for t = 1:NT]
-        V[2,:,NT] = [-exp(im*q*x*π/NX) * coeffs_Id_U2() for x = 1:NX]
-    else # if isodd(q)
-        v_x = Pauli2vec(V[1,NX,1]/sqrt(det(V[1,NX,1])))
-        v_t = Pauli2vec(V[2,1,NT]/sqrt(det(V[2,1,NT])))
-        ### More generally, less efficient, but applicable to any q:
-            # v_x = Pauli_coeffs(V[1,NX,1]/sqrt(det(V[1,NX,1])))
-            # v_t = Pauli_coeffs(V[2,1,NT]/sqrt(det(V[2,1,NT])))
-        v_x = v_x/sqrt(v_x'*v_x)
-        v_t = v_t/sqrt(v_t'*v_t)
-        v_x_insta = [1.0, 0.0, 0.0]
-        v_t_insta = [0.0, 1.0, 0.0]
-        M1 = find_rot_mat(v_x, v_x_insta)
-        M2 = find_rot_mat(M1*v_t, v_t_insta)
-        rot_quat = rot_mat2quat(M2*M1)
-        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT) / sqrt(det(V[1,NX,2])) 
-        for t = 1:NT
-            V[1,NX,t] = U1_fac_ratio_outer * rot_quat * V[1,NX,t] * adjoint(rot_quat)
-        end
-        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
-        for x = 1:NX
-            V[2,x,NT] = U1_fac_ratio_outer * rot_quat * V[2,x,NT] * adjoint(rot_quat)
-        end
-    end
-    return two_metric_field(V,insta_U2_comb(NX,NT,q))
-end
-
 minimum_insta_metric(bla)
-
-function optimize_insta_metric(U, start_coeffs)
-    NX = size(U,2)
-    NT = size(U,3)
-    U_opt = max_gauge(U,"U2")
-    q = round(Int,top_charge_U2(U))
-    if iseven(q)
-        return NaN
-    else
-        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(U_opt[1,NX,2])) 
-        for t = 1:NT
-            U_opt[1,NX,t] = U1_fac_ratio_outer * U_opt[1,NX,t]
-        end
-        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(U_opt[2,1,NT]))
-        for x = 1:NX
-            U_opt[2,x,NT] = U1_fac_ratio_outer * U_opt[2,x,NT]
-        end
-        optim_metric(coeffs) = two_metric_field_insta_rot(U_opt,coeffs)
-        return optimize(optim_metric, start_coeffs,LBFGS()).minimum
-    end
-end
 
 ip = optimize_insta_metric(bla,[0.0,0.0,0.0]).minimum
 

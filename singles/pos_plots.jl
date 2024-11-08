@@ -13,12 +13,25 @@ using LinearAlgebra
 # using Roots
 using DelimitedFiles
 using Statistics
-# using Optim
+using Optim
 using QuadGK
 using Measures
 
 data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS" 
 fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS"
+
+cb_hexes  = [
+    "#377eb8", # blue
+    "#ff7f00", # orange
+    "#4daf4a", # green
+    "#984ea3", # purple
+    "#e41a1c", # red
+    "#f781bf", # pink
+    "#999999", # grey
+    "#a65628", # brown
+]
+cb_colors = parse.(Colorant, cb_hexes)
+cb_blue, cb_orange, cb_green, cb_purple, cb_red, cb_pink, cb_grey, cb_brown  = cb_colors
 
 function insta_action_U2_min(β, N_x, N_t, q)
     return β*N_x*N_t*(1-cos(q*π/N_x/N_t))
@@ -106,7 +119,6 @@ function insta_U2_z(N_x, N_t, q, z)
     return U
 end
 
-
 function small_U2_single_lie_direction(lie_dir::Int, ϵ)
     ### "ϵ" is short for "hitsize"
     if lie_dir == 0
@@ -127,8 +139,213 @@ function small_U2_lie_direction_vec(hitsize, v::Vector)
     return grp2coeffs_U2(exp(im*sum(w.*Σ)/2))
 end
 
-cb_colors = parse.(Colorant, ["#377eb8", "#ff7f00", "#4daf4a", "#e41a1c", "#f781bf", "#999999", "#984ea3"]);;
-cb_blue, cb_orange, cb_green, cb_red, cb_pink, cb_grey, cb_purple  = cb_colors;;
+function insta_U2_comb(N_x, N_t, Q)
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = complex.([π/(1+mod(Q,2)), 0.0, 0.0])
+    t_vec = complex.([0.0, π/(1+mod(Q,2)), 0.0])
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+function insta_U2_comb_odd(N_x, N_t, Q, M_rot)
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = M_rot * complex.([π/(1+mod(Q,2)), 0.0, 0.0])
+    t_vec = M_rot * complex.([0.0, π/(1+mod(Q,2)), 0.0])
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+function insta_U2_comb_even(N_x, N_t, Q, coeffs_α_and_vec)
+    ### coeffs_α_and_vec: first entry is alpha, second, third and fourth the vector. Needs to be
+    ### one vector for optim() to work
+    insta = gaugefield_U2(N_x,N_t,false)
+    x_vec = complex.(coeffs_α_and_vec[2:4])
+    t_vec = coeffs_α_and_vec[1] .* x_vec
+    x_fac = exp_u2(coeffs_U2(0.0im, x_vec[1], x_vec[2], x_vec[3]))
+    t_fac = exp_u2(coeffs_U2(0.0im, t_vec[1], t_vec[2], t_vec[3]))
+    insta[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * coeffs_Id_U2() for x = 1:N_x-1, t = 1:N_t]
+    insta[1,N_x,:] = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * x_fac for t = 1:N_t]
+    insta[2,:,N_t] = [exp(im*Q*x*π/N_x) * t_fac for x = 1:N_x]
+    return insta
+end
+
+function insta_U2_z_comb(N_x, N_t, Q, z)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * exp_u2(-(t-1)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x-1, t = 1:N_t]
+    U[1,N_x,:]     = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * exp_u2(-(t-1+N_x)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * exp_u2(x*2*π/N_x * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x]
+    return U
+end
+
+function insta_U2_z_comb(N_x, N_t, Q, z, coeffs)
+    ### coeffs: 2 real numbers telling how to stretch the outer slices with
+    ### the factor exp(i*coeffs[1]*σ_3) resp. exp(i*coeffs[2]*σ_3)
+    U = Array{coeffs_U2}(undef, 2, N_x, N_t)
+    U[1,1:N_x-1,:] = [exp(-im*Q*π*(t-1)/N_x/N_t) * exp_u2(-(t-1)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x-1, t = 1:N_t]
+    U[1,N_x,:]     = [exp(-im*Q*π*(t-1+N_x)/N_x/N_t) * exp_u2(-(t-1+N_x)*2*π/N_x/N_t * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for t = 1:N_t]
+    U[2,:,1:N_t-1] = [coeffs_Id_U2() for x = 1:N_x, t = 1:N_t-1]
+    U[2,:,N_t]     = [exp(im*Q*x*π/N_x) * exp_u2(x*2*π/N_x * (z-Q/2) * coeffs_U2(0.0im, 0.0im, 0.0im, complex(1.0))) for x = 1:N_x]
+    for t = 1:N_t
+        U[1,N_x,t] = exp_u2(coeffs[1]*coeffs_U2(0.0im,0.0im,0.0im,complex(1.0))) * U[1,N_x,t]
+    end
+    for x = 1:N_x
+        U[2,x,N_t] = exp_u2(coeffs[2]*coeffs_U2(0.0im,0.0im,0.0im,complex(1.0))) * U[2,x,N_t]
+    end
+    return U
+end
+
+function two_metric(M::Matrix, N::Matrix)
+    O = M-N
+    return real(sqrt(sum(O.*conj(O))))
+end
+
+function two_metric(X::coeffs_U2, Y::coeffs_U2)
+    Z = X-Y
+    return real(sqrt(2)*sqrt(conj(Z.a)*Z.a + conj(Z.b)*Z.b + conj(Z.c)*Z.c + conj(Z.d)*Z.d))
+end
+
+function two_metric_squared(X::coeffs_U2, Y::coeffs_U2)
+    Z = X-Y
+    return real(2* (conj(Z.a)*Z.a + conj(Z.b)*Z.b + conj(Z.c)*Z.c + conj(Z.d)*Z.d))
+end
+
+function two_metric_field(U, V)
+    NX = size(U,2)
+    NT = size(U,3)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / (2*NX*NT)
+end
+
+function find_rot_mat(a,b)
+    v = cross(a,b)
+    s = sqrt(v'*v)
+    c = a'*b
+    M_v = [0.0 -v[3] v[2]; v[3] 0.0 -v[1]; -v[2] v[1] 0.0]
+    return I(3) + M_v + (1-c)/s^2 * M_v^2
+end
+
+function rot_mat2quat(M::Matrix)
+    x0x1 = (M[2,3]-M[3,2])/4
+    x0x2 = (M[3,1]-M[1,3])/4
+    x0x3 = (M[1,2]-M[2,1])/4
+    x1x3 = (M[1,3]+M[3,1])/4
+    x0_over_x1 = x0x3/x1x3
+    x0 = sqrt(x0x1 * x0_over_x1)
+    x1 = x0x1/x0
+    x2 = x0x2/x0
+    x3 = x0x3/x0
+    x0, x1, x2, x3 = complex.([x0, x1, x2, x3])
+    return coeffs_U2(x0, x1, x2, x3)
+end
+
+function Pauli2vec(M::Matrix)
+    v1 = imag(M[1,2])
+    v2 = real(M[1,2])
+    v3 = imag(M[1,1])
+    return [v1,v2,v3]
+end
+
+function Pauli2vec(X::coeffs_U2)
+    return [X.b, X.c, X.d]
+end
+
+function two_metric_field_insta_rot(U, M_rot_Lie_coeffs)
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    L1 = [0 0 0; 0 0 -1; 0 1 0]
+    L2 = [0 0 1; 0 0 0; -1 0 0]
+    L3 = [0 -1 0; 1 0 0; 0 0 0]
+    M_rot = exp(sum(M_rot_Lie_coeffs.*[L1,L2,L3]))
+    insta = insta_U2_comb_odd(NX,NT,q,M_rot)
+    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / (2*NX*NT)
+end
+
+function minimum_insta_metric(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    V = max_gauge(U,"U2")
+    q = round(Int,top_charge_U2(U))
+    if iseven(q)
+        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT) / sqrt(det(V[1,NX,2])) 
+        for t = 1:NT
+            V[1,NX,t] = U1_fac_ratio_outer * V[1,NX,t]
+        end
+        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+        for x = 1:NX
+            V[2,x,NT] = U1_fac_ratio_outer * V[2,x,NT]
+        end
+    else
+        v_x = Pauli2vec(V[1,NX,1]/sqrt(det(V[1,NX,1])))
+        v_t = Pauli2vec(V[2,1,NT]/sqrt(det(V[2,1,NT])))
+        v_x_insta = [1.0, 0.0, 0.0]
+        v_t_insta = [0.0, 1.0, 0.0]
+        M1 = find_rot_mat(v_x, v_x_insta)
+        M2 = find_rot_mat(M1*v_t, v_t_insta)
+        rot_quat = rot_mat2quat(M2*M1)
+        U1_fac_ratio_outer = exp(-im*q*π*(1+NX)/NX/NT) / sqrt(det(V[1,NX,2])) 
+        for t = 1:NT
+            V[1,NX,t] = U1_fac_ratio_outer * rot_quat * V[1,NX,t] * adjoint(rot_quat)
+        end
+        U1_fac_ratio_outer = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+        for x = 1:NX
+            V[2,x,NT] = U1_fac_ratio_outer * rot_quat * V[2,x,NT] * adjoint(rot_quat)
+        end
+    end
+    return two_metric_field(V,insta_U2_comb(NX,NT,q))
+end
+
+function optimize_insta_metric(U, start_coeffs)
+    @assert length(start_coeffs) == 4 "start_coeffs must number 4, the last 3 of which are the vector"
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    
+    V = max_gauge(U,"U2")
+    U1_fac_ratio_outer_x = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(V[1,NX,2])) 
+    for t = 1:NT
+        V[1,NX,t] = U1_fac_ratio_outer_x * V[1,NX,t]
+    end
+    U1_fac_ratio_outer_t = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+    for x = 1:NX
+        V[2,x,NT] = U1_fac_ratio_outer_t * V[2,x,NT]
+    end
+    if iseven(q)
+        optim_metric_even(coeffs) = two_metric_field(V, insta_U2_comb_even(NX,NT,q,coeffs))
+        return optimize(optim_metric_even, start_coeffs,LBFGS()).minimum
+    else
+        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V,coeffs)
+        return optimize(optim_metric_odd, start_coeffs[2:4],LBFGS()).minimum
+    end
+end
+
+function optimize_special_metric(U, start_coeffs, z)
+    @assert length(start_coeffs) == 2 "start_coeffs must number 2, for each outer slice to be optimized by exp(i*start_coeffs[1/2]*σ_3)"
+    NX = size(U,2)
+    NT = size(U,3)
+    q = round(Int,top_charge_U2(U))
+    
+    V = max_gauge(U,"U2")
+    U1_fac_ratio_outer_x = exp(-im*q*π*(1+NX)/NX/NT)/sqrt(det(V[1,NX,2])) 
+    for t = 1:NT
+        V[1,NX,t] = U1_fac_ratio_outer_x * V[1,NX,t]
+    end
+    U1_fac_ratio_outer_t = exp(im*q*π/NX) / sqrt(det(V[2,1,NT]))
+    for x = 1:NX
+        V[2,x,NT] = U1_fac_ratio_outer_t * V[2,x,NT]
+    end
+    
+    optim_metric(coeffs) = two_metric_field(V, insta_U2_z_comb(NX,NT,q,z,coeffs))
+    return optimize(optim_metric,start_coeffs,LBFGS()).minimum
+end
 
 
 
@@ -350,6 +567,91 @@ image_dist_path = string(fig_path,"\\disturbed_locals_SINGLE_LINK.pdf")
 
 
 
+#### special plots ####
+
+L        = 32
+q        = 1
+z        = 5
+N_smear  = Int(1e4)
+ρ        = 0.1
+pertsize = 1e-1
+dist_actions_path = string(data_path,"\\dist_actions\\dist_actions_q_$(q)_z_$(z)_pertsize_$pertsize.txt")
+dist_actions = readdlm(dist_actions_path)
+
+special_colors = [cb_pink, cb_orange, cb_purple, cb_blue]
+let
+    # l_styles = [:solid, :dash, :dashdot, :dashdotdot]
+    l_styles = [:solid, :solid, :dash, :dash]
+    l_widths = [4.5, 4.5, 1.7, 1.5]
+    color_inds = [1,2,3,4]
+    alphas   = [0.6, 0.45, 1, 1]
+    τ0 = 2
+    start_ind = Int(τ0/ρ)
+    image_dist = plot(
+        # title  = latexstring("\$L = $L, q = $q, z = $z, \\mathrm{pert.\\ size} = $pertsize\$"),
+        xlabel = latexstring("flow time \$\\tau/a^2\$"),
+        ylabel = latexstring("\$S/\\beta\$"),
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 11,
+        legend = :right,
+        # foreground_color_legend = :false,
+        background_color_legend = RGBA(1.0,1.0,1.0,0.8),
+        # left_margin = 2mm,
+    )
+    greys = (:grey84, :grey77, :grey70, :grey63, :grey56, :grey49, :grey42, :grey35)
+    # greys = (:grey77, :grey70, :grey63, :grey56, :grey49, :grey42, :grey30)
+    for z_prime = 1:z-1
+        j = z-z_prime
+        image_dist = hline!(
+            [insta_action_U2(1,L,L,q,j)],
+            label = :false,# latexstring("\$S\$ for \$q=$q, z=$j\$"),
+            color = greys[2*j],
+            # color = greys[j+length(greys)-z+1],
+            linestyle = :dot,
+            linewidth = 2.5,
+            alpha = 0.8,
+        )
+    end
+    for lie_dir = 0:3
+        image_dist = plot!(
+            ρ.*Array(0:N_smear)[start_ind:end],
+            dist_actions[start_ind:end,lie_dir+1],
+            label = latexstring("\$j = $lie_dir\$"),
+            # color = greys[2*lie_dir+1],
+            color = special_colors[color_inds[lie_dir+1]],
+            # markershape = m_shapes[lie_dir+1],
+            # markersize = 2,
+            linewidth = l_widths[lie_dir+1], # 1.2,
+            alpha = alphas[lie_dir+1],
+            linestyle = l_styles[lie_dir+1]
+        )
+    end
+
+    annotate!(300-55, 0.28, text(latexstring("\$(q=1, z=4)\$"), :black, 11))
+    annotate!(355-55, 0.145, text(latexstring("\$(q=1, z=3)\$"), :black, 11))
+    annotate!(370-55, 0.0555, text(latexstring("\$(q=1, z=2)\$"), :black, 11))
+    annotate!(415-55, 0.0112, text(latexstring("\$(q=1, z=1)\$"), :black, 11))
+    image_dist = hline!(
+        [insta_action_U2_min(1,L,L,q)],
+        label = latexstring("lower bound for \$q=1\$"),
+        color = :black, # cb_red,
+        linestyle = :dot,
+        linewidth = 2.5,
+        alpha = 0.8,
+    )
+    # image_dist = plot!(ylim = (0.0, 0.02))
+    image_dist = plot!(yaxis = :log, legend = :right)
+    display(image_dist)
+end # let
+
+image_dist_path = string(fig_path,"\\dist_actions\\dist_actions_q_$(q)_z_$(z)_pertsize_$pertsize.pdf")
+# savefig(image_dist_path)
+
+
+
+
+
 ########  *How* special are our special configs?  ########
 
 
@@ -543,7 +845,7 @@ let
             last_fit_converged = fit_sdiff.converged
             image_sdiff = plot(
                 # title = latexstring("\$ \\Delta S \$ of the special config at \$(q,z) = ($q,$z)\$ \n \$(\\mu, x, t) = ($μ,$x,$t)\$, Lie-dir.: \$ $lie_dir\$"),
-                xlabel = latexstring("step size \$\\epsilon\$"),
+                xlabel = latexstring("step size \$\\epsilon_1\$"),
                 ylabel = latexstring("\$\\Delta S / \\left(\\beta \\cdot \\epsilon_\\textrm{machine} \\right)\$"),
                 rightmargin = 5mm,
                 labelfontsize = 15,
@@ -961,3 +1263,196 @@ end # let
 ### pert. size 1e-3, q = 5, z = 3 
 ### Parameters b,c significantly different from 0 only for Lie direction ∈ {1,2} 
 ###     Especially for [μ,x,t] = [1,24,32]
+
+
+
+
+
+######## Global perturbation and measure metric distance ########
+
+
+
+
+
+L = 32
+q = 1
+z = 5
+N_smear = Int(1e4)
+ρ = 0.1
+epsilons = round.(vcat([0.0], [10.0^(-i) for i = 2:7]), digits = 8)
+
+dist_actions = Array{Float64}(undef,N_smear+1,length(epsilons))
+metric_inds  = Int.(N_smear .* collect(0.99:0.002:1.0))
+dist_metrics_opt = []
+dist_metrics_min = []
+
+for i in eachindex(epsilons)
+    println("Started smearing at i = $i")
+    push!(dist_metrics_opt, [])
+    push!(dist_metrics_min, [])
+    count = 0
+    ϵ = epsilons[i]
+    U = [ran_U2(ϵ) for μ = 1:2, x = 1:L, t = 1:L] .* insta_U2_z(L, L, q, z)
+    dist_actions[1,i]   = action(U,1)
+    V = stout_midpoint(U,ρ)
+    for smear = 1:N_smear
+        dist_actions[smear+1,i]   = action(V,1)
+        V = stout_midpoint(V,ρ)
+        if smear in metric_inds
+            push!(dist_metrics_opt[i], minimum([optimize_insta_metric(V, coeffs) for coeffs in [zeros(4), ones(4), 2 .* rand(4) .-1]]))
+            push!(dist_metrics_min[i], minimum_insta_metric(V))
+        end
+        if smear%(N_smear/20) == 0
+            count += 5
+            println("    Smearing progress: $count%")
+        end
+    end
+end
+
+dist_actions_path = string(data_path,"\\glob_dist_actions\\glob_dist_actions.txt")
+# writedlm(dist_actions_path, dist_actions)
+dist_actions = readdlm(dist_actions_path)
+
+
+
+let
+    τ0 = 2
+    τf = 750
+    start_ind = Int(τ0/ρ)
+    final_ind = Int(τf/ρ)
+    image_dist = plot(
+        xlabel = latexstring("flow time \$\\tau/a^2\$"),
+        ylabel = L"S/\beta",
+        xticks = 0:250:750,
+        tickfontsize = 10,
+        labelfontsize = 15,
+        legendfontsize = 11,
+        legend = :top,
+        background_color_legend = RGBA(1.0,1.0,1.0,0.8),
+    )
+    greys = (:grey77, :grey70, :grey63, :grey56, :grey49, :grey42, :grey30)
+    for i = 1:length(epsilons)-1 
+        j = length(epsilons)-i+1
+        image_dist = plot!(
+            ρ.*Array(0:N_smear)[start_ind:final_ind],
+            dist_actions[start_ind:final_ind,j],
+            label = latexstring("\$\\epsilon = $(epsilons[j])\$"),
+            color = greys[i],
+            linewidth = 2.5,
+            alpha = 1
+        )
+    end
+    image_dist = plot!(
+        ρ.*Array(0:N_smear)[start_ind:final_ind],
+        dist_actions[start_ind:final_ind,1],
+        label = latexstring("\$\\epsilon = 0.0\$"),
+        color = :black,
+        linewidth = 2,
+        alpha = 0.8
+    )
+    image_dist = hline!(
+        [insta_action_U2_min(1,L,L,q)],
+        label = latexstring("lower bound for \$q=1\$"),
+        color = cb_red,
+        linestyle = :dot,
+        legend = :right,
+        linewidth = 2.5,
+        alpha = 0.8,
+    )
+    display(image_dist)
+end
+
+let
+    image_insta_metrics = plot(
+        title = latexstring("Optim. norm of glob. dist. smeared configs \$-\$ inst.\n\$(q,z)=($q,$z)"),
+        xlabel = latexstring("flow time \$\\tau\$"),
+    )
+    for i = 2:length(epsilons)
+        image_insta_metrics = scatter!(
+            ρ.*metric_inds,
+            dist_metrics_opt[i],
+            label = latexstring("\$\\epsilon = $(epsilons[i])\$")
+        )
+    end
+    display(image_insta_metrics)
+end
+
+let
+    image_insta_metrics = plot(
+        title = latexstring("Anal. norm of glob. dist. smeared configs \$-\$ inst.\n\$(q,z)=($q,$z)"),
+        xlabel = latexstring("flow time \$\\tau\$"),
+    )
+    for i = 2:length(epsilons)
+        image_insta_metrics = scatter!(
+            ρ.*metric_inds,
+            dist_metrics_min[i],
+            label = latexstring("\$\\epsilon = $(epsilons[i])\$")
+        )
+    end
+    display(image_insta_metrics)
+end
+
+
+
+######## Local perturbation and measure metric distance ########
+
+
+
+
+
+L        = 32
+q        = 1
+z        = 5
+N_smear  = Int(1e4)
+ρ        = 0.1
+pertsize = 1e-1
+
+lie_dirs = [1,2]
+dist_actions = Array{Float64}(undef,N_smear+1,2)
+dist_insta_metric_z1 = []
+dist_insta_metric_z4 = []
+dist_insta_metric    = []
+U = insta_U2_z(L, L, q, z)
+μ = rand(1:2)
+x = rand(1:L)
+t = rand(1:L)
+
+for lie_dir_ind = 1:length(lie_dirs)
+    lie_dir = lie_dirs[lie_dir_ind]
+    count = 0
+    println("Perturbation Lie direction: $lie_dir")
+    V = deepcopy(U)
+    V[μ,x,t] = small_U2_single_lie_direction(lie_dir, pertsize) * V[μ,x,t]
+    dist_actions[1,lie_dir_ind] = action(V,1)
+
+    for smear = 1:N_smear
+        V = stout_midpoint(V,ρ)
+        dist_actions[smear+1,lie_dir_ind] = action(V,1)
+
+        if smear in 1000:100:1600
+            push!(dist_insta_metric_z4, minimum([optimize_special_metric(V, coeffs, 4) for coeffs in [zeros(2), ones(2), 2 .* rand(2) .-1]]))
+        end
+        if smear in 2500:100:3500
+            push!(dist_insta_metric_z1, minimum([optimize_special_metric(V, coeffs, 1) for coeffs in [zeros(2), ones(2), 2 .* rand(2) .-1]]))
+        end
+        if smear in 9000:200:10000
+            push!(dist_insta_metric, minimum([optimize_insta_metric(V, coeffs) for coeffs in [zeros(4), ones(4), 2 .* rand(4) .-1]]))
+        end
+
+        if smear%(N_smear/20) == 0
+            count += 5
+            println("    Smearing progress: $count%")
+        end
+    end
+end
+
+scatter(100:10:160, dist_insta_metric_z4[1:7], label = latexstring("\$z=4, j=1\$"))
+scatter!(100:10:160, dist_insta_metric_z4[8:14], label = latexstring("\$z=4, j=2\$"))
+
+scatter(250:10:350, dist_insta_metric_z1[1:10], label = latexstring("\$z=1, j=1\$"))
+scatter!(250:10:350, dist_insta_metric_z1[11:20], label = latexstring("\$z=1, j=2\$"))
+
+scatter(900:20:1000, dist_insta_metric[1:5], label = "inst.")
+scatter!(900:20:1000, dist_insta_metric[6:10], label = "inst.")
+
+# dist_actions = readdlm(dist_actions_path)
