@@ -320,10 +320,10 @@ function optimize_insta_metric(U, start_coeffs)
     end
     if iseven(q)
         optim_metric_even(coeffs) = two_metric_field(V, insta_U2_comb_even(NX,NT,q,coeffs))
-        return optimize(optim_metric_even, start_coeffs,LBFGS()).minimum
+        return optimize(optim_metric_even, start_coeffs,NelderMead()).minimum
     else
-        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V,coeffs)
-        return optimize(optim_metric_odd, start_coeffs[2:4],LBFGS()).minimum
+        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V, coeffs)
+        return optimize(optim_metric_odd, start_coeffs[2:4],NelderMead()).minimum
     end
 end
 
@@ -344,7 +344,7 @@ function optimize_special_metric(U, start_coeffs, z)
     end
     
     optim_metric(coeffs) = two_metric_field(V, insta_U2_z_comb(NX,NT,q,z,coeffs))
-    return optimize(optim_metric,start_coeffs,LBFGS()).minimum
+    return optimize(optim_metric,start_coeffs,NelderMead()).minimum
 end
 
 
@@ -1286,21 +1286,22 @@ metric_inds  = Int.(N_smear .* collect(0.99:0.002:1.0))
 dist_metrics_opt = []
 dist_metrics_min = []
 
+#=
 for i in eachindex(epsilons)
     println("Started smearing at i = $i")
     push!(dist_metrics_opt, [])
-    push!(dist_metrics_min, [])
+    # push!(dist_metrics_min, [])
     count = 0
     ϵ = epsilons[i]
-    U = [ran_U2(ϵ) for μ = 1:2, x = 1:L, t = 1:L] .* insta_U2_z(L, L, q, z)
+    U = [ran_U2(rand()*ϵ) for μ = 1:2, x = 1:L, t = 1:L] .* insta_U2_z(L, L, q, z)
     dist_actions[1,i]   = action(U,1)
     V = stout_midpoint(U,ρ)
     for smear = 1:N_smear
-        dist_actions[smear+1,i]   = action(V,1)
+        dist_actions[smear+1,i] = action(V,1)
         V = stout_midpoint(V,ρ)
         if smear in metric_inds
             push!(dist_metrics_opt[i], minimum([optimize_insta_metric(V, coeffs) for coeffs in [zeros(4), ones(4), 2 .* rand(4) .-1]]))
-            push!(dist_metrics_min[i], minimum_insta_metric(V))
+            # push!(dist_metrics_min[i], minimum_insta_metric(V))
         end
         if smear%(N_smear/20) == 0
             count += 5
@@ -1311,7 +1312,24 @@ end
 
 dist_actions_path = string(data_path,"\\glob_dist_actions\\glob_dist_actions.txt")
 # writedlm(dist_actions_path, dist_actions)
+for i = 1:length(epsilons)
+    dist_metric_opt_path = string(data_path,"\\glob_dist_actions\\glob_dist_metric_opt_epsnr_$i.txt")
+    dist_metric_min_path = string(data_path,"\\glob_dist_actions\\glob_dist_metric_min_epsnr_$i.txt")
+    # writedlm(dist_metric_opt_path, dist_metrics_opt[i])
+    # writedlm(dist_metric_min_path, dist_metrics_min[i])
+end
+=#
+
+dist_actions_path = string(data_path,"\\glob_dist_actions\\glob_dist_actions.txt")
 dist_actions = readdlm(dist_actions_path)
+dist_metrics_opt = []
+dist_metrics_min = []
+for i = 1:length(epsilons)
+    dist_metric_opt_path = string(data_path,"\\glob_dist_actions\\glob_dist_metric_opt_epsnr_$i.txt")
+    dist_metric_min_path = string(data_path,"\\glob_dist_actions\\glob_dist_metric_min_epsnr_$i.txt")
+    push!(dist_metrics_opt, readdlm(dist_metric_opt_path))
+    push!(dist_metrics_min, readdlm(dist_metric_min_path))
+end
 
 
 
@@ -1364,14 +1382,17 @@ end
 
 let
     image_insta_metrics = plot(
-        title = latexstring("Optim. norm of glob. dist. smeared configs \$-\$ inst.\n\$(q,z)=($q,$z)"),
+        title = latexstring("Optim. norm of glob. dist. smeared configs\n\$(q,z)=($q,$z) compared to instanton"),
         xlabel = latexstring("flow time \$\\tau\$"),
     )
     for i = 2:length(epsilons)
         image_insta_metrics = scatter!(
             ρ.*metric_inds,
             dist_metrics_opt[i],
-            label = latexstring("\$\\epsilon = $(epsilons[i])\$")
+            label = latexstring("\$\\epsilon = $(epsilons[i])\$"),
+            yaxis = :log,
+            xticks = ρ.*metric_inds,
+            legend = :outerright,
         )
     end
     display(image_insta_metrics)
@@ -1379,18 +1400,23 @@ end
 
 let
     image_insta_metrics = plot(
-        title = latexstring("Anal. norm of glob. dist. smeared configs \$-\$ inst.\n\$(q,z)=($q,$z)"),
+        title = latexstring("Anal. norm of glob. dist. smeared configs\n\$(q,z)=($q,$z) compared to instanton"),
         xlabel = latexstring("flow time \$\\tau\$"),
     )
     for i = 2:length(epsilons)
         image_insta_metrics = scatter!(
             ρ.*metric_inds,
             dist_metrics_min[i],
-            label = latexstring("\$\\epsilon = $(epsilons[i])\$")
+            label = latexstring("\$\\epsilon = $(epsilons[i])\$"),
+            yaxis = :log,
+            xticks = ρ.*metric_inds,
+            legend = :outerright,
         )
     end
     display(image_insta_metrics)
 end
+
+
 
 
 
@@ -1417,6 +1443,10 @@ U = insta_U2_z(L, L, q, z)
 x = rand(1:L)
 t = rand(1:L)
 
+metric_inds_z4 = collect(1000:100:1600)
+metric_inds_z1 = collect(2300:100:3500)
+metric_inds    = collect(9500:100:10000)
+
 for lie_dir_ind = 1:length(lie_dirs)
     lie_dir = lie_dirs[lie_dir_ind]
     count = 0
@@ -1429,13 +1459,13 @@ for lie_dir_ind = 1:length(lie_dirs)
         V = stout_midpoint(V,ρ)
         dist_actions[smear+1,lie_dir_ind] = action(V,1)
 
-        if smear in 1000:100:1600
+        if smear in metric_inds_z4
             push!(dist_insta_metric_z4, minimum([optimize_special_metric(V, coeffs, 4) for coeffs in [zeros(2), ones(2), 2 .* rand(2) .-1]]))
         end
-        if smear in 2500:100:3500
+        if smear in metric_inds_z1
             push!(dist_insta_metric_z1, minimum([optimize_special_metric(V, coeffs, 1) for coeffs in [zeros(2), ones(2), 2 .* rand(2) .-1]]))
         end
-        if smear in 9000:200:10000
+        if smear in metric_inds
             push!(dist_insta_metric, minimum([optimize_insta_metric(V, coeffs) for coeffs in [zeros(4), ones(4), 2 .* rand(4) .-1]]))
         end
 
@@ -1446,13 +1476,43 @@ for lie_dir_ind = 1:length(lie_dirs)
     end
 end
 
-scatter(100:10:160, dist_insta_metric_z4[1:7], label = latexstring("\$z=4, j=1\$"))
-scatter!(100:10:160, dist_insta_metric_z4[8:14], label = latexstring("\$z=4, j=2\$"))
-
-scatter(250:10:350, dist_insta_metric_z1[1:10], label = latexstring("\$z=1, j=1\$"))
-scatter!(250:10:350, dist_insta_metric_z1[11:20], label = latexstring("\$z=1, j=2\$"))
-
-scatter(900:20:1000, dist_insta_metric[1:5], label = "inst.")
-scatter!(900:20:1000, dist_insta_metric[6:10], label = "inst.")
-
+dist_actions_path = string(data_path,"\\loc_dist_actions\\loc_dist_actions_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
+dist_insta_metric_z4_path = string(data_path,"\\loc_dist_actions\\loc_dist_metric_z4_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
+dist_insta_metric_z1_path = string(data_path,"\\loc_dist_actions\\loc_dist_metric_z1_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
+dist_insta_metric_path = string(data_path,"\\loc_dist_actions\\loc_dist_metric_insta_q_$(q)_z_$(z)_pertsize_$(pertsize).txt")
+# # writedlm(dist_actions_path, dist_actions)
+# # writedlm(dist_insta_metric_z4_path, dist_insta_metric_z4)
+# # writedlm(dist_insta_metric_z1_path, dist_insta_metric_z1)
+# # writedlm(dist_insta_metric_path, dist_insta_metric)
 # dist_actions = readdlm(dist_actions_path)
+# dist_insta_metric_z4 = readdlm(dist_insta_metric_z4_path)
+# dist_insta_metric_z1 = readdlm(dist_insta_metric_z1_path)
+# dist_insta_metric = readdlm(dist_insta_metric_path)
+
+
+let
+    scatter(ρ.*metric_inds_z4, dist_insta_metric_z4[1:length(metric_inds_z4)], label = latexstring("\$z=4, j=1\$"))
+    scatter!(ρ.*metric_inds_z4, dist_insta_metric_z4[length(metric_inds_z4)+1:end], label = latexstring("\$z=4, j=2\$"))
+    plot!(title = latexstring("Half-optim. norm of loc. dist. smeared configs \n\$(q,z)=(1,5)\$ compared to \$(1,4)\$"),
+        xlabel = latexstring("flow time \$\\tau\$"),
+        yaxis = :log
+    )
+end
+
+let
+    scatter(ρ.*metric_inds_z1, dist_insta_metric_z1[1:length(metric_inds_z1)], label = latexstring("\$z=1, j=1\$"))
+    scatter!(ρ.*metric_inds_z1, dist_insta_metric_z1[length(metric_inds_z1)+1:end], label = latexstring("\$z=1, j=2\$"))
+    plot!(title = latexstring("Half-optim. norm of loc. dist. smeared configs \n\$(q,z)=(1,5)\$ compared to \$(1,1)\$"),
+        xlabel = latexstring("flow time \$\\tau\$"),
+        yaxis = :log
+    )
+end
+
+let
+    scatter(ρ.*metric_inds, dist_insta_metric[1:length(metric_inds)], label = latexstring("\$j=1\$"))
+    scatter!(ρ.*metric_inds, dist_insta_metric[length(metric_inds)+1:end], label = latexstring("\$j=2\$"))
+    plot!(title = latexstring("Optim. norm of loc. dist. smeared configs \n\$(q,z)=(1,5)\$ compared to instanton"),
+        xlabel = latexstring("flow time \$\\tau\$"),
+        yaxis = :log
+    )
+end

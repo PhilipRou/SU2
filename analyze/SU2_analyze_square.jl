@@ -1,5 +1,5 @@
 include("SU2_analyze_head.jl")
-
+include("SU2_jackknives.jl")
 
 
 
@@ -347,7 +347,8 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -416,28 +417,29 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
-    means = readdlm(mean_vals_path)
+    # means = readdlm(mean_vals_path)
     means_mike = readdlm(mean_vals_mike_path)
-    num_means = size(means,1)
-    num_loops = size(means,2)
+    num_means = size(means_mike,1)
+    num_loops = size(means_mike,2)
 
-    creutz_means = [creutz(means[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
+    # creutz_means = [creutz(means[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
     creutz_means_mike = [creutz(means_mike[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
-    num_ratios = size(creutz_means,2)
+    num_ratios = size(creutz_means_mike,2)
 
-    ratio_means = []
-    ratio_mean_errs = []
+    # ratio_means = []
+    # ratio_mean_errs = []
     ratio_means_mike = []
     ratio_mean_errs_mike = []
     for i = 1:num_ratios
-        b_size = Int(round(2*auto_corr_time(creutz_means[:,i]) + 1, RoundUp))    
-        bla = jackknife(creutz_means[:,i], b_size)#, 500)
-        push!(ratio_means, bla[1])
-        push!(ratio_mean_errs, bla[2])
+        # b_size = Int(round(2*auto_corr_time(creutz_means[:,i]) + 1, RoundUp))    
+        # bla = jackknife(creutz_means[:,i], b_size)#, 500)
+        # push!(ratio_means, bla[1])
+        # push!(ratio_mean_errs, bla[2])
 
         b_size = Int(round(2*auto_corr_time(creutz_means_mike[:,i]) + 1, RoundUp))    
         bla = jackknife(creutz_means_mike[:,i], b_size)#, 500)
@@ -480,7 +482,8 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 

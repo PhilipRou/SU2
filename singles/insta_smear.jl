@@ -285,10 +285,10 @@ function optimize_insta_metric(U, start_coeffs)
     end
     if iseven(q)
         optim_metric_even(coeffs) = two_metric_field(V, insta_U2_comb_even(NX,NT,q,coeffs))
-        return optimize(optim_metric_even, start_coeffs,LBFGS()).minimum
+        return optimize(optim_metric_even, start_coeffs,NelderMead()).minimum
     else
-        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V,coeffs)
-        return optimize(optim_metric_odd, start_coeffs[2:4],LBFGS()).minimum
+        optim_metric_odd(coeffs) = two_metric_field_insta_rot(V, coeffs)
+        return optimize(optim_metric_odd, start_coeffs[2:4],NelderMead()).minimum
     end
 end
 
@@ -319,7 +319,7 @@ function optimize_special_metric(U, start_coeffs, z)
     end
     
     optim_metric(coeffs) = two_metric_field(V, insta_U2_z_comb(NX,NT,q,z,coeffs))
-    return optimize(optim_metric,start_coeffs,LBFGS()).minimum
+    return optimize(optim_metric,start_coeffs,NelderMead()).minimum
 end
 
 
@@ -677,7 +677,7 @@ let
     N_therm   = 500
     N_meas    = 100
     N_sepa    = 100
-    N_smear   = 5*10^4
+    N_smear   = 5e4
     acc_wish  = 0.8
     ϵ         = 0.1
     base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"

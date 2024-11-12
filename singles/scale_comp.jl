@@ -106,7 +106,7 @@ function plot_LCP_beta(N1,N2,G)
         color = :grey25,
         linestyle = :dash,
         label = L"$\beta_2 = \beta_1 \cdot V_2^\Lambda / V_1^\Lambda $" ,
-        title = "Exemplary Lines of Constant Physics \n in 2D $G",
+        # title = "Exemplary Lines of Constant Physics \n in 2D $G",
         xlabel = "N_x = N_t",
         ylabel = "β",
         xticks = N1:16:N2
@@ -208,13 +208,13 @@ function plot_LCP_a(β1,β2)
         color = :grey25,
         linestyle = :dash,
         label = L"$a_2 = a_1 \cdot \sqrt{\beta_1/\beta_2} $" ,
-        title = "Ratio of Lattice Spacings in 2D for β₁ = $β1",
+        # title = "Ratio of Lattice Spacings in 2D for β₁ = $β1",
         xlabel = L"\beta_2",
         ylabel = L"a_2/a_1",
         xaxis = :log2,
         yaxis = :log,
         # xticks = β1:bla:β2
-        xticks = [2^n for n = 1:2:9]
+        xticks = [2^n for n = 1:2:9],
         # foreground_color_legend = nothing
     )
     image_LCP = plot!(
@@ -244,6 +244,12 @@ function plot_LCP_a(β1,β2)
         foreground_color_legend = nothing,
         legend = :bottomleft
     )
+    image_LCP = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
+    )
     return image_LCP
 end
 
@@ -262,7 +268,7 @@ function susc_LCP_U1(β_1, lower_a_factor)
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
-        title = "Cont. Limit of Topological Susc. \n in 2D U(1) with β₁ = $β_1",
+        # title = "Cont. Limit of Topological Susc. \n in 2D U(1) with β₁ = $β_1",
         xlabel = L"$(a_2 / a_1)^2$",
         foreground_color_legend = nothing
     )
@@ -270,8 +276,15 @@ function susc_LCP_U1(β_1, lower_a_factor)
         [1.0, 0.0],
         [analytic_susc_U1(β_1), 0.0],
         markershape = :star,
+        markersize = 7,
         color = :white,
         label = L"$\chi_{top}$ for $a_2/a_1 \in \{0,1\}$"
+    )
+    image_susc = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
     )
     display(image_susc)
 end
@@ -289,7 +302,7 @@ function susc_LCP_U2(β_1, lower_a_factor)
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
     image_susc = plot!(
-        title = "Cont. Limit of Topological Susc. \n in 2D U(2) with β₁ = $β_1",
+        # title = "Cont. Limit of Topological Susc. \n in 2D U(2) with β₁ = $β_1",
         xlabel = L"$(a_2 / a_1)^2$",
         foreground_color_legend = nothing
     )
@@ -298,93 +311,121 @@ function susc_LCP_U2(β_1, lower_a_factor)
         [1.0, 0.0],
         [analytic_susc_U2(β_1), 0.0],
         markershape = :star,
+        markersize = 7,
         color = :white,
         label = L"$\chi_{top}$ for $a_2/a_1 \in \{0,1\}$"
+    )
+    image_susc = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
     )
 end
 
 function plaq_LCP_U1(β_1, lower_a_factor)
     x_vals = Vector(lower_a_factor:0.01:0.999)
-    image_susc = plot(
+    image_plaq = plot(
         x_vals.^2, 
         [analytic_plaq_U1(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
-    image_susc = plot!(
+    image_plaq = plot!(
         x_vals.^2, 
         [analytic_plaq_U1(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
-    image_susc = plot!(
-        title = "Cont. Limit of the Plaquette \n in 2D U(1) with β₁ = $β_1",
+    image_plaq = plot!(
+        # title = "Cont. Limit of the Plaquette \n in 2D U(1) with β₁ = $β_1",
         xlabel = L"$(a_2 / a_1)^2$",
         legend = :bottomleft,
         foreground_color_legend = nothing
     )
-    image_susc = scatter!(
+    image_plaq = scatter!(
         [1.0, 0.0],
         [analytic_plaq_U1(β_1), 1.0],
         markershape = :star,
+        markersize = 7,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"
     )
-    display(image_susc)
+    image_plaq = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
+    )
+    display(image_plaq)
 end
 
 function plaq_LCP_SU2(β_1, lower_a_factor)
     x_vals = Vector(lower_a_factor:0.01:0.999)
-    image_susc = plot(
+    image_plaq = plot(
         x_vals.^2, 
         [analytic_plaq_SU2(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
-    image_susc = plot!(
+    image_plaq = plot!(
         x_vals.^2, 
         [analytic_plaq_SU2(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
-    image_susc = plot!(
-        title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
+    image_plaq = plot!(
+        # title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
         xlabel = L"$(a_2 / a_1)^2$",
         legend = :topright,
         foreground_color_legend = nothing
     )
-    image_susc = scatter!(
+    image_plaq = scatter!(
         [1.0, 0.0],
         [analytic_plaq_SU2(β_1), 1.0],
         markershape = :star,
+        markersize = 7,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"
     )
-    display(image_susc)
+    image_plaq = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
+    )
+    display(image_plaq)
 end
 
 function plaq_LCP_U2(β_1, lower_a_factor)
     x_vals = Vector(lower_a_factor:0.01:0.999)
-    image_susc = plot(
+    image_plaq = plot(
         x_vals.^2, 
         [analytic_plaq_U2(β) for β in [LCP_beta_U1(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\ln\langle P_{xt}\rangle (\beta_2) }{ \ln\langle P_{xt}\rangle (\beta_1)} } $"
     )
-    image_susc = plot!(
+    image_plaq = plot!(
         x_vals.^2, 
         [analytic_plaq_U2(β) for β in [LCP_beta_old(a,β_1) for a in x_vals]],
         label = L"$\frac{a_2}{a_1} = \sqrt{\frac{\beta_1}{\beta_2}} $",
         linestyle = :dash)
-    image_susc = plot!(
-        title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
+    image_plaq = plot!(
+        # title = "Cont. Limit of the Plaquette \n in 2D U(2) with β₁ = $β_1",
         xlabel = L"$(a_2 / a_1)^2$",
         legend = :topright,
         foreground_color_legend = nothing
     )
-    image_susc = scatter!(
+    image_plaq = scatter!(
         [1.0, 0.0],
         [analytic_plaq_U2(β_1), 1.0],
         markershape = :star,
+        markersize = 7,
         color = :white,
         label = L"$P_{xt}$ for $a_2/a_1 \in \{0,1\}$"
     )
-    display(image_susc)
+    image_plaq = plot!(
+        tickfontsize = 11,
+        labelfontsize = 16,
+        legendfontsize = 9,
+        background_color_legend = nothing
+    )
+    display(image_plaq)
 end
 
 
@@ -394,19 +435,19 @@ end
 β_1 = 2.0
 
 plot_LCP_a(β_1, 2^9)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\LCP_beta_1_$β_1.later.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\LCP_beta_1_$β_1.later.pdf")
 
 plaq_LCP_U2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\U2_plaq_LCP_beta_1_$β_1.pdf")
 
 susc_LCP_U2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U2_susc_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\U2_susc_LCP_beta_1_$β_1.pdf")
 
 plaq_LCP_U1(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\U1_plaq_LCP_beta_1_$β_1.pdf")
 
 susc_LCP_U1(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\U1_susc_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\U1_susc_LCP_beta_1_$β_1.pdf")
 
 plaq_LCP_SU2(β_1, 0.0561)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\SU2_plaq_LCP_beta_1_$β_1.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\master_plots\\SU2_plaq_LCP_beta_1_$β_1.pdf")
