@@ -1,6 +1,9 @@
 include("SU2_analyze_head.jl")
 include("SU2_jackknives.jl")
 
+function creutz(means::Vector, a, b, c, d)
+    return means[a]*means[d]/(means[b]*means[c])
+end
 
 
 #=
@@ -343,7 +346,7 @@ for L = 32:32:128
     ϵ   = 0.2 
     n_stout = 0
     ρ   = 0.12
-    sim_count = 1
+    sim_count = 2
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
@@ -388,6 +391,7 @@ for L = 32:32:128
 
     # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
 
+    #=
     image_err = plot(title = "Uncertainties of Various ⟨W(R,T)⟩ 
     with N_t = N_x = $N_t, β = $β",
     xlabel = "[R,T] in ⟨W(R,T)⟩",
@@ -396,9 +400,8 @@ for L = 32:32:128
     image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
     image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs_mike[int_start:int_end], label = "Via [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
 
-
-
     display(image_err)
+   =# 
 
     # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_uncer_zoomed_beta_$β.N_t_$N_t.pdf")
 end
@@ -413,7 +416,7 @@ for L = 32:32:128
     ϵ   = 0.2 
     n_stout = 0
     ρ   = 0.12
-    sim_count = 1
+    sim_count = 2
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
@@ -422,24 +425,24 @@ for L = 32:32:128
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
-    # means = readdlm(mean_vals_path)
+    means = readdlm(mean_vals_path)
     means_mike = readdlm(mean_vals_mike_path)
     num_means = size(means_mike,1)
     num_loops = size(means_mike,2)
 
-    # creutz_means = [creutz(means[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
+    creutz_means = [creutz(means[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
     creutz_means_mike = [creutz(means_mike[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
     num_ratios = size(creutz_means_mike,2)
 
-    # ratio_means = []
-    # ratio_mean_errs = []
+    ratio_means = []
+    ratio_mean_errs = []
     ratio_means_mike = []
     ratio_mean_errs_mike = []
     for i = 1:num_ratios
-        # b_size = Int(round(2*auto_corr_time(creutz_means[:,i]) + 1, RoundUp))    
-        # bla = jackknife(creutz_means[:,i], b_size)#, 500)
-        # push!(ratio_means, bla[1])
-        # push!(ratio_mean_errs, bla[2])
+        b_size = Int(round(2*auto_corr_time(creutz_means[:,i]) + 1, RoundUp))    
+        bla = jackknife(creutz_means[:,i], b_size)#, 500)
+        push!(ratio_means, bla[1])
+        push!(ratio_mean_errs, bla[2])
 
         b_size = Int(round(2*auto_corr_time(creutz_means_mike[:,i]) + 1, RoundUp))    
         bla = jackknife(creutz_means_mike[:,i], b_size)#, 500)
@@ -451,8 +454,8 @@ for L = 32:32:128
     int_end = num_ratios
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5]])
 
-    # image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_endnum_ratios], yerror = ratio_mean_errs[int_start:int_end], label = "conventional", markerstrokecolor = :auto)
-    image = scatter(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_end], yerror = ratio_mean_errs[int_start:int_end], label = "conventional", markerstrokecolor = :auto)
+    image = scatter!(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
     image = plot!(title = "Creutz Ratios 
     with N_t = N_x = $N_t, β = $β", 
     xlabel = "R and T in {⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")
@@ -478,7 +481,7 @@ for L = 32:32:128
     ϵ   = 0.2 
     n_stout = 0
     ρ   = 0.12
-    sim_count = 1 # 7 for β = 6.0
+    sim_count = 2 # 7 for β = 6.0
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 

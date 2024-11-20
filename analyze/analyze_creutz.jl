@@ -47,8 +47,8 @@ end
 
 
 
-for L = 32:32:32
-    for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
+for L = 32:32:128
+    for β in [2.0, 4.0, 6.0, 8.0]
         # L = 32
         # β   = 2.0 #N_t*N_x/128
         N_t = L #+ i*16
@@ -125,19 +125,24 @@ for L = 32:32:32
 
         # image = scatter(x_lab[int_start:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
         image = scatter(
-            x_lab, 
-            all_jack_means, 
-            yerror = all_jack_errs, 
-            label = "Square \n (no h-rh. or rh.)",
-            colors = palette(:default)[1],
+            x_lab[1:12], 
+            all_jack_means[1:12], 
+            yerror = all_jack_errs[1:12], 
+            label = "Square", # \n (no h-rh. or rh.)",
+            color = cb_purple,# palette(:default)[1],
             markerstrokecolor = :auto, 
-            markershape = :diamond,
+            markershape = :square,
+            markersize = 6,
             legend = :top,
-            foreground_color_legend = nothing,
-            background_color_legend = nothing)
-        image = plot!(title = "Various Wilson Loops, β = $β
-        Square: N_t = N_x = $L, Hex: N_t = 2⋅N_x = 2⋅$L", 
-        xlabel = "[R,T] in ⟨W(R,T)⟩ or name of loop")
+            # foreground_color_legend = nothing,
+            background_color_legend = nothing,
+            xlabel = latexstring("\$[R,T]\$ in \$\\langle W(R,T) \\rangle\$ or name of loop"),
+            tickfontsize = 9,
+            labelfontsize = 14,
+            legendfontsize = 10,
+            )
+        # image = plot!(title = "Various Wilson Loops, β = $β
+        # Square: N_t = N_x = $L, Hex: N_t = 2⋅N_x = 2⋅$L", 
         # xticks = int_start-1:1:int_end+1)
         # display(image)
 
@@ -196,13 +201,15 @@ for L = 32:32:32
         all_jack_errs_hex = vcat(jack_mean_errs, edge_err_hex, L_err_hex, rhomb_half_err, rhomb_err)
 
         image = scatter!(
-            x_lab, 
-            all_jack_means_hex, 
-            yerror = all_jack_errs_hex, 
+            x_lab[1:12], 
+            all_jack_means_hex[1:12], 
+            yerror = all_jack_errs_hex[1:12], 
             label = "Hexagonal", 
-            colors = palette(:default)[2], 
+            color = cb_pink; # palette(:default)[2], 
             markerstrokecolor = :auto,
-            markershape = :hexagon)
+            markershape = :hexagon,
+            markersize = 6,
+            )
 
 
 
@@ -259,7 +266,7 @@ for L = 32:32:32
             #     all_jack_means_hex_2, 
             #     yerror = all_jack_errs_hex_2, 
             #     label = "Hexagonal, N_x : N_t = 1:1", 
-            #     colors = palette(:default)[3], 
+            #     color = palette(:default)[3], 
             #     markerstrokecolor = :auto,
             #     markershape = :hexagon)
 
@@ -273,14 +280,15 @@ for L = 32:32:32
         jack_means_anal = [2*analytic_plaq(β)^l for l in loop_sizes]
 
         image = scatter!(
-            x_lab, 
-            jack_means_anal, 
+            x_lab[1:12], 
+            jack_means_anal[1:12], 
             # yerror = all_jack_errs_hex, 
             label = "Analytic", 
-            color = :red, # palette(:default)[3], 
+            color = :black,# :red, # palette(:default)[3], 
             # markerstrokecolor = :auto,
             markershape = :hline, 
-            markersize = 10)
+            markersize = 10
+            )
 
 
         display(image)
@@ -288,7 +296,7 @@ for L = 32:32:32
         # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_many_beta_$β._L_$L.pdf")
 
 
-
+        #=
         int_zoom_1 = collect(5:10)
 
         image_zoom_1 = scatter(
@@ -385,8 +393,38 @@ for L = 32:32:32
         println("rhomb:      ", all_jack_means[14], " ± ", all_jack_errs[14])
         println("rhomb_hex:  ", all_jack_means_hex[14], " ± ", all_jack_errs_hex[14])
         println(" ")
+        =#
+
+        fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.pdf"
+        # savefig(fig_path)
+        tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.txt"
+        err_digs  = 2
+        anal_digs_pre  = 1
+        anal_digs_post = 7
+        bla = open(tab_path, "w")
+        write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
+        write(bla, "\t\t loop &\t square &\t hex &\t analyt. \t \\\\\\hline\n")
+        for i = 1:12
+            sq_dat   = format_x_err(all_jack_means[i], all_jack_errs[i], err_digs)
+            hex_dat  = format_x_err(all_jack_means_hex[i], all_jack_errs_hex[i], err_digs)
+            # anal_dat = round(jack_means_anal[i], digits = anal_digs)
+            anal_dat = @sprintf("%*.*f", anal_digs_pre, anal_digs_post, jack_means_anal[i])
+            write(bla, "\t\t $(x_lab[i]) &\t $sq_dat &\t $hex_dat &\t $anal_dat\t \\\\\\hline\n")
+        end
+        write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
+        close(bla)
     end
 end
+
+# \begin{table}[H]
+#     \centering
+#     \begin{tabular}{|c|c|c|}
+#          &  \\
+#          & 
+#     \end{tabular}
+#     \caption{Caption}
+#     \label{tab:my_label}
+# \end{table}
 
 
 

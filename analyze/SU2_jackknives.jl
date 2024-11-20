@@ -412,3 +412,41 @@ function jack_conn_corr_mat_GEV(corr_mats_t2, corr_mats_t1, mean_vals, b_size)
     return mean_evs, σ
 end
 =#
+
+function creutz(means::Vector, a, b, c, d)
+    return means[a]*means[d]/(means[b]*means[c])
+end
+
+function jackknife(obs, b_size)
+    N_blocks   = Int(div(length(obs), b_size, RoundDown))
+    jack_means = Vector{Float64}(undef,N_blocks)
+    blocked_means = [mean(obs[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    temp_means    = blocked_means[2:end]
+    for i = 1:N_blocks-1
+        jack_means[i] = mean(temp_means)
+        temp_means[i] = blocked_means[i]
+    end
+    jack_means[N_blocks] = mean(temp_means)
+
+    obs_mean = mean(obs)
+    σ = sqrt((N_blocks-1) * mean((jack_means.-obs_mean).^2 ))
+    return [obs_mean, σ]
+end
+
+function jack_creutz(means::Array, a, b, c, d, b_size)
+    N_blocks   = Int(div(length(obs), b_size, RoundDown))
+    jack_means = Array{Float64}(undef,N_blocks)
+    blocked_loop_means = [mean(means[(i-1)*b_size+1:i*b_size,j]) for i = 1:N_blocks, j in [a,b,c,d]]
+    temp_means    = blocked_loop_means[2:end, :]
+    for i = 1:N_blocks-1
+        loop_means = [mean(temp_means[:,j]) for j = 1:4]
+        jack_means[i] = loop_means[1]*loop_means[4] / (loop_means[2]*loop_means[3])
+        temp_means[i,:] = blocked_loop_means[i,:]
+    end
+    loop_means = [mean(temp_means[:,j]) for j = 1:4]
+    jack_means[N_blocks] = loop_means[1]*loop_means[4] / (loop_means[2]*loop_means[3])
+
+    creutz_mean = mean(means[:,a]) * mean(means[:,d]) / (mean(means[:,b])  * mean(means[:,c]))
+    σ = sqrt((N_blocks-1) * mean((jack_means.-creutz_mean).^2 ))
+    return [creutz_mean, σ]
+end

@@ -145,7 +145,7 @@ end
 function two_metric_field(U, V)
     NX = size(U,2)
     NT = size(U,3)
-    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / 2*NX*NT
+    return sqrt(sum([two_metric_squared(U[μ,x,t], V[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
 end
 
 # Needs M to be ∈ SU(2)!
@@ -239,7 +239,7 @@ function two_metric_field_insta_rot(U, M_rot_Lie_coeffs)
     L3 = [0 -1 0; 1 0 0; 0 0 0]
     M_rot = exp(sum(M_rot_Lie_coeffs.*[L1,L2,L3]))
     insta = insta_U2_comb_odd(NX,NT,q,M_rot)
-    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / 2*NX*NT
+    return sqrt(sum([two_metric_squared(U[μ,x,t], insta[μ,x,t]) for μ = 1:2, x = 1:NX, t = 1:NT ])) / sqrt(2*NX*NT)
 end
 
 # two_metric_field_insta_rot(blabla, [0.0,0.0,0.0])
@@ -291,7 +291,7 @@ end
 # for i = 1:200 chess_metro!(bla,0.1,6.0,[0.0],"U2") end
 # bla = stout_midpoint(bla, 5e3, 0.1)
 # minimum_insta_metric(bla)
-optimize_insta_metric(bla)
+# optimize_insta_metric(bla)
 # action(bla,1)
 # insta_action(1,2,32,32,-4,-2)
 
@@ -348,6 +348,19 @@ function optimize_special_metric(U, start_coeffs, z)
     return optimize(optim_metric,start_coeffs,NelderMead()).minimum
 end
 
+cb_hexes  = [
+    "#377eb8", # blue
+    "#ff7f00", # orange
+    "#4daf4a", # green
+    "#984ea3", # purple
+    "#e41a1c", # red
+    "#f781bf", # pink
+    "#999999", # grey
+    "#a65628", # brown
+]
+cb_colors = parse.(Colorant, cb_hexes)
+cb_blue, cb_orange, cb_green, cb_purple, cb_red, cb_pink, cb_grey, cb_brown  = cb_colors
+
 
 
 
@@ -358,43 +371,51 @@ end
 
 
 
+#=
 # @assert 1==0 "Do we really want to start a smearing run???"
 β   = 6.0
-L   = 32
+L   = 16
 N_x = L
 N_t = L
 hot = true
 ρ   = 0.1
 N_therm   = 500
-N_meas    = 20
+N_meas    = 10
 N_sepa    = 10
 N_metro   = 1
 N_over    = 3
 N_smear   = Int(5e4)
 acc_wish  = 0.8
 ϵ         = 0.1
-m_smear_inds = collect(2000:2000:N_smear)
+m_smear_inds = collect(0:2000:N_smear)
+comment = "More measurements for small lattices"
 
-base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new"    
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new"
+    sim_count = Int(readdlm(string(base_path,"\\sim_count.txt"))[1])
+    sim_count += 1
+    writedlm(string(base_path,"\\sim_count.txt"), sim_count)
+    base_path = string(base_path,"\\smears_$(sim_count)")
+    mkdir(base_path)
 actions_path = string(base_path,"\\non_smeared_actions.txt")
 params_path = string(base_path, "\\params.txt")
 
-
 params = "Square Simulation with:
-β            = $β
-N_t          = $N_t
-N_x          = $N_x 
-hot          = $hot
+β        = $β
+N_t      = $N_t
+N_x      = $N_x 
+hot      = $hot
 
-N_therm      = $N_therm
-N_metro      = $N_metro
-N_over       = $N_over
-N_sepa       = $N_sepa
-N_meas       = $N_meas
-acc_wish     = $acc_wish
+N_therm  = $N_therm
+N_metro  = $N_metro
+N_over   = $N_over
+N_sepa   = $N_sepa
+N_meas   = $N_meas
+acc_wish = $acc_wish
 
-N_smear      = $N_smear
-ρ            = $ρ"
+N_smear  = $N_smear
+ρ        = $ρ
+
+comment  = $comment"
 
 bla = open(params_path, "a")
 write(bla, params)
@@ -456,38 +477,60 @@ for meas = 1:N_meas
 end # meas
 writedlm(actions_path, actions)
 println("We're done here!")
+=#
 
 
 
 
 
 
-base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\prel_smears"
-# actions_path = string(base_path, "non_smeard_actions.txt")    
-# actions = readdlm(actions_path)
-# plot(actions)
+
+sim_count = 3
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\smears_$sim_count"
+L         = 32
+β         = 6.0 # 1.5
+N_meas    = 20
+ρ         = 0.1  # 0.02
+# N_smear   = Int(1.4e4)
+N_smear   = Int(5e4)
+# N_smear   = Int(20e4)
+m_smear_inds = collect(2000:2000:N_smear)
 
 for meas = 1:1
-    show_s      = true
-    show_z      = true
-    show_q      = false
-    show_m_opt  = false
-    show_m_anal = false
+# meas = 17
+    show_s       = true
+    show_s_neg   = false
+    show_z       = false
+    show_q       = false
+    show_m_opt   = false
+    show_m_anal  = false
+    show_m_both  = true
+    correct_sqrt = true
 
-    z = -1
-    ### in prel_smears interesting configs:
-    # meas 1    q -3   z -1/-2
-    # meas 4    q  9   z  4/ 5
+    z = 3
+    ### interesting configs:
+    ### smear_0
+    # meas  1   q -3   z -1/-2
+    # meas  4   q  9   z  4/ 5
     # meas 10   q -1   z  0/-1
+    ### smear_3
+    # meas  5   q -1   z -1/ 0
+    # meas 10   q  7   z  3/ 4
+    # meas 17   q  5   z  2/ 3
+
 
     S_path = string(base_path,"\\sms_measnr_$meas.txt")
     Q_path = string(base_path,"\\smq_measnr_$meas.txt")
     smeared_m_opt_path = string(base_path, "\\smeared_m_opt_measnr_$meas.txt")
     smeared_m_anal_path = string(base_path, "\\smeared_m_anal_measnr_$meas.txt")
-    smeared_actions = readdlm(S_path)
+    smeared_actions = readdlm(S_path) ./ (β*L^2)
     smeared_charges = readdlm(Q_path)
     smeared_m_opt   = readdlm(smeared_m_opt_path)
     smeared_m_anal  = readdlm(smeared_m_anal_path) 
+    if correct_sqrt
+        smeared_m_opt  = sqrt(2*L^2) .* smeared_m_opt
+        smeared_m_anal = sqrt(2*L^2) .* smeared_m_anal
+    end
     flow_times   = ρ.*collect(0:N_smear+1)
     flow_times_m = ρ.*vcat([0],m_smear_inds)
     start_τ_s = 10
@@ -499,18 +542,63 @@ for meas = 1:1
     skip_s = 5
 
     q = round(Int,last(smeared_charges))
+    smeared_actions = smeared_actions .- action(insta_U2(L, L, q),1)/L^2
+
+    smeared_actions_pos = NaN.*zeros(N_smear+2)
+    smeared_actions_neg = NaN.*zeros(N_smear+2)
+    flow_times_pos = []
+    flow_times_neg = []
+    for i = 1:N_smear+2
+        if smeared_actions[i] > 0.0
+            smeared_actions_pos[i] = smeared_actions[i]
+            push!(flow_times_pos, ρ*i)
+        elseif smeared_actions[i] < 0.0
+            smeared_actions_neg[i] = -smeared_actions[i]
+            push!(flow_times_neg, ρ*i)
+        end
+    end
+    start_ind_s_pos = findall(x->x==start_τ_s, flow_times_pos)[1]
+    skip_s_pos = 10
+
+    smeared_actions = abs.(smeared_actions) # ⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕⭕
     
     if show_s
         image_s = plot(
             flow_times[start_ind_s:skip_s:end], 
-            smeared_actions[start_ind_s:skip_s:end] ./ β,
-            title = latexstring("\$S/\\beta\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            smeared_actions[start_ind_s:skip_s:end],
+            title = latexstring("\$(s(U)-s_\\mathrm{inst.}^{(q)})/\\beta\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
             xlabel = latexstring("flow time \$\\tau\$"),
             label = :false,
-            yaxis = :log
+            yaxis = :log,
+            yticks = [10.0^pow for pow = -14:2:4]
         )
         if show_z
-            hline!([insta_action(β,2,L,L,q,z)/β], label = latexstring("\$S/\\beta\$ of spec. conf. for \$(q,z) = ($q,$z)\$"))
+            hline!([(insta_action(1,2,L,L,q,z)-action(insta_U2(L,L,q),1))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
+            # hline!([(insta_action(1,2,L,L,q,z))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
+        end
+        display(image_s)
+    end
+    
+    if show_s_neg
+        image_s = scatter(
+            flow_times_pos[start_ind_s:skip_s_pos:end],
+            smeared_actions_pos[start_ind_s:skip_s_pos:end],
+            title = latexstring("\$(s(U)-s_\\mathrm{inst.}^{(q)})/\\beta\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            xlabel = latexstring("flow time \$\\tau\$"),
+            label = :false,
+            yaxis = :log,
+            yticks = [10.0^pow for pow = -14:2:4],
+            markercolor = cb_blue
+        )
+        image_s = scatter!(
+            flow_times_neg,
+            smeared_actions_neg,
+            label = :false,
+            markercolor = cb_pink
+        )
+        if show_z
+            hline!([(insta_action(1,2,L,L,q,z)-action(insta_U2(L,L,q),1))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
+            # hline!([(insta_action(1,2,L,L,q,z))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
         end
         display(image_s)
     end
@@ -529,7 +617,7 @@ for meas = 1:1
     if show_m_opt
         image_m_opt = scatter(
             flow_times_m[start_ind_m:end], 
-            smeared_m_opt[start_ind_m:end-1],
+            smeared_m_opt[start_ind_m:end],
             title = latexstring("optim. \$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
             xlabel = latexstring("flow time \$\\tau\$"),
             label = :false,
@@ -541,7 +629,7 @@ for meas = 1:1
     if show_m_anal
         image_m_anal = scatter(
             flow_times_m[start_ind_m:end], 
-            smeared_m_anal[start_ind_m:end-1],
+            smeared_m_anal[start_ind_m:end],
             title = latexstring("anal. \$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
             xlabel = latexstring("flow time \$\\tau\$"),
             label = :false,
@@ -549,4 +637,38 @@ for meas = 1:1
         )
         display(image_m_anal)
     end
+
+    if show_m_opt
+        image_m_opt = scatter(
+            flow_times_m[start_ind_m:end], 
+            smeared_m_opt[start_ind_m:end],
+            title = latexstring("optim. \$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            xlabel = latexstring("flow time \$\\tau\$"),
+            label = :false,
+            yaxis = :log
+        )
+        display(image_m_opt)
+    end
+
+    if show_m_both
+        image_m_both = scatter(
+            flow_times_m[start_ind_m:end], 
+            smeared_m_anal[start_ind_m:end],
+            title = latexstring("\$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            xlabel = latexstring("flow time \$\\tau\$"),
+            label = "analytical",
+            yaxis = :log,
+            yticks = [10.0^pow for pow = -8:1:4]
+        )
+        image_m_both = scatter!(
+            flow_times_m[start_ind_m:end], 
+            smeared_m_opt[start_ind_m:end],
+            label = "numerical",
+        )
+        display(image_m_both)
+    end
 end
+
+
+fig_path = string(base_path,"\\both_norms_measnr_11.pdf")
+# savefig(fig_path)

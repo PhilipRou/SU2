@@ -43,3 +43,32 @@ end
 function s_wil(plaq_mean)
     return 1 - plaq_mean/2
 end
+
+cb_hexes  = [
+    "#377eb8", # blue
+    "#ff7f00", # orange
+    "#4daf4a", # green
+    "#984ea3", # purple
+    "#e41a1c", # red
+    "#f781bf", # pink
+    "#999999", # grey
+    "#a65628", # brown
+];
+cb_colors = parse.(Colorant, cb_hexes);
+cb_blue, cb_orange, cb_green, cb_purple, cb_red, cb_pink, cb_grey, cb_brown  = cb_colors;
+
+function show_cb_colors()
+    display(cb_colors)
+    return nothing
+end
+
+function format_x_err(x,x_err,error_digs)
+    sig_digs = round(Int, -log10(x_err), RoundUp) + (error_digs-1) 
+    rounded_x     = round(x, sigdigits = sig_digs)
+    rounded_x_err = round(x_err, sigdigits = sig_digs)
+    x_out     = @sprintf("%.*f", sig_digs, rounded_x)
+    x_err_out = round(Int, rounded_x_err * 10^sig_digs)
+    return "$x_out($x_err_out)"
+end
+
+# format_x_err(5.310,0.002,2)
