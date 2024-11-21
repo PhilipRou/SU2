@@ -75,8 +75,8 @@ for L = 32:32:128
 
     x_lab = string.(loops)
 
-    image = scatter(x_lab[int_start:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
-    image = scatter!(x_lab[int_start:int_end], jack_means_mike[int_start:int_end], yerror = jack_mean_errs_mike[int_start:int_end], label = "C.Michael, NPB 259, 58, eq.(6)", markerstrokecolor = :auto)
+    image = scatter(x_lab[int_start:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "single hit", markerstrokecolor = :auto)
+    image = scatter!(x_lab[int_start:int_end], jack_means_mike[int_start:int_end], yerror = jack_mean_errs_mike[int_start:int_end], label = "one-link integral", markerstrokecolor = :auto)
     image = plot!(title = "Various ⟨W(R,T)⟩ with N_t = N_x = $N_t", 
     xlabel = "[R,T] in ⟨W(R,T)⟩")
     # xticks = int_start-1:1:int_end+1)
@@ -89,8 +89,8 @@ for L = 32:32:128
     xlabel = "[R,T] in ⟨W(R,T)⟩",
     legend = :right)
     # xticks = int_start-1:1:int_end+1)
-    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
-    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs_mike[int_start:int_end], label = "C.Michael, NPB 259, 58, eq.(6)", markerstrokecolor = :auto)
+    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs[int_start:int_end], label = "single hit", markerstrokecolor = :auto)
+    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs_mike[int_start:int_end], label = "one-link integral", markerstrokecolor = :auto)
 
 
 
@@ -173,8 +173,8 @@ for L = 32:32:128
     int_end = num_ratios
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5]])
 
-    # image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_endnum_ratios], yerror = ratio_mean_errs[int_start:int_end], label = "conventional", markerstrokecolor = :auto)
-    image = scatter(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    # image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_endnum_ratios], yerror = ratio_mean_errs[int_start:int_end], label = "single hit", markerstrokecolor = :auto)
+    image = scatter(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [one-link integral]", markerstrokecolor = :auto)
     image = plot!(title = "Creutz Ratios with N_t = N_x = $N_t", 
     xlabel = "R and T in {⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")
     # xticks = 1:num_ratios)
@@ -305,8 +305,8 @@ for L = 32:32:128
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5]])
     indices_mike = [1,2,3]
 
-    # image = scatter(x_lab[indices], strings[indices], yerror = (string_errs_m[indices], string_errs_p[indices]), label = "conventional", markerstrokecolor = :auto)
-    image = scatter(x_lab[indices_mike], strings_mike[indices_mike], yerror = (string_errs_m_mike[indices_mike], string_errs_p_mike[indices_mike]), label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    # image = scatter(x_lab[indices], strings[indices], yerror = (string_errs_m[indices], string_errs_p[indices]), label = "single hit", markerstrokecolor = :auto)
+    image = scatter(x_lab[indices_mike], strings_mike[indices_mike], yerror = (string_errs_m_mike[indices_mike], string_errs_p_mike[indices_mike]), label = "⟨W(R,T)⟩ via Multihit [one-link integral]", markerstrokecolor = :auto)
     image = plot!(title = "String Tensions from C.-ratios with N_t = N_x = $N_t", 
     xlabel = "R and T in -log{⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")
     # xticks = 1:num_ratios)
@@ -338,10 +338,11 @@ image_sqrts = scatter(
 
 
 for L = 32:32:128
+# for β = 2.0:2.0:8.0
 # L = 32
     N_t = L #+ i*16
     N_x = L #+ i*16
-    β   = 8.0 #N_t*N_x/128
+    β   = 2.0 #N_t*N_x/128
     hot = true
     ϵ   = 0.2 
     n_stout = 0
@@ -376,34 +377,86 @@ for L = 32:32:128
         push!(jack_mean_errs_mike, bla[2])
     end
 
-    int_start = 13
+    loop_sizes = [1, 2, 2, 4, 6, 6, 9, 12, 12, 16, 20, 20, 25, 30, 30, 36]
+    jack_means_anal = [2*analytic_plaq(β)^l for l in loop_sizes]
+
+    int_start = 1
     int_end = 16
 
     x_lab = string.(loops)
 
-    image = scatter(x_lab[int_start:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
-    image = scatter!(x_lab[int_start:int_end], jack_means_mike[int_start:int_end], yerror = jack_mean_errs_mike[int_start:int_end], label = "C.Michael, NPB 259, 58, eq.(6)", markerstrokecolor = :auto)
-    image = plot!(title = "Various ⟨W(R,T)⟩ 
-    with N_t = N_x = $N_t, β = $β", 
-    xlabel = "[R,T] in ⟨W(R,T)⟩")
+    image = scatter(x_lab[int_start:1:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "Single hit", color = cb_blue, markerstrokecolor = cb_blue, markersize = 5)
+    image = scatter!(x_lab[int_start:1:int_end], jack_means_mike[int_start:int_end], yerror = jack_mean_errs_mike[int_start:int_end], label = "One-link integral", color = cb_orange, markerstrokecolor = cb_orange, markersize = 5)
+    image = plot!(
+        xlabel = latexstring("\$[R,T]\$"),
+        ylabel = latexstring("\$\\langle W(R,T) \\rangle\$"),
+        tickfontsize = 9,
+        labelfontsize = 14,
+        legendfontsize = 10,
+        background_color_legend = nothing
+        )
+    image = scatter!(
+        x_lab[int_start:int_end],
+        jack_means_anal[int_start:int_end],
+        label = "Analytical",
+        color = cb_red,
+        markershape = :hline,
+        markersize = 10,
+    )
+    image = lens!(
+        [13,16],
+        # [0.0,0.006],      # β = 8.0
+        # [-0.0008, 0.0014],    # β = 6.0
+        # [-0.001, 0.0012],    # β = 4.0
+        [-0.001, 0.001],    # β = 2.0
+        inset = (1, bbox(0.6,0.3,0.3,0.4)),
+    )
+    # image = plot!(title = "Various ⟨W(R,T)⟩ 
+    # with N_t = N_x = $N_t, β = $β", 
+    # xlabel = "[R,T] in ⟨W(R,T)⟩")
     # xticks = int_start-1:1:int_end+1)
     display(image)
 
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
+    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\WRT_mike\\WRT_mike_beta_$(β)_L_$L.pdf"
+    savefig(fig_path)
 
     #=
+    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\WRT_mike\\WRT_mike_beta_$(β)_L_$L.txt"
+    err_digs  = 2
+    anal_digs_pre  = 1
+    anal_digs_post = 7
+    bla = open(tab_path, "w")
+    write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
+    write(bla, "\t\t \$[R,T]\$ &\t single hit &\t one-link int. &\t analyt. \t \\\\\\hline\n")
+    for i = 1:16
+        sq_dat   = format_x_err(jack_means[i], jack_mean_errs[i], err_digs)
+        mike_dat  = format_x_err(jack_means_mike[i], jack_mean_errs_mike[i], err_digs)
+        # anal_dat = round(jack_means_anal[i], digits = anal_digs)
+        anal_dat = @sprintf("%*.*f", anal_digs_pre, anal_digs_post, jack_means_anal[i])
+        write(bla, "\t\t $(x_lab[i]) &\t $sq_dat &\t $mike_dat &\t $anal_dat\t \\\\\\hline\n")
+    end
+    write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
+    close(bla)
+    =#
+
+
+    
+    #=
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
+    
     image_err = plot(title = "Uncertainties of Various ⟨W(R,T)⟩ 
     with N_t = N_x = $N_t, β = $β",
     xlabel = "[R,T] in ⟨W(R,T)⟩",
     legend = :left)
     # xticks = int_start-1:1:int_end+1)
-    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs[int_start:int_end], label = "Conventional", markerstrokecolor = :auto)
-    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs_mike[int_start:int_end], label = "Via [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs[int_start:int_end], label = "single hit", markerstrokecolor = :auto)
+    image_err = scatter!(x_lab[int_start:int_end], jack_mean_errs_mike[int_start:int_end], label = "Via [one-link integral]", markerstrokecolor = :auto)
 
     display(image_err)
    =# 
 
     # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\creutz_ratios\\beta_$β\\mikes_loops_uncer_zoomed_beta_$β.N_t_$N_t.pdf")
+# end
 end
 
 
@@ -454,8 +507,8 @@ for L = 32:32:128
     int_end = num_ratios
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5]])
 
-    image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_end], yerror = ratio_mean_errs[int_start:int_end], label = "conventional", markerstrokecolor = :auto)
-    image = scatter!(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    image = scatter(x_lab[int_start:int_end], ratio_means[int_start:int_end], yerror = ratio_mean_errs[int_start:int_end], label = "single hit", markerstrokecolor = :auto)
+    image = scatter!(x_lab[int_start:int_end], ratio_means_mike[int_start:int_end], yerror = ratio_mean_errs_mike[int_start:int_end], label = "⟨W(R,T)⟩ via Multihit [one-link integral]", markerstrokecolor = :auto)
     image = plot!(title = "Creutz Ratios 
     with N_t = N_x = $N_t, β = $β", 
     xlabel = "R and T in {⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")
@@ -562,8 +615,8 @@ for L = 32:32:128
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5]])
     indices_mike = [1,2,3]
 
-    # image = scatter(x_lab[indices], strings[indices], yerror = (string_errs_m[indices], string_errs_p[indices]), label = "conventional", markerstrokecolor = :auto)
-    image = scatter(x_lab[indices_mike], strings_mike[indices_mike], yerror = (string_errs_m_mike[indices_mike], string_errs_p_mike[indices_mike]), label = "⟨W(R,T)⟩ via Multihit [C.Michael, NPB 259, 58, eq.(6)]", markerstrokecolor = :auto)
+    # image = scatter(x_lab[indices], strings[indices], yerror = (string_errs_m[indices], string_errs_p[indices]), label = "single hit", markerstrokecolor = :auto)
+    image = scatter(x_lab[indices_mike], strings_mike[indices_mike], yerror = (string_errs_m_mike[indices_mike], string_errs_p_mike[indices_mike]), label = "⟨W(R,T)⟩ via Multihit [one-link integral]", markerstrokecolor = :auto)
     image = plot!(title = "String Tensions from C.-ratios 
     with N_t = N_x = $N_t, β = $β", 
     xlabel = "R and T in -log{⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")

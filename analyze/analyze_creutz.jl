@@ -9,6 +9,11 @@ function analytic_plaq(β)
     return (besseli(0,β) + besseli(2,β)) / (2*besseli(1,β)) - 1/β
 end
 
+function analytic_plaq_approx(β)
+    b = big(β)
+    return -1/b + (2 - 14/(8*b)) / (2 * (1-3/(8*b)))
+end
+
 function string_jack(means, b_size, a, b, c, d)
     N_blocks = Int(div(size(means,1), b_size, RoundDown))
     ratios = [creutz(means[i, :], a, b, c, d) for i = 1:N_blocks*b_size]
@@ -48,6 +53,14 @@ end
 
 
 for L = 32:32:128
+    swil_sq_str = []
+    swil_hex_str = []
+    swil_anal_str = []
+    plaqs_sq = []
+    plaqs_sq_err = []
+    plaqs_hex = []
+    plaqs_hex_err = []
+    plaqs_anal = []
     for β in [2.0, 4.0, 6.0, 8.0]
         # L = 32
         # β   = 2.0 #N_t*N_x/128
@@ -128,15 +141,16 @@ for L = 32:32:128
             x_lab[1:12], 
             all_jack_means[1:12], 
             yerror = all_jack_errs[1:12], 
-            label = "Square", # \n (no h-rh. or rh.)",
+            label = "Square, one-link int.", # \n (no h-rh. or rh.)",
             color = cb_purple,# palette(:default)[1],
-            markerstrokecolor = :auto, 
+            markerstrokecolor = cb_purple, # :auto,  
             markershape = :square,
             markersize = 6,
             legend = :top,
             # foreground_color_legend = nothing,
             background_color_legend = nothing,
-            xlabel = latexstring("\$[R,T]\$ in \$\\langle W(R,T) \\rangle\$ or name of loop"),
+            xlabel = latexstring("\$[R,T]\$ or name of loop"),
+            ylabel = latexstring("\$\\langle W(R,T) \\rangle\$"),
             tickfontsize = 9,
             labelfontsize = 14,
             legendfontsize = 10,
@@ -206,7 +220,7 @@ for L = 32:32:128
             yerror = all_jack_errs_hex[1:12], 
             label = "Hexagonal", 
             color = cb_pink; # palette(:default)[2], 
-            markerstrokecolor = :auto,
+            markerstrokecolor = cb_pink, # :auto,
             markershape = :hexagon,
             markersize = 6,
             )
@@ -282,7 +296,6 @@ for L = 32:32:128
         image = scatter!(
             x_lab[1:12], 
             jack_means_anal[1:12], 
-            # yerror = all_jack_errs_hex, 
             label = "Analytic", 
             color = :black,# :red, # palette(:default)[3], 
             # markerstrokecolor = :auto,
@@ -395,6 +408,7 @@ for L = 32:32:128
         println(" ")
         =#
 
+        
         fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.pdf"
         # savefig(fig_path)
         tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.txt"
@@ -410,10 +424,103 @@ for L = 32:32:128
             # anal_dat = round(jack_means_anal[i], digits = anal_digs)
             anal_dat = @sprintf("%*.*f", anal_digs_pre, anal_digs_post, jack_means_anal[i])
             write(bla, "\t\t $(x_lab[i]) &\t $sq_dat &\t $hex_dat &\t $anal_dat\t \\\\\\hline\n")
+            if i == 1
+                sq_swil   = format_x_err((1-all_jack_means[i]/2)*β/4, all_jack_errs[i]/2*β/4, err_digs)
+                hex_swil  = format_x_err((1-all_jack_means_hex[i]/2)*β/4, all_jack_errs_hex[i]/2*β/4, err_digs)
+                anal_swil = @sprintf("%*.*f", anal_digs_pre, anal_digs_post, (1-jack_means_anal[i]/2)*β/4)
+                push!(swil_sq_str, sq_swil)
+                push!(swil_hex_str, hex_swil)
+                push!(swil_anal_str, anal_swil)
+                push!(plaqs_sq, all_jack_means[i])
+                push!(plaqs_sq_err, all_jack_errs[i])
+                push!(plaqs_hex, all_jack_means_hex[i])
+                push!(plaqs_hex_err, all_jack_errs_hex[i])
+                push!(plaqs_anal, jack_means_anal[i])
+            end
         end
         write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
         close(bla)
     end
+
+    betas = Vector(2.0:2.0:8.0)
+    beta_range_anal = 1.0:0.1:700
+    slop = ((1-analytic_plaq(700))*700/4 - (1-analytic_plaq(699))*699/4) / (1/700-1/699)
+    image_plaq_anal = plot(
+        1 ./ beta_range_anal,
+        # (1 .- analytic_plaq.(beta_range_anal)) .* beta_range_anal ./4 ,
+        [(1-analytic_plaq(β))*β/4 for β in beta_range_anal],
+        label = :false,
+        color = :black
+    )
+    image_plaq_anal = plot!(
+        0:0.05:0.3,
+        [3/8 + slop*x for x in 0:0.05:0.3],
+        label = :false, # "Slope at cont. value",
+        color = cb_red
+    )
+    image_plaq_anal = scatter!(
+        1 ./ betas,
+        (1 .- plaqs_sq./2).*betas./4,
+        yerror = plaqs_sq_err.*betas./8, 
+        label = "Square", 
+        color = cb_purple, 
+        markerstrokecolor = cb_purple, # :auto, 
+        markershape = :square,
+        markersize = 7,
+        legend = :topright,
+        # foreground_color_legend = nothing,
+        background_color_legend = nothing,
+        xlabel = latexstring("\$1/\\beta = (ag)^2/4\$"),
+        ylabel = latexstring("\$ s_\\mathrm{wil}/g^2 \$"),
+        tickfontsize = 10,
+        labelfontsize = 14,
+        legendfontsize = 10,
+        # msw = 10,
+    )
+    image_plaq_anal = scatter!(
+        1 ./ betas,
+        (1 .- plaqs_hex./2).*betas./4,
+        yerror = plaqs_hex_err.*betas./8,            
+        label = "Hexagonal", 
+        color = cb_pink, 
+        markerstrokecolor = cb_pink, # :auto, 
+        markershape = :hexagon,
+        markersize = 7,
+    )
+    image_plaq_anal = plot!(
+        [0.5],
+        [0.3],
+        label = "Analytic",
+        color = :black
+    )
+    image_plaq_anal = scatter!(
+        [0.0],
+        [3/8],
+        markershape = :star5,
+        markersize = 7,
+        color = :white,
+        label = latexstring("Cont. value \$3/8\$")
+    )
+    image_plaq_anal = plot!(
+        [0.0],
+        [3/8],
+        label = "Slope at cont. value",
+        color = cb_red,
+    )
+        
+    display(image_plaq_anal)
+    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\plaq_square_hex_anal\\swil_sha_L_$L.pdf"
+    # savefig(fig_path)
+
+    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\plaq_square_hex_anal\\swil_sha_L_$L.txt"
+    bla = open(tab_path, "w")
+    write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
+    write(bla, "\t\t \$\\beta\$ &\t square &\t hex &\t analyt. \t \\\\\\hline\n")
+    for beta_ind = 1:4
+        write(bla, "\t\t $(2.0*beta_ind) &\t $(swil_sq_str[beta_ind]) &\t $(swil_hex_str[beta_ind]) &\t $(swil_anal_str[beta_ind])\t \\\\\\hline\n")
+    end
+    write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
+    close(bla)
 end
 
 # \begin{table}[H]
@@ -436,7 +543,7 @@ square_best_err = []
 
 L = 32
 # for L in [32] # 32:32:128
-for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
+for β in [2.0, 4.0, 6.0, 8.0]
     # L = 32
     N_t = L #+ i*16
     N_x = L #+ i*16
@@ -453,20 +560,18 @@ for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
     num_means = size(means,1)
     num_loops = size(means,2)
 
-    creutz_means = [creutz(means[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
-    num_ratios = size(creutz_means,2)
-
     ratio_means = []
-    ratio_mean_errs = []
-    for i = 1:num_ratios
-        b_size = Int(round(2*auto_corr_time(creutz_means[:,i]) + 1, RoundUp))    
-        bla = jackknife(creutz_means[:,i], b_size)#, 500)
+    ratio_mean_errs  = []
+    for j = 1:3:4
+        # @show j
+        b_size = maximum([Int(round(2*auto_corr_time(means[:,k]) + 1, RoundUp)) for k in [j,j+1,j+2,j+3]])
+        bla = jack_string_creutz(means,  j,j+1,j+2,j+3, b_size)
         push!(ratio_means, bla[1])
         push!(ratio_mean_errs, bla[2])
     end
 
     int_start = 1
-    int_end = 1
+    int_end = 2
     x_lab = string.([[1,1], [2,2], [3,3], [4,4], [5,5], [6,6]])
 
     image = scatter(
@@ -498,19 +603,16 @@ for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
     num_means = size(means_hex,1)
     num_loops = size(means_hex,2)
 
-    creutz_means_hex = [creutz(means_hex[i,:], j,j+1,j+2,j+3) for i = 1:num_means, j = 1:3:Int(num_loops-3)]
-    num_ratios = size(creutz_means_hex,2)
-
-    # ratio_means = []
-    # ratio_mean_errs = []
     ratio_means_hex = []
-    ratio_mean_errs_hex = []
-    for i = 1:num_ratios
-        b_size = Int(round(2*auto_corr_time(creutz_means_hex[:,i]) + 1, RoundUp))    
-        bla = jackknife(creutz_means_hex[:,i], b_size)#, 500)
+    ratio_mean_errs_hex  = []
+    for j = 1:3:4
+        b_size = maximum([Int(round(2*auto_corr_time(means_hex[:,k]) + 1, RoundUp)) for k in [j,j+1,j+2,j+3]])
+        bla = jack_string_creutz(means_hex,  j,j+1,j+2,j+3, b_size)
         push!(ratio_means_hex, bla[1])
         push!(ratio_mean_errs_hex, bla[2])
     end
+
+    int_end = 2
 
     image = scatter!(
         x_lab[int_start:int_end], 
@@ -520,7 +622,7 @@ for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
         markerstrokecolor = :auto,
         markershape = :hexagon)
 
-    image = hline!([analytic_plaq(β)], label = "Analytic", color = :red)
+    image = hline!([-log(analytic_plaq(β))], label = "Analytic", color = :red)
     
     image = plot!(title = "Creutz Ratios with β = $β,
     Sq.: N_t = N_x = $L, Hex.: N_t = 2⋅N_x = 2⋅$L", 
@@ -534,46 +636,99 @@ for β in [8.0] # [2.0, 4.0, 6.0, 8.0]
     push!(hex_best_err, ratio_mean_errs_hex[1])
     push!(square_best, ratio_means[1])
     push!(square_best_err, ratio_mean_errs[1])
-
 end
 # end
 
 # L = 32
-betas = [2.0, 4.0, 6.0, 8.0]
-image_creutz_compare = scatter(
-    betas,
-    square_best,
-    yerror = square_best_err,
-    label = "Square",
-    markerstrokecolor = :auto,
-    markershape = :diamond
-)
-image_creutz_compare = scatter!(
-    betas,
-    hex_best,
-    yerror = hex_best_err,
-    label = "Hexagonal",
-    markerstrokecolor = :auto,
-    markershape = :hexagon
-)
-betas_plot = Array(first(betas):0.01:last(betas)) 
-image_creutz_compare = plot!(
-    betas_plot,
-    analytic_plaq.(betas_plot),
-    label = "Analytic",
-    # markerstrokecolor = :auto,
-    # markershape = :hline,
-    markersize = 10,
-    color = :red
-)
-image_creutz_compare = plot!(
-    title = "Creutz Ratios using ⟨W(1,1)⟩, ..., ⟨W(2,2)⟩
-    Square: N_t = N_x = $L,  Hex.: N_t = 2⋅N_x = 2⋅$L",
-    xlabel = "β"
-)
-display(image_creutz_compare)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_fav_ratios_N_x_$L.pdf")
+let
+    betas = [2.0, 4.0, 6.0, 8.0]
+    betas_plot = Vector(1.0:0.1:700) 
+    slop = - (log(analytic_plaq(700))*700/4 - log(analytic_plaq(699))*699/4 ) / (1/700-1/699)
+    image_creutz_compare = plot(
+        1 ./betas_plot,
+        -log.(analytic_plaq.(betas_plot)) .* betas_plot ./4,
+        label = :false,
+        color = :black
+    )
+    image_creutz_compare = plot!(
+        0:0.05:0.25,
+        [3/8 + slop*x for x in 0:0.05:0.25],
+        label = :false, # "Slope at cont. value",
+        color = cb_red
+    )
+    image_creutz_compare = scatter!(
+        1 ./betas,
+        square_best.*betas./4,
+        yerror = square_best_err.*betas./4,
+        label = "Square",
+        color = cb_purple,
+        markerstrokecolor = cb_purple,
+        markershape = :square,
+        markersize = 7,
+    )
+    image_creutz_compare = scatter!(
+        1 ./betas,
+        hex_best.*betas./4,
+        yerror = hex_best_err.*betas./4,
+        label = "Hexagonal",
+        color = cb_pink,
+        markerstrokecolor = cb_pink,
+        markershape = :hexagon,
+        markersize = 7,
+    )
+    image_creutz_compare = plot!(
+        [0.0],
+        [3/8],
+        label = "Analytic",
+        color = :black
+    )
+    image_creutz_compare = plot!(
+        xlabel = latexstring("\$1/\\beta = (ag)^2/4\$"),
+        ylabel = latexstring("\$\\sigma/g^2\$"),
+        tickfontsize = 9,
+        labelfontsize = 14,
+        legendfontsize = 10,
+    )
+    image_creutz_compare = scatter!(
+        [0.0],
+        [3/8],
+        markershape = :star5,
+        markersize = 7,
+        color = :white,
+        label = latexstring("Cont. value \$3/8\$")
+    )
+    image_creutz_compare = plot!(
+        [0.0],
+        [3/8],
+        color = cb_red,
+        label = "Slope at cont. value"
+    )
+    image_creutz_compare = plot!(
+        legend = :bottom,
+        background_color_legend = :false
+    )
+    display(image_creutz_compare)
+    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\string_square_hex_anal\\string_sha_L_$L.pdf"
+    # savefig(fig_path)
 
+    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\string_square_hex_anal\\string_sha_L_$L.txt"
+    bla = open(tab_path, "w")
+    write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
+    write(bla, "\t\t \$\\beta\$ &\t square &\t hex &\t analyt. \t \\\\\\hline\n")
+    error_digs = 2
+    anal_digs_pre  = 1 
+    anal_digs_post = 7
+    string_sq_str   = format_x_err.(square_best.*betas./4, square_best_err.*betas./4, error_digs)
+    string_hex_str  = format_x_err.(hex_best.*betas./4, hex_best_err.*betas./4, error_digs)
+    for beta_ind = 1:4
+        string_anal_str = @sprintf("%*.*f", anal_digs_pre, anal_digs_post, -log(analytic_plaq(betas[beta_ind]))*betas[beta_ind]/4)
+        write(bla, "\t\t $(2.0*beta_ind) &\t $(string_sq_str[beta_ind]) &\t $(string_hex_str[beta_ind]) &\t $string_anal_str\t \\\\\\hline\n")
+    end
+    write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
+    close(bla)
+end
+# end
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_fav_ratios_N_x_$L.pdf")
 
 
 

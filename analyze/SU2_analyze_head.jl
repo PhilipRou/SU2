@@ -5,6 +5,7 @@ using LsqFit
 using SpecialFunctions
 using LaTeXStrings
 using Measures
+using Printf
 
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")

@@ -434,7 +434,7 @@ function jackknife(obs, b_size)
 end
 
 function jack_creutz(means::Array, a, b, c, d, b_size)
-    N_blocks   = Int(div(length(obs), b_size, RoundDown))
+    N_blocks   = Int(div(length(means[:,1]), b_size, RoundDown))
     jack_means = Array{Float64}(undef,N_blocks)
     blocked_loop_means = [mean(means[(i-1)*b_size+1:i*b_size,j]) for i = 1:N_blocks, j in [a,b,c,d]]
     temp_means    = blocked_loop_means[2:end, :]
@@ -449,4 +449,22 @@ function jack_creutz(means::Array, a, b, c, d, b_size)
     creutz_mean = mean(means[:,a]) * mean(means[:,d]) / (mean(means[:,b])  * mean(means[:,c]))
     σ = sqrt((N_blocks-1) * mean((jack_means.-creutz_mean).^2 ))
     return [creutz_mean, σ]
+end
+
+function jack_string_creutz(means::Array, a, b, c, d, b_size)
+    N_blocks   = Int(div(length(means[:,1]), b_size, RoundDown))
+    jack_means = Array{Float64}(undef,N_blocks)
+    blocked_loop_means = [mean(means[(i-1)*b_size+1:i*b_size,j]) for i = 1:N_blocks, j in [a,b,c,d]]
+    temp_means    = blocked_loop_means[2:end, :]
+    for i = 1:N_blocks-1
+        loop_means = [mean(temp_means[:,j]) for j = 1:4]
+        jack_means[i] = -log(loop_means[1]*loop_means[4] / (loop_means[2]*loop_means[3]))
+        temp_means[i,:] = blocked_loop_means[i,:]
+    end
+    loop_means = [mean(temp_means[:,j]) for j = 1:4]
+    jack_means[N_blocks] = -log(loop_means[1]*loop_means[4] / (loop_means[2]*loop_means[3]))
+
+    string_mean = -log(mean(means[:,a]) * mean(means[:,d]) / (mean(means[:,b])  * mean(means[:,c])))
+    σ = sqrt((N_blocks-1) * mean((jack_means.-string_mean).^2 ))
+    return [string_mean, σ]
 end
