@@ -417,6 +417,8 @@ function top_charge_U2_wil(U)
 end
 
 
+
+
 #=
 function one_link_integral_U2(A, β, n_sum_max, r_sum_max)
     Z = 0.0
@@ -446,8 +448,8 @@ end
 
 
 function one_link_expect_value_U2(U, μ, x, t, β, n_sum_max, r_sum_max, p_sum_max, s_sum_max)
-    A = staple(U,μ,x,t)
-    A_dagmod = coeffs_U2(conj(A.a), conj(A.b), conj(A.c), conj(A.d)) #  (-1)ⁱ⁺ʲ A†[̸j,̸i]
+    A = β/2* staple(U,μ,x,t)
+    A_dagmod = coeffs_U2(conj(A.a), conj(A.b), -conj(A.c), conj(A.d)) #  (-1)ⁱ⁺ʲ A†[̸j,̸i]
     # M = A*adjoint(A)
     # A_dagmod = conj.([A[2,2] -A[2,1]; -A[1,2] A[1,1]])
     trM = tr(A*adjoint(A))
@@ -462,24 +464,28 @@ function one_link_expect_value_U2(U, μ, x, t, β, n_sum_max, r_sum_max, p_sum_m
                 for s = 1:s_sum_max
                     # Z += tr(M)^n * det(M)^r / (factorial(big(n+2*r+1)) * factorial(big(n)) * factorial(big(r))^2)
                     denom = factorial(big(n+2*r+1))*factorial(big(p+2*s+1))*factorial(big(n))*factorial(big(p))*factorial(big(r))^2*factorial(big(s))^2
-                    sum_normal += p * trM^(p+n-1) * detM^(r+s) / denom
-                    sum_dagmod += s * trM^(p+n) * detA^(r+s) * detA_dag^(r+s-1) / denom
+                    # sum_normal += p * trM^(p+n-1) * detM^(r+s) / denom
+                    # sum_dagmod += s * trM^(p+n) * detA^(r+s) * detA_dag^(r+s-1) / denom
+                    sum_normal += n * trM^(p+n-1) * detM^(r+s) / denom
+                    sum_dagmod += r * trM^(p+n) * detA^(r+s) * detA_dag^(r+s-1) / denom
                 end
             end
         end
     end
-    return convert(ComplexF64,sum_normal)*A + convert(ComplexF64,sum_dagmod)*A_dagmod
+    return 2/β*(convert(ComplexF64,sum_normal)*A + convert(ComplexF64,sum_dagmod)*A_dagmod)
 end
 
 N_x = N_t = L = 16
-β = 1
+β = 6
 U = gaugefield_U2(N_x, N_t, true);
-for i = 1:200 chess_metro!(U,0.1,β,[0.0],"U2") end
+acc_metro = [0.0]
+for i = 1:500 chess_metro!(U,0.1,β,acc_metro,"U2") end
+acc_metro
 μ = rand([1,2])
 x, t = rand(Array(1:L), 2)
 Us = []
 V = deepcopy(U);
-for i = 1:100000
+for i = 1:1e6
     push!(Us, V[μ,x,t])
     metro!(V,μ,x,t,0.1,β,[0.0],"U2")
 end
@@ -523,5 +529,4 @@ real(tr(U_exp))
 # jackknife(Us,b_size)
 # U_exp = one_link_expect_value_SU2(U,μ,x,t,β)
 # real(tr(U_exp))
-
 =#
