@@ -173,6 +173,24 @@ function metro_hex!(U, μ, x, t, step, β, acc, group)
     return nothing
 end
 
+function metro_hex_comp!(U, μ, x, t, step, β, acc, group)
+    # new_coeffs = ran_SU2(step) * U[μ,x,t]
+    new_coeffs = U[μ,x,t]
+    if group == "SU2"
+        new_coeffs = ran_SU2(step) * new_coeffs
+    elseif group == "U2"
+        new_coeffs = ran_U2(step) * new_coeffs
+    end
+    staple_d = staple_dag_hex(U,μ,x,t)
+    S_old = β/2*27/4*real(tr(U[μ,x,t] * staple_d))
+    S_new = β/2*27/4*real(tr(new_coeffs * staple_d))
+    if rand() < exp(S_new-S_old)
+        U[μ,x,t] = new_coeffs
+        acc[1] += 1
+    end
+    return nothing
+end
+
 function chess_metro_hex!(U, step, β, acc, group)
     NX = size(U,2)
     NT = size(U,3)
@@ -193,6 +211,34 @@ function chess_metro_hex!(U, step, β, acc, group)
                 # for x = (1+mod(t+trip,2)):2:NX
                 for x = trip:2:NX
                     metro_hex!(U,μ,x,t,step,β,acc, group)
+                    # println(μ, ", ", x, ", ", t)
+                end
+            end
+        end
+    end
+    return nothing
+end
+
+function chess_metro_hex_comp!(U, step, β, acc, group)
+    NX = size(U,2)
+    NT = size(U,3)
+    μ = 1
+    for trip = 1:2
+        for t = trip:2:NT
+            # for x = 2-mod(t,2):2:NX
+            for x = trip:2:NX
+                metro_hex_comp!(U,μ,x,t,step,β,acc, group)
+                # println(μ, ", ", x, ", ", t)
+            end
+        end
+    end
+    μ = 2
+    for trip = 1:2
+        for start_t = 1:2
+            for t = start_t:2:NT
+                # for x = (1+mod(t+trip,2)):2:NX
+                for x = trip:2:NX
+                    metro_hex_comp!(U,μ,x,t,step,β,acc, group)
                     # println(μ, ", ", x, ", ", t)
                 end
             end

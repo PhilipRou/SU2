@@ -176,7 +176,7 @@ for beta in [12] # [2.0,4,0,6.0,8.0]
                 counter += 1
             end
             for j = 1:N_metro
-                chess_metro_hex!(H,ϵ,β,acc,group)
+                chess_metro_hex_comp!(H,ϵ,β,acc,group)  #❗❗❗❗❗
             end
             for j = 1:N_over
                 chess_overrelax_hex!(H,acc)
@@ -207,17 +207,17 @@ for beta in [12] # [2.0,4,0,6.0,8.0]
 
 
             mywrite(acceptances_path, [acc_metro[1], acc[1]])
-            mywrite(actions_path, action_hex(H,β))
-            mywrite(top_charge_path, top_charge_U2_hex(H))
+            mywrite(actions_path, action_hex_comp(H,β))         #❗❗❗❗❗
+            mywrite(top_charge_path, top_charge_U2_hex_comp(H)) #❗❗❗❗❗
             loop_means = measure_RT_loops_hex(H,loops,legal_coords)#,n_stout,ρ)
             mywrite(mean_vals_path, loop_means)
-            # edge_loop_mean = sum([tr(edge_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            edge_loop_mean = sum([tr(edge_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
             # rhomb_half_loop_mean = sum([tr(rhomb_half_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
-            # L_loop_mean = sum([tr(L_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
+            L_loop_mean = sum([tr(L_loop_hex(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
             # rhomb_loop_mean = sum([tr(rhomb_loop(H,coord[1],coord[2])) for coord in half_chess_coords(N_x,N_t)])/N_x/(0.5*N_t)
-            # mywrite(edge_loop_means_path, edge_loop_mean)
+            mywrite(edge_loop_means_path, edge_loop_mean)
             # mywrite(rhomb_half_loop_means_path, rhomb_half_loop_mean)
-            # mywrite(L_loop_means_path, L_loop_mean)
+            mywrite(L_loop_means_path, L_loop_mean)
             # mywrite(rhomb_loop_means_path, rhomb_loop_mean)
         end
         # push!(actions_hex, action_hex(H))

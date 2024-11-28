@@ -6,6 +6,7 @@ using SpecialFunctions
 using LaTeXStrings
 using Measures
 using Printf
+using QuadGK
 
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
 include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_hex.jl")
@@ -64,11 +65,16 @@ function show_cb_colors()
 end
 
 function format_x_err(x,x_err,error_digs)
-    sig_digs = round(Int, -log10(x_err), RoundUp) + (error_digs-1) 
-    rounded_x     = round(x, sigdigits = sig_digs)
-    rounded_x_err = round(x_err, sigdigits = sig_digs)
-    x_out     = @sprintf("%.*f", sig_digs, rounded_x)
-    x_err_out = round(Int, rounded_x_err * 10^sig_digs)
+    sig_digs = 5
+    x_out     = @sprintf("%.*f", sig_digs, x)
+    x_err_out = "0"
+    if x_err > 1e-15
+        sig_digs = round(Int, -log10(x_err), RoundUp) + (error_digs-1) 
+        rounded_x     = round(x, sigdigits = sig_digs)
+        rounded_x_err = round(x_err, sigdigits = sig_digs)
+        x_out     = @sprintf("%.*f", sig_digs, rounded_x)
+        x_err_out = round(Int, rounded_x_err * 10^sig_digs)
+    end
     return "$x_out($x_err_out)"
 end
 

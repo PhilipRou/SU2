@@ -64,6 +64,18 @@ function action_hex(U,β)
     return β*S/2
 end
 
+function action_hex_comp(U,β)
+    NX = size(U,2)
+    NT = size(U,3)
+    S = NX*NT
+    for t = 1:NT
+        for x = (1+mod(t+1,2)):2:NX
+            S -= 27/4* real(tr(hexplaq(U,x,t)))
+        end
+    end
+    return β*S/2
+end
+
 
 function loop_1x2_hex(U,x,t)
     NX = size(U,2)
@@ -401,5 +413,17 @@ function top_charge_U2_hex(U)
         end
     end
     return Q / 2 / π
+end
+
+function top_charge_U2_hex_comp(U)
+    NX = size(U,2)
+    NT = size(U,3)
+    Q = 0.0
+    for t = 1:NT
+        for x = mod1(t,2):2:NX
+            Q += imag(log(det(hexplaq(U, x, t)))) 
+        end
+    end
+    return Q / 2 / π * (2/(3*sqrt(3)))
 end
 
