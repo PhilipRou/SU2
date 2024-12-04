@@ -128,9 +128,9 @@ function overrelax!(U, μ, x, t, acc)
     elseif typeof(U[μ,x,t]) == coeffs_U2{ComplexF64}
         new_coeffs = adjoint(v * U[μ,x,t] * v)
         staple_d = staple_dag(U,μ,x,t)
-        S_old = β*0.5*real(tr(U[μ,x,t] * staple_d))
-        S_new = β*0.5*real(tr(new_coeffs * staple_d))
-        if rand() < exp(S_old-S_new)
+        S_new = -β*0.5*real(tr(new_coeffs * staple_d))
+        S_old = -β*0.5*real(tr(U[μ,x,t] * staple_d))
+        if rand() < exp(S_new-S_old)
             U[μ,x,t] = new_coeffs
             acc[1] += 1/2/NX/NT
         end

@@ -3,7 +3,8 @@ include("SU2_jackknives.jl")
 
 
 
-for beta in 6.0:1.5:15.0
+# for beta in 6.0:1.5:15.0
+    beta = 6.0
     beta       = string(beta)*"0"
     # beta       = "6.00"
     n_stout    = 7
@@ -14,7 +15,7 @@ for beta in 6.0:1.5:15.0
     n_op = length(smearlist)
     small_inds = 2:length(smearlist)
 
-    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
+    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\good_old_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
     timeseries_path   = base_path * ".txt"
     corr_path         = base_path * "_crosscorr.txt"
     swil_smeared_path = base_path * "_swil_smeared.txt"
@@ -65,7 +66,8 @@ for beta in 6.0:1.5:15.0
         corrmats_symm_small[t][:] = (corrmats_symm_small[t][:] .+ transpose.(corrmats_symm_small[t][:])) ./ 2
     end
 
-
+    # mean(corrmats_symm_small[1])[1:4,1:4]
+    
 
     ### Connected correlators of individual smeared s_wil series
     swil_corr_con_mean = Array{Float64}(undef, length(smearlist), Nz>>1+1);
@@ -111,8 +113,8 @@ for beta in 6.0:1.5:15.0
         evs      = Array{Float64}(undef, Nz>>1+1, length(small_inds))
         evs_errs = Array{Float64}(undef, Nz>>1+1, length(small_inds))
     end
-    for t = 1:Nz>>1+1
-        # t = 1
+    @time for t = 1:Nz>>1+1
+        @show t
         jack = [zeros(n_op), zeros(n_op)]
         if small
             jack = jack_conn_corr_mat_ev(corrmats_symm_small[t], swil_smeared_small, maximum([bsize_corrmats,bsize_swil_smeared]))
@@ -157,7 +159,7 @@ for beta in 6.0:1.5:15.0
         GEVs_errs = Array{Float64}(undef, Nz>>1-t0, length(small_inds))
     end
     @time for t = t0+1:Nz>>1
-        # t = 1
+        @show t
         jack = [zeros(n_op), zeros(n_op)]
         if small
             jack = jack_conn_corr_mat_GEV(corrmats_symm_small[t], corrmats_symm_small[t0], swil_smeared_small, maximum([bsize_corrmats,bsize_swil_smeared]))
@@ -180,7 +182,7 @@ for beta in 6.0:1.5:15.0
                 yerror = GEVs_errs[:,i],
                 label = latexstring("GEV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-5, 2.0),
+                ylim = (1e-5, 10.0),
                 yaxis = :log,
                 legend = :bottomright
             )
@@ -188,4 +190,4 @@ for beta in 6.0:1.5:15.0
         display(image_conn_GEVs)
     end
 
-end # beta
+# end # beta

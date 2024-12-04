@@ -266,29 +266,105 @@ function jack_conn_corr_mat_ev(corr_mats, mean_vals, b_size)
     jack_evs = Array{Float64}(undef, N_blocks, num_vals)
     blocked_means = Array{Float64}(undef, N_blocks, num_vals)
     for op = 1:num_vals
-        blocked_means[:,op] = @views [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+        blocked_means[:,op] =  [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
     end
-    blocked_corrs = @views [mean(corr_mats[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
-    temp_means = @views blocked_means[2:end,:]
-    temp_corrs = @views blocked_corrs[2:end]
+    blocked_corrs =  [mean(corr_mats[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    temp_means =  blocked_means[2:end,:]
+    temp_corrs =  blocked_corrs[2:end]
     for i = 1:N_blocks-1
-        temp_mean_means = @views [mean(temp_means[:,op]) for op = 1:num_vals]
-        temp_means_mat  = @views [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
         jack_evs[i,:]   = eigen(mean(temp_corrs)-temp_means_mat).values
-        temp_means[i,:]  = @views blocked_means[i,:]
-        temp_corrs[i]    = @views blocked_corrs[i]
+        temp_means[i,:]  =  blocked_means[i,:]
+        temp_corrs[i]    =  blocked_corrs[i]
     end
-    temp_mean_means = @views [mean(temp_means[:,op]) for op = 1:num_vals]
-    temp_means_mat  = @views [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
     jack_evs[N_blocks,:] = eigen(mean(temp_corrs)-temp_means_mat).values
 
-    mean_corr  = @views mean(corr_mats)
-    mean_means = @views [mean(mean_vals[:,op]) for op = 1:num_vals]
-    mean_mean_mat = @views [mean_means[op1] * mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    mean_corr  =  mean(corr_mats)
+    mean_means =  [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_mean_mat =  [mean_means[op1] * mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
     mean_evs   = eigen(mean_corr - mean_mean_mat).values
     σ = [sqrt((N_blocks-1) * mean((jack_evs[:,i] .- mean_evs[i]).^2 )) for i = 1:num_vals]
     return mean_evs, σ
 end
+
+function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size)
+    N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
+    num_vals = size(corr_mats_t1[1],1)
+    jack_masses = Array{Float64}(undef, N_blocks, num_vals)
+    blocked_means = Array{Float64}(undef, N_blocks, num_vals)
+    for op = 1:num_vals
+        blocked_means[:,op] =  [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+    end
+    blocked_corrs_t1 = [mean(corr_mats_t1[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    blocked_corrs_t2 = [mean(corr_mats_t2[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    temp_means =    blocked_means[2:end,:]
+    temp_corrs_t1 = blocked_corrs_t1[2:end]
+    temp_corrs_t2 = blocked_corrs_t2[2:end]
+    for i = 1:N_blocks-1
+        temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        jack_evs_t1 = eigen(mean(temp_corrs_t1)-temp_means_mat).values
+        jack_evs_t2 = eigen(mean(temp_corrs_t2)-temp_means_mat).values
+        jack_masses[i,:] = log.(jack_evs_t1 ./ jack_evs_t2)
+        temp_means[i,:]   =  blocked_means[i,:]
+        temp_corrs_t1[i]  =  blocked_corrs_t1[i]
+        temp_corrs_t2[i]  =  blocked_corrs_t2[i]
+    end
+    temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    jack_evs_t1 = eigen(mean(temp_corrs_t1)-temp_means_mat).values
+    jack_evs_t2 = eigen(mean(temp_corrs_t2)-temp_means_mat).values
+    jack_masses[N_blocks,:] = log.(jack_evs_t1 ./ jack_evs_t2)
+
+    mean_means = [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_evs_t1 = eigen(mean(corrs_t1) - [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]).values
+    mean_evs_t2 = eigen(mean(corrs_t2) - [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]).values
+    mass_means  = log.(mean_evs_t1 ./ mean_evs_t2)
+    σ = [sqrt((N_blocks-1) * mean((jack_masses[:,i] .- mass_means[i]).^2 )) for i = 1:num_vals]
+    return mass_means, σ
+end
+
+function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size, ev_nr)
+    N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
+    num_vals = size(corr_mats_t1[1],1)
+    ev_nr_intern = num_vals - ev_nr +1
+    jack_masses = Array{Float64}(undef, N_blocks, ev_nr_intern)
+    blocked_means = Array{Float64}(undef, N_blocks, ev_nr_intern)
+    for op = 1:num_vals
+        blocked_means[:,op] =  [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+    end
+    blocked_corrs_t1 = [mean(corr_mats_t1[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    blocked_corrs_t2 = [mean(corr_mats_t2[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    temp_means    = blocked_means[2:end,:]
+    temp_corrs_t1 = blocked_corrs_t1[2:end]
+    temp_corrs_t2 = blocked_corrs_t2[2:end]
+    for i = 1:N_blocks-1
+        temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        jack_evs_t1 = eigen(mean(temp_corrs_t1)-temp_means_mat).values[1:ev_nr_intern]
+        jack_evs_t2 = eigen(mean(temp_corrs_t2)-temp_means_mat).values[1:ev_nr_intern]
+        jack_masses[i,:] = log.(jack_evs_t1 ./ jack_evs_t2)
+        temp_means[i,:]   =  blocked_means[i,:]
+        temp_corrs_t1[i]  =  blocked_corrs_t1[i]
+        temp_corrs_t2[i]  =  blocked_corrs_t2[i]
+    end
+    temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    jack_evs_t1 = eigen(mean(temp_corrs_t1)-temp_means_mat).values[1:ev_nr_intern]
+    jack_evs_t2 = eigen(mean(temp_corrs_t2)-temp_means_mat).values[1:ev_nr_intern]
+    jack_masses[N_blocks,:] = log.(jack_evs_t1 ./ jack_evs_t2)
+
+    mean_means = [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_evs_t1 = eigen(mean(corrs_t1) - [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]).values
+    mean_evs_t2 = eigen(mean(corrs_t2) - [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]).values
+    mass_means  = log.(mean_evs_t1 ./ mean_evs_t2)
+    σ = [sqrt((N_blocks-1) * mean((jack_masses[:,i] .- mass_means[i]).^2 )) for i = 1:num_vals]
+    return mass_means, σ
+end
+
 
 #=
 function jack_conn_corr_mat_ev(corr_mats, mean_vals, b_size)
@@ -309,9 +385,9 @@ function jack_conn_corr_mat_ev(corr_mats, mean_vals, b_size)
     σ = [sqrt((N_blocks-1) * mean((jack_evs[:,i] .- mean_evs[i]).^2 )) for i = 1:num_vals]
     return mean_evs, σ
 end
-=#
 
 ### 🚧👷 Has to be made faster! 👷🚧
+### 🪄🔮 Has been  made faster! 🔮🪄
 function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size)
     N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
     num_vals = size(corr_mats_t1[1],1)
@@ -336,6 +412,7 @@ function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b
 end
 
 ### 🚧👷 Has to be made faster! 👷🚧
+### 🪄🔮 Has been  made faster! 🔮🪄
 function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size, ev_nr)
     N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
     num_vals = size(corr_mats_t1[1],1)
@@ -359,6 +436,7 @@ function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b
     σ = sqrt((N_blocks-1) * mean((jack_masses .- mass_mean).^2 ))
     return mass_mean, σ
 end
+=#
 
 # function jack_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, b_size, ev_nr)
 #     N_blocks = Int(div(length(corr_mats_t1), b_size, RoundDown))
@@ -385,29 +463,29 @@ function jack_conn_corr_mat_GEV(corr_mats_t2, corr_mats_t1, mean_vals, b_size)
     jack_evs = Array{Float64}(undef, N_blocks, num_vals)
     blocked_means = Array{Float64}(undef, N_blocks, num_vals)
     for op = 1:num_vals
-        blocked_means[:,op] = @views [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+        blocked_means[:,op] =  [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
     end
-    blocked_corrs_t2 = @views [mean(corr_mats_t2[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
-    blocked_corrs_t1 = @views [mean(corr_mats_t1[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
-    temp_means    = @views blocked_means[2:end,:]
-    temp_corrs_t2 = @views blocked_corrs_t2[2:end]
-    temp_corrs_t1 = @views blocked_corrs_t1[2:end]
+    blocked_corrs_t2 =  [mean(corr_mats_t2[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    blocked_corrs_t1 =  [mean(corr_mats_t1[(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+    temp_means    =  blocked_means[2:end,:]
+    temp_corrs_t2 =  blocked_corrs_t2[2:end]
+    temp_corrs_t1 =  blocked_corrs_t1[2:end]
     for i = 1:N_blocks-1
-        temp_mean_means = @views [mean(temp_means[:,op]) for op = 1:num_vals]
-        temp_means_mat  = @views [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        temp_mean_means =  [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  =  [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
         jack_evs[i,:]   = eigen(mean(temp_corrs_t2)-temp_means_mat, mean(temp_corrs_t1)-temp_means_mat).values
-        temp_means[i,:]  = @views blocked_means[i,:]
-        temp_corrs_t2[i] = @views blocked_corrs_t2[i]
-        temp_corrs_t1[i] = @views blocked_corrs_t1[i]
+        temp_means[i,:]  =  blocked_means[i,:]
+        temp_corrs_t2[i] =  blocked_corrs_t2[i]
+        temp_corrs_t1[i] =  blocked_corrs_t1[i]
     end
-    temp_mean_means = @views [mean(temp_means[:,op]) for op = 1:num_vals]
-    temp_means_mat  = @views [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    temp_mean_means =  [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  =  [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
     jack_evs[N_blocks,:] = eigen(mean(temp_corrs_t2)-temp_means_mat, mean(temp_corrs_t1)-temp_means_mat).values
 
-    mean_means = @views [mean(mean_vals[:,op]) for op = 1:num_vals]
-    mean_means_mat = @views [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
-    mean_corr_t2   = @views mean(corr_mats_t2)
-    mean_corr_t1   = @views mean(corr_mats_t1)
+    mean_means =  [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_means_mat =  [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    mean_corr_t2   =  mean(corr_mats_t2)
+    mean_corr_t1   =  mean(corr_mats_t1)
     mean_evs   = eigen(mean_corr_t2-mean_means_mat, mean_corr_t1-mean_means_mat).values
     σ = [sqrt((N_blocks-1) * mean((jack_evs[:,i] .- mean_evs[i]).^2 )) for i = 1:num_vals]
     return mean_evs, σ

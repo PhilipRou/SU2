@@ -7,7 +7,7 @@ using DelimitedFiles
 
 
 
-# #=
+#=
 for L  = 32:8:64
     println("Started L = $L")
     # for Δq = 0:6
@@ -42,7 +42,9 @@ for L  = 32:8:64
             chess_metro!(U,ϵ,β,acc_metro,group)
             ϵ *= sqrt(acc_metro[1] / acc_wish) # only update ϵ acc. to Metropolis
             global epsilon = deepcopy(ϵ)
-            println("\t\t Acceptance: $(round(acc_metro[1],digits = 3)), ϵ: $epsilon ")
+            if therm%Int(N_therm/10) == 0
+                println("\t\t Acceptance: $(round(acc_metro[1],digits = 3)), ϵ: $epsilon ")
+            end
         end
 
         println("\t L = $L, Δq = $Δq")
@@ -70,7 +72,7 @@ for L  = 32:8:64
             end
         end
 
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_2"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_3"
         metro_acc_path = string(base_path,"\\acc_metro_L_$(L)_deltaq_$Δq.txt")
         over_acc_path  = string(base_path,"\\acc_over_L_$(L)_deltaq_$Δq.txt")
         insta_acc_path = string(base_path,"\\acc_insta_L_$(L)_deltaq_$Δq.txt")
@@ -83,7 +85,7 @@ for L  = 32:8:64
         writedlm(charges_path, charges)
     # end
 end
-# =#
+=#
 
 
 
@@ -95,7 +97,8 @@ include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\a
 
 
 Ls = Vector(32:8:64)
-qs = Vector(0:6)
+# qs = Vector(0:6)
+qs = [2]
 betas = 5.0 .* Ls.^2 ./ 32^2
 
 insta_acc_all     = Array{Float64}(undef,length(qs),length(Ls))
@@ -118,7 +121,7 @@ for L_ind = 1:length(Ls)
     β  = betas[L_ind]
     for q_ind = 1:length(qs)
         Δq = qs[q_ind]        
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_1"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_2"
         metro_acc_path = string(base_path,"\\acc_metro_L_$(L)_deltaq_$Δq.txt")
         over_acc_path  = string(base_path,"\\acc_over_L_$(L)_deltaq_$Δq.txt")
         insta_acc_path = string(base_path,"\\acc_insta_L_$(L)_deltaq_$Δq.txt")
@@ -129,9 +132,11 @@ for L_ind = 1:length(Ls)
         insta_acc = readdlm(insta_acc_path)
         charges      = readdlm(charges_path)
         susc         = charges.^2 ./L^2 .* β ./4
-        even_charges = charges[(x->iseven(x)).(charges)]
-        odd_charges = charges[(x->isodd(x)).(charges)]
-        swil    = readdlm(actions_path) ./ (β*L^2)
+        even_charges = charges[(x->iseven(x)).(round.(Int,charges))]
+        odd_charges  = charges[(x->isodd(x)).(round.(Int,charges))]
+        even_susc = even_charges.^2 ./L^2 .* β ./4
+        odd_susc  = odd_charges.^2 ./L^2 .* β ./4
+        # swil = readdlm(actions_path) ./ (β*L^2)
 
         if isnan(auto_corr_time(insta_acc))
             insta_acc_all[q_ind,L_ind]     = insta_acc[1]
@@ -142,12 +147,21 @@ for L_ind = 1:length(Ls)
         end
         
         b_size_q = round(Int, 2*auto_corr_time(charges)+1, RoundUp) ### auto time of charges on purpose cause it's longer
+        @show b_size_q
         susc_all[q_ind,L_ind], susc_err_all[q_ind,L_ind] = jackknife(susc, b_size_q)
-        even_susc_all[q_ind,L_ind], even_susc_err_all[q_ind,L_ind] = jackknife(even_susc, b_size_q)
-        odd_susc_all[q_ind,L_ind], odd_susc_err_all[q_ind,L_ind] = jackknife(odd_susc, b_size_q)
+        if length(even_susc)>0
+            even_susc_all[q_ind,L_ind], even_susc_err_all[q_ind,L_ind] = jackknife(even_susc, b_size_q)
+        else
+            even_susc_all[q_ind,L_ind], even_susc_err_all[q_ind,L_ind] = [NaN,NaN]
+        end
+        if length(odd_susc)>0
+            odd_susc_all[q_ind,L_ind], odd_susc_err_all[q_ind,L_ind] = jackknife(odd_susc, b_size_q)
+        else
+            odd_susc_all[q_ind,L_ind], odd_susc_err_all[q_ind,L_ind] = [NaN,NaN]
+        end
         
-        b_size_swil = round(Int, 2*auto_corr_time(swil)+1, RoundUp)
-        swil_all[q_ind,L_ind], swil_err_all[q_ind,L_ind] = jackknife(swil, b_size_swil)
+        # b_size_swil = round(Int, 2*auto_corr_time(swil)+1, RoundUp)
+        # swil_all[q_ind,L_ind], swil_err_all[q_ind,L_ind] = jackknife(swil, b_size_swil)
 
         # display(plot(charges, title = "top. charge time series \n L = $L, Δq = $Δq, β = $β", label = :false))
     end
@@ -162,8 +176,8 @@ let
     shapes = [:circle, :utriangle, :diamond, :rtriangle, :star5, :dtriangle, :star8]
     image_acc = plot(
         xlabel = latexstring("inverse coupling \$\\beta\$"),
-        ylabel = "acceptance rate",
-        legend = :bottomright,
+        ylabel = "inst. acceptance rate",
+        # legend = :bottomright,
         background_color_legend = nothing,
         tickfontsize = 10,
         labelfontsize = 15,
@@ -206,10 +220,10 @@ let
     display(image_acc)
 end
 
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\acc_insta_update.pdf"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\acc_insta_update_2.pdf"
 # savefig(fig_path)
 
-tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\acc_insta_update.txt"
+tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\acc_insta_update_2.txt"
 bla = open(tab_path, "w")
 write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c||c|c|c|c|c|}\n")
 write(bla, "\t\t & \t \$L=$(Ls[1])\$ & \t \$L=$(Ls[2])\$ & \t \$L=$(Ls[3])\$ & \t \$L=$(Ls[4])\$ & \t \$L=$(Ls[5])\$ \t \\\\\n")
@@ -309,7 +323,7 @@ fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plot
 # savefig(fig_path)
 =#
 
-tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\susc_insta_update.txt"
+tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\susc_insta_update_2.txt"
 bla = open(tab_path, "w")
 write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c||c|c|c|c|c|}\n")
 write(bla, "\t\t & \t \$L=$(Ls[1])\$ & \t \$L=$(Ls[2])\$ & \t \$L=$(Ls[3])\$ & \t \$L=$(Ls[4])\$ & \t \$L=$(Ls[5])\$ \t \\\\\n")
@@ -317,11 +331,15 @@ write(bla, "\t\t \$\\Delta q\$ & \t \$L=$(betas[1])\$ & \t \$L=$(betas[2])\$ & \
 error_digs     = 2
 anal_digs_pre  = 1
 anal_digs_post = 8
-susc_str = format_x_err.(susc_all, susc_err_all, error_digs)
+susc_str      = format_x_err.(susc_all, susc_err_all, error_digs)
+even_susc_str = format_x_err.(even_susc_all, even_susc_err_all, error_digs)
+odd_susc_str  = format_x_err.(odd_susc_all, odd_susc_err_all, error_digs)
 for q_ind = 1:length(qs)-1
     write(bla, "\t\t $(qs[q_ind]) & \t $(susc_str[q_ind,1]) & \t $(susc_str[q_ind,2]) & \t $(susc_str[q_ind,3]) & \t $(susc_str[q_ind,4]) & \t $(susc_str[q_ind,5]) & \t \\\\\\hline\n ")
 end
-write(bla, "\t\t $(qs[5]) & \t $(susc_str[5,1]) & \t $(susc_str[5,2]) & \t $(susc_str[5,3]) & \t $(susc_str[5,4]) & \t $(susc_str[5,5]) & \t \\\\\\hline\\hline\n ")
+write(bla, "\t\t $(qs[end]) & \t $(susc_str[end,1]) & \t $(susc_str[end,2]) & \t $(susc_str[end,3]) & \t $(susc_str[end,4]) & \t $(susc_str[end,5]) & \t \\\\\\hline\\hline\n ")
+write(bla, "\t\t $(qs[end]), even & \t $(even_susc_str[end,1]) & \t $(even_susc_str[end,2]) & \t $(even_susc_str[end,3]) & \t $(even_susc_str[end,4]) & \t $(even_susc_str[end,5]) & \t \\\\\\hline\\hline\n ")
+write(bla, "\t\t $(qs[end]), odd & \t $(odd_susc_str[end,1]) & \t $(odd_susc_str[end,2]) & \t $(odd_susc_str[end,3]) & \t $(odd_susc_str[end,4]) & \t $(odd_susc_str[end,5]) & \t \\\\\\hline\\hline\n ")
 susc_anal_str = [@sprintf("%*.*f", anal_digs_pre, anal_digs_post, analytic_susc_U2(β)) for β in betas]
 write(bla, "\t\t anal. & \t $(susc_anal_str[1]) & \t $(susc_anal_str[2]) & \t $(susc_anal_str[3]) & \t $(susc_anal_str[4]) & \t $(susc_anal_str[5]) & \t \\\\\\hline\n")
 write(bla,"\t\\end{tabular}\n\t\\caption{Caption}\n\t\\label{tab:my_label}\n\\end{table}")
@@ -373,8 +391,8 @@ let
 end
 
 let
-    versatz = 0.05
-    betas_anal = 1:0.1:700
+    versatz = 0.002
+    betas_anal = 3:0.1:700
     susc_anal = [analytic_susc_U2(β)*β/4 for β in betas_anal]
 
     image_susc = plot(
@@ -392,32 +410,45 @@ let
         color = :black,
         linewidth = 1.5
     )
-    image_susc = scatter!(
-        1 ./ betas,
-        susc_all[3,:],
-        yerror = susc_err_all[3,:],
-        label = latexstring("all \$q\$"),
-        markershape = :diamond,
-        markersize = 5,
-        color = cb_blue
-    )
+    # image_susc = scatter!(
+    #     1 ./ betas,
+    #     susc_all[:],
+    #     yerror = susc_err_all[:],
+    #     label = latexstring("all \$q\$"),
+    #     markershape = :diamond,
+    #     markersize = 5,
+    #     color = cb_blue,
+    #     # markerstrokecolor = cb_blue
+    # )
     image_susc = scatter!(
         1 ./ betas .+ versatz,
-        even_susc_all[3,:],
-        yerror = even_susc_err_all[3,:],
+        even_susc_all[:],
+        yerror = even_susc_err_all[:],
         label = latexstring("even \$q\$ only"),
-        markershape = :utriangle,
-        markersize = 5,
-        color = cb_orange
+        markershape = :rtriangle,
+        markersize = 8,
+        color = cb_orange,
+        # markerstrokecolor = cb_orange
     )
     image_susc = scatter!(
         1 ./ betas .- versatz,
-        odd_susc_all[3,:],
-        yerror = odd_susc_err_all[3,:],
+        odd_susc_all[:],
+        yerror = odd_susc_err_all[:],
         label = latexstring("odd \$q\$ only"),
-        markershape = :dtriangle,
-        markersize = 5,
-        color = cb_green
+        markershape = :ltriangle,
+        markersize = 8,
+        color = cb_green,
+        # markerstrokecolor = cb_green
+    )
+    image_susc = scatter!(
+        1 ./ betas,
+        susc_all[:],
+        yerror = susc_err_all[:],
+        label = latexstring("all \$q\$"),
+        markershape = :diamond,
+        markersize = 6,
+        color = cb_blue,
+        # markerstrokecolor = cb_blue
     )
     image_susc = plot!(
         [1/betas_anal[1]],
@@ -426,3 +457,6 @@ let
         color = :black
     )
 end
+
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update_2_eo.pdf"
+# savefig(fig_path)
