@@ -6,7 +6,7 @@ using LinearAlgebra
 using DelimitedFiles
 
 # Crazy outdated⭕⭕⭕
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
 include("SU2_observables.jl")
 include("SU2_observables_hex.jl")
 include("SU2_updates.jl")
@@ -150,8 +150,8 @@ adjoint_test()
 
 # function read_last_config_test()
 #     test_config = gaugefield_SU2(4,4,true)
-#     writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt", test_config.U)
-#     recon = read_last_config("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_config.txt")
+#     writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test_config.txt", test_config.U)
+#     recon = read_last_config("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test_config.txt")
 #     # ⭕ For some reason (test_config == recon) = false, hence check all attributes individually: ⭕
 #     @assert test_config.U           == recon.U
 #     @assert test_config.N_t         == recon.N_t
@@ -185,11 +185,11 @@ end
 mod1_homebrew_test()
 
 # function test_mywrite()
-#     rm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
+#     rm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
 #     for i = 1:10
-#         mywrite("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt",i)
+#         mywrite("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt",i)
 #     end
-#     bla = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
+#     bla = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test_mywrite.txt")
 #     @assert Int.(bla[:,1]) == collect(1:10)
 #     return true
 # end
@@ -199,8 +199,8 @@ mod1_homebrew_test()
 #=
 function mywrite_last_conf_test()
     V = gaugefield_SU2(N_t,N_x,true)
-    mywrite("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt", V)
-    W = read_last_conf("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt")
+    mywrite("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt", V)
+    W = read_last_conf("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\test_data\\mywrite_config_test.txt")
     for μ = 1:2
         for t = 1:N_t
             for x = 1:N_x
@@ -630,10 +630,10 @@ end
 #     return true
 # end
 
-# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test3.txt", "a")
+# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test3.txt", "a")
 # write(bla, "Surely this will work \n")
 # close(bla)
-# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\test_data\\test3.txt", "a")
+# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\test_data\\test3.txt", "a")
 # write(bla, "Surely this will work ALSO \n")
 # close(bla)
 

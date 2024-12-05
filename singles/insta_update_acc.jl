@@ -1,7 +1,7 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-# include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+# include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 using DelimitedFiles
 
@@ -72,7 +72,7 @@ for L  = 32:8:64
             end
         end
 
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_3"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\U2_data_new\\acc_3"
         metro_acc_path = string(base_path,"\\acc_metro_L_$(L)_deltaq_$Δq.txt")
         over_acc_path  = string(base_path,"\\acc_over_L_$(L)_deltaq_$Δq.txt")
         insta_acc_path = string(base_path,"\\acc_insta_L_$(L)_deltaq_$Δq.txt")
@@ -91,8 +91,8 @@ end
 
 
 
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_jackknives.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\analyze\\SU2_jackknives.jl")
 
 
 
@@ -121,7 +121,7 @@ for L_ind = 1:length(Ls)
     β  = betas[L_ind]
     for q_ind = 1:length(qs)
         Δq = qs[q_ind]        
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data_new\\acc_2"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\U2_data_new\\acc_2"
         metro_acc_path = string(base_path,"\\acc_metro_L_$(L)_deltaq_$Δq.txt")
         over_acc_path  = string(base_path,"\\acc_over_L_$(L)_deltaq_$Δq.txt")
         insta_acc_path = string(base_path,"\\acc_insta_L_$(L)_deltaq_$Δq.txt")
@@ -220,10 +220,10 @@ let
     display(image_acc)
 end
 
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\acc_insta_update_2.pdf"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\insta_updates\\acc_insta_update_2.pdf"
 # savefig(fig_path)
 
-tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\acc_insta_update_2.txt"
+tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\tabellen\\insta_updates\\acc_insta_update_2.txt"
 bla = open(tab_path, "w")
 write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c||c|c|c|c|c|}\n")
 write(bla, "\t\t & \t \$L=$(Ls[1])\$ & \t \$L=$(Ls[2])\$ & \t \$L=$(Ls[3])\$ & \t \$L=$(Ls[4])\$ & \t \$L=$(Ls[5])\$ \t \\\\\n")
@@ -319,11 +319,11 @@ let
     display(image_susc)
 end
 
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update.pdf"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update.pdf"
 # savefig(fig_path)
 =#
 
-tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\insta_updates\\susc_insta_update_2.txt"
+tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\tabellen\\insta_updates\\susc_insta_update_2.txt"
 bla = open(tab_path, "w")
 write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c||c|c|c|c|c|}\n")
 write(bla, "\t\t & \t \$L=$(Ls[1])\$ & \t \$L=$(Ls[2])\$ & \t \$L=$(Ls[3])\$ & \t \$L=$(Ls[4])\$ & \t \$L=$(Ls[5])\$ \t \\\\\n")
@@ -458,5 +458,5 @@ let
     )
 end
 
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update_2_eo.pdf"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update_2_eo.pdf"
 # savefig(fig_path)

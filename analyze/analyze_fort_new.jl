@@ -15,7 +15,7 @@ include("SU2_jackknives.jl")
 
     n_op = 16 # length(smearlist)
 
-    base_path               = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
+    base_path               = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\fortran_projects\\SU2_3D_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
     timeseries_path         = base_path * "_hist_3D.txt"
     timeseries_2Dsmear_path = base_path * "_hist_2D.txt"
     corr_path               = base_path * "_crosscorr.txt"
@@ -54,15 +54,15 @@ include("SU2_jackknives.jl")
     push!(corrmats_symm, corrmats[Nz>>1][:]);
     
     ### Symmetrize every corr. matrix (in operator space)
-    for t = 1:Nz>>1+1
+    @time for t = 1:Nz>>1+1
+        @show t
         corrmats_symm[t] = (corrmats_symm[t] .+ transpose.(corrmats_symm[t])) ./ 2
-        @assert !(0 in ishermitian.(corrmats_symm[t])) "There are non-hermitian correlation matrices for t = $t"
+        @assert !(false in ishermitian.(corrmats_symm[t])) "There are non-hermitian correlation matrices for t = $t"
     end
 
-    round.(mean(corrmats_symm[1]), sigdigits = 4)
-    # eigen(mean(corrmats_symm[1])[1:4,1:4]).values
-    # bla = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\stephans_mat.txt")
-    # eigen(bla[1:4,1:4]).values
+    
+
+
 
     ### Connected correlators of individual smeared s_wil series
     corr_con_mean = Array{Float64}(undef, length(smearlist)-1, Nz>>1+1);
@@ -97,21 +97,22 @@ include("SU2_jackknives.jl")
 # end # beta
 
 
-    
+
+#=
     ### EVs of correlation matrices
-    # evs      = Array{Float64}(undef, Nz>>1+1, n_op)
-    # evs_errs = Array{Float64}(undef, Nz>>1+1, n_op)
+    evs      = Array{Float64}(undef, Nz>>1+1, n_op)
+    evs_errs = Array{Float64}(undef, Nz>>1+1, n_op)
         # evs      = Array{Float64}(undef, Nz>>1+1, 4)    ### for debugging purposes 🚧
         # evs_errs = Array{Float64}(undef, Nz>>1+1, 4)    ### for debugging purposes 🚧
-        evs      = Array{Float64}(undef, Nz>>1+1, 8)    ### for debugging purposes 🚧
-        evs_errs = Array{Float64}(undef, Nz>>1+1, 8)    ### for debugging purposes 🚧
-    @time for t = 1:Nz>>1+1
+        # evs      = Array{Float64}(undef, Nz>>1+1, 8)    ### for debugging purposes 🚧
+        # evs_errs = Array{Float64}(undef, Nz>>1+1, 8)    ### for debugging purposes 🚧
+    @time for t = 1: Nz>>1+1
         @show t
-        # jack = jack_conn_corr_mat_ev(corrmats_symm[t], ops_smeared, maximum([bsize_corrmats,bsize_ops_smeared]))
+        jack = jack_conn_corr_mat_ev(corrmats_symm[t], ops_smeared, maximum([bsize_corrmats,bsize_ops_smeared]))
         ### for debugging purposes 🚧:
             # jack = jack_conn_corr_mat_ev([corrmats_symm[t][meas][1:4,1:4] for meas = 1:n_meas], ops_smeared[:,1:4], maximum([bsize_corrmats,bsize_ops_smeared]))
             # jack = jack_conn_corr_mat_ev([corrmats_symm[t][meas][1:8,1:8] for meas = 1:n_meas], ops_smeared[:,1:8], maximum([bsize_corrmats,bsize_ops_smeared]))
-            jack = jack_conn_corr_mat_ev([corrmats_symm[t][meas][9:16,9:16] for meas = 1:n_meas], ops_smeared[:,9:16], maximum([bsize_corrmats,bsize_ops_smeared]))
+            # jack = jack_conn_corr_mat_ev([corrmats_symm[t][meas][9:16,9:16] for meas = 1:n_meas], ops_smeared[:,9:16], maximum([bsize_corrmats,bsize_ops_smeared]))
         evs[t,:]      = reverse(jack[1])
         evs_errs[t,:] = reverse(jack[2])
     end
@@ -146,8 +147,89 @@ include("SU2_jackknives.jl")
         # writedlm(bli, evs_errs)
         # close(bli)
     end
-# end # beta
+=#
 
+    
+    ### EVs and EV-masses of connected parts of correlation matrices
+    evs        = Array{Float64}(undef, Nz>>1+1, n_op)
+    evs_errs   = Array{Float64}(undef, Nz>>1+1, n_op)
+    m_evs      = Array{Float64}(undef, Nz>>1, 3)
+    m_evs_errs = Array{Float64}(undef, Nz>>1, 3)
+    @time for t = 1:Nz>>1
+        @show t
+        jack = jack_conn_corr_mat_ev_mass_2pt(corrmats_symm[t], corrmats_symm[t+1], ops_smeared, maximum([bsize_corrmats,bsize_ops_smeared]),3)
+        m_evs[t,:]      = jack[1]
+        m_evs_errs[t,:] = jack[2]
+        evs[t,:]        = jack[3]
+        evs_errs[t,:]   = jack[4]
+        if t == Nz>>1
+            jack_last_evs = jack_conn_corr_mat_ev(corrmats_symm[Nz>>1+1], ops_smeared, maximum([bsize_corrmats,bsize_ops_smeared]))
+            evs[Nz>>1+1,:]      = jack_last_evs[1]
+            evs_errs[Nz>>1+1,:] = jack_last_evs[2]
+        end
+    end
+
+    let
+        image_conn_evs = plot(
+            title  = latexstring("EV's of conn. corr. 16² mats. \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
+            xlabel = latexstring("\$t\$"),
+            )
+        for i = 1:size(evs,2)
+            image_conn_evs = scatter!(
+                Vector(0:Nz>>1) .+ (i-1)*0.05,
+                evs[:,i],
+                yerror = evs_errs[:,i],
+                label = latexstring("EV nr. \$$i\$"),
+                markerstrokecolor = :auto,
+                ylim = (1e-16, 1e-3),
+                yaxis = :log,
+                legend = :outerright
+            )
+        end
+        display(image_conn_evs)
+    # end
+    # let
+        image_conn_evs_masses = plot(
+            title  = latexstring("2pt Masses of EV's of conn. corr. 16² mats. \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
+            xlabel = latexstring("\$t\$"),
+            )
+        for i = 1:3
+            image_conn_evs_masses = scatter!(
+                Vector(0:Nz>>1) .+ (i-1)*0.05,
+                m_evs[:,i],
+                yerror = m_evs_errs[:,i],
+                label = latexstring("EV nr. \$$i\$"),
+                markerstrokecolor = :auto,
+                # ylim = (1e-16, 1e-3),
+                # yaxis = :log,
+                legend = :outerright
+            )
+        end
+        display(image_conn_evs_masses)
+    end
+
+    let
+        # evs_path = base_path * "_evs.txt"
+        # bla = open(evs_path, "w")
+        # writedlm(bla, evs)
+        # close(bla)
+        # evs_errs_path = base_path * "_evs_errs.txt"
+        # bli = open(evs_errs_path, "w")
+        # writedlm(bli, evs_errs)
+        # close(bli)
+    # end
+    # let
+        # m_evs_path = base_path * "_m_evs.txt"
+        # bla = open(m_evs_path, "w")
+        # writedlm(bla, m_evs)
+        # close(bla)
+        # m_evs_errs_path = base_path * "_m_evs_errs.txt"
+        # bli = open(m_evs_errs_path, "w")
+        # writedlm(bli, m_evs_errs)
+        # close(bli)
+    end
+
+    
 
 
     ### GEVs of the correlation matrices
@@ -167,8 +249,8 @@ include("SU2_jackknives.jl")
             # jack = jack_conn_corr_mat_GEV([corrmats_symm[t][meas][1:4,1:4] for meas = 1:n_meas], [corrmats_symm[t0][meas][1:4,1:4] for meas = 1:n_meas], ops_smeared[:,1:4], maximum([bsize_corrmats,bsize_ops_smeared]))
             # jack = jack_conn_corr_mat_GEV([corrmats_symm[t][meas][1:8,1:8] for meas = 1:n_meas], [corrmats_symm[t0][meas][1:8,1:8] for meas = 1:n_meas], ops_smeared[:,1:8], maximum([bsize_corrmats,bsize_ops_smeared]))
             jack = jack_conn_corr_mat_GEV([corrmats_symm[t][meas][9:16,9:16] for meas = 1:n_meas], [corrmats_symm[t0][meas][9:16,9:16] for meas = 1:n_meas], ops_smeared[:,9:16], maximum([bsize_corrmats,bsize_ops_smeared]))
-            GEVs[t-t0,:]  = reverse(jack[1])
-        GEVs_errs[t-t0,:] = reverse(jack[2])
+            GEVs[t-t0,:]  = jack[1]
+        GEVs_errs[t-t0,:] = jack[2]
     end
 
     let

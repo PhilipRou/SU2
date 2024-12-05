@@ -1,9 +1,9 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\analyze\\SU2_jackknives.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\analyze\\SU2_analyze_head.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\analyze\\SU2_jackknives.jl")
 
 
 using Plots
@@ -17,10 +17,10 @@ using Statistics
 using QuadGK
 using Measures
 
-data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\data"
-# data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS" 
-# fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\plots"
-fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Lattice_projects\\Lattice2024\\PoS"
+data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Lattice_projects\\Lattice2024\\data"
+# data_path ="C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Lattice_projects\\Lattice2024\\PoS" 
+# fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Lattice_projects\\Lattice2024\\plots"
+fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Lattice_projects\\Lattice2024\\PoS"
 
 function insta_action_U2_min(β, N_x, N_t, q)
     return β*N_x*N_t*(1-cos(q*π/N_x/N_t))
@@ -575,7 +575,7 @@ let
     N_sepa    = 100
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = string(data_path, "\\smearing") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
+    base_path = string(data_path, "\\smearing") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
 
     acc_therm = [0.0]
     U = gaugefield(N_x, N_t, true, "U2", "square")
@@ -806,7 +806,7 @@ let
     N_sepa    = 100
     acc_wish  = 0.8
     ϵ         = 0.1
-    base_path = string(data_path, "\\smearing_new") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
+    base_path = string(data_path, "\\smearing_new") # "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\U2_data\\square_data\\sms\\sms_data_18"
 
     acc_therm = [0.0]
     U = gaugefield(N_x, N_t, true, "U2", "square")

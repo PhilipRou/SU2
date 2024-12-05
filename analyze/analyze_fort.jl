@@ -15,7 +15,7 @@ include("SU2_jackknives.jl")
     n_op = length(smearlist)
     small_inds = 2:length(smearlist)
 
-    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\fortran_projects\\SU2_3D_data\\good_old_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
+    base_path         = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\fortran_projects\\SU2_3D_data\\good_old_data\\beta_$(beta)_Nz_$(Nz)_Nx_$(Nx)_smearlist_rho_2D_$(rho_2D)"
     timeseries_path   = base_path * ".txt"
     corr_path         = base_path * "_crosscorr.txt"
     swil_smeared_path = base_path * "_swil_smeared.txt"

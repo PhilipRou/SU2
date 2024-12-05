@@ -74,9 +74,9 @@ for L = 32:32:128
         loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]#, [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
         num_loops = length(loops)
 
-        # base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
+        # base_base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ" 
         # base_path = string(base_base_path, "\\sim_count_$sim_count")
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
         # mean_vals_path = string(base_path,"\\mean_vals.txt")
         mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
         L_loop_means_path = string(base_path,"\\L_loop_means.txt")
@@ -168,7 +168,7 @@ for L = 32:32:128
 
         sim_count = 3
         N_t = 2*L
-        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+        base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
         mean_vals_path = string(base_path,"\\mean_vals.txt")
         L_loop_means_path = string(base_path,"\\L_loop_means.txt")
         edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
@@ -231,7 +231,7 @@ for L = 32:32:128
 
             # sim_count = 2
             # N_t = L
-            # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+            # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
             # mean_vals_path = string(base_path,"\\mean_vals.txt")
             # L_loop_means_path = string(base_path,"\\L_loop_means.txt")
             # edge_loop_means_path = string(base_path,"\\edge_loop_means.txt")
@@ -305,8 +305,8 @@ for L = 32:32:128
 
 
         display(image)
-        # mkpath("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β")
-        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_many_beta_$β._L_$L.pdf")
+        # mkpath("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β")
+        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_many_beta_$β._L_$L.pdf")
 
 
         #=
@@ -346,7 +346,7 @@ for L = 32:32:128
 
         display(image_zoom_1)
 
-        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_zoom_1_beta_$β._L_$L.pdf")
+        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_zoom_1_beta_$β._L_$L.pdf")
 
 
         int_zoom_2 = [4,5,6,11,12]
@@ -384,7 +384,7 @@ for L = 32:32:128
             markersize = 10)
 
         display(image_2)
-        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_zoom_2_beta_$β._L_$L.pdf")
+        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_loops\\beta_$β\\compare_loops_zoom_2_beta_$β._L_$L.pdf")
 
 
         # all_jack_means
@@ -409,9 +409,9 @@ for L = 32:32:128
         =#
 
         
-        fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.pdf"
+        fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.pdf"
         # savefig(fig_path)
-        tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.txt"
+        tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\tabellen\\WRT_square_hex_anal\\WRT_sha_beta_$(β)_L_$L.txt"
         err_digs  = 2
         anal_digs_pre  = 1
         anal_digs_post = 7
@@ -509,10 +509,10 @@ for L = 32:32:128
     )
         
     display(image_plaq_anal)
-    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\plaq_square_hex_anal\\swil_sha_L_$L.pdf"
+    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\plaq_square_hex_anal\\swil_sha_L_$L.pdf"
     # savefig(fig_path)
 
-    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\plaq_square_hex_anal\\swil_sha_L_$L.txt"
+    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\tabellen\\plaq_square_hex_anal\\swil_sha_L_$L.txt"
     bla = open(tab_path, "w")
     write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
     write(bla, "\t\t \$\\beta\$ &\t square &\t hex &\t analyt. \t \\\\\\hline\n")
@@ -553,7 +553,7 @@ for β in [2.0, 4.0, 6.0, 8.0]
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
     means = readdlm(mean_vals_mike_path)
@@ -596,7 +596,7 @@ for β in [2.0, 4.0, 6.0, 8.0]
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_hex_path = string(base_path,"\\mean_vals.txt")
 
     means_hex = readdlm(mean_vals_hex_path)
@@ -629,8 +629,8 @@ for β in [2.0, 4.0, 6.0, 8.0]
     xlabel = "R and T in {⟨W(R,T)⟩ ⟨W(R+1,T+1)⟩} / {⟨W(R+1,T)⟩ ⟨W(R,T+1)⟩}")
     display(image)
 
-    # mkpath("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\beta_$β")
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\beta_$β\\ratios_beta_$β._N_x_$L.pdf")
+    # mkpath("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\beta_$β")
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\beta_$β\\ratios_beta_$β._N_x_$L.pdf")
 
     push!(hex_best, ratio_means_hex[1])
     push!(hex_best_err, ratio_mean_errs_hex[1])
@@ -708,10 +708,10 @@ let
         background_color_legend = :false
     )
     display(image_creutz_compare)
-    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\plots\\string_square_hex_anal\\string_sha_L_$L.pdf"
+    fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\string_square_hex_anal\\string_sha_L_$L.pdf"
     # savefig(fig_path)
 
-    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\tabellen\\string_square_hex_anal\\string_sha_L_$L.txt"
+    tab_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\tabellen\\string_square_hex_anal\\string_sha_L_$L.txt"
     bla = open(tab_path, "w")
     write(bla, "\\begin{table}[H]\n\t\\centering\n\t\\hline\n\t\\begin{tabular}{|c|c|c|c|}\n")
     write(bla, "\t\t \$\\beta\$ &\t square &\t hex &\t analyt. \t \\\\\\hline\n")
@@ -728,7 +728,7 @@ let
     close(bla)
 end
 # end
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_fav_ratios_N_x_$L.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_fav_ratios_N_x_$L.pdf")
 
 
 
@@ -756,7 +756,7 @@ for β in betas
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
     means = readdlm(mean_vals_mike_path)
@@ -781,7 +781,7 @@ for β in betas
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_hex_path = string(base_path,"\\mean_vals.txt")
 
     means_hex = readdlm(mean_vals_hex_path)
@@ -873,10 +873,10 @@ for i = 1:4
     end
 end
 
-# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_strings_N_x_$L.txt", "w")
+# bla = open("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_strings_N_x_$L.txt", "w")
 # writedlm(bla, info)
 # close(bla)
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_strings_N_x_$L.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_strings_N_x_$L.pdf")
 
 
 
@@ -903,7 +903,7 @@ for β in betas
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\square_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
     means = readdlm(mean_vals_mike_path)
@@ -928,7 +928,7 @@ for β in betas
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4]]
     num_loops = length(loops)
 
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_hex_path = string(base_path,"\\mean_vals.txt")
 
     means_hex = readdlm(mean_vals_hex_path)
@@ -984,7 +984,7 @@ image_spaces = plot!(
 )
 display(image_spaces)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_spacings_N_x_$L.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_spacings_N_x_$L.pdf")
 
 
 
@@ -1057,7 +1057,7 @@ println(" ")
 println(" ")
 =#
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_spacings_N_x_$L.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\data\\hex_data\\compare_creutz\\compare_spacings_N_x_$L.pdf")
 
 
 

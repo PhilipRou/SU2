@@ -324,8 +324,8 @@ function read_config_U3(path)
     return [reshape(blub[t+(x-1)*L+(μ-1)*L^2,:], N, N) for μ = 1:2, x = 1:L, t = 1:L] 
 end
 
-# write_conf_U3(U,"C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\conf3.txt")
-# bla = read_config_U3("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\conf3.txt");
+# write_conf_U3(U,"C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\conf3.txt")
+# bla = read_config_U3("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\conf3.txt");
 # # U == bla # true
 
 

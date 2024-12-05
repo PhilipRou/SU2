@@ -1,7 +1,7 @@
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
-include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\observables\\smearing.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\gaugefields\\gaugefields.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\updates\\updates_square.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\observables_square.jl")
+include("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\observables\\smearing.jl")
 
 using Plots
 using LsqFit
@@ -277,7 +277,7 @@ end
 image_insta = plot!(xlims = [-10.5, 10.5], ylims = [0.01,0.5], legend = :bottomleft, background_color_legend = "rgba(100%,100%,100%,60%)", foreground_color_legend = :false)
 image_insta = plot!(yaxis = :log)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_zoom.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\local_minima_2D_U3_zoom.pdf")
 
 
 let
@@ -324,7 +324,7 @@ end
 image_insta = plot!(xlims = [-10.5, 10.5], ylims = [-0.03,0.5], legend = :bottomleft, background_color_legend = "rgba(100%,100%,100%,60%)", foreground_color_legend = :false)
 image_insta = plot!(yaxis = :log)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_zoom.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\local_minima_2D_U2_zoom.pdf")
 
 
 
@@ -344,7 +344,7 @@ for z = -2:2
 end
 display(image_insta)
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U2_Q_cont.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\local_minima_2D_U2_Q_cont.pdf")
 
 
 
@@ -403,7 +403,7 @@ let
     display(image_einh)
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\global_minima_2D_U3.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\global_minima_2D_U3.pdf")
 
 
 
@@ -447,7 +447,7 @@ let
     display(image_einh)
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\global_minima_2D_U2.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\global_minima_2D_U2.pdf")
 
 
 
@@ -522,7 +522,7 @@ let
     display(image_einh)
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\global_minima_2D_U4.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\global_minima_2D_U4.pdf")
 
 
 
@@ -646,7 +646,7 @@ let
     display(image_action_z)
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\insta_actions_z_U2_zoomout.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\insta_actions_z_U2_zoomout.pdf")
 
 
 
@@ -714,7 +714,7 @@ let
     display(image_insta)
 end
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\Master_Thesis\\local_minima_2D_U3_spec.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\local_minima_2D_U3_spec.pdf")
 
 
 let 

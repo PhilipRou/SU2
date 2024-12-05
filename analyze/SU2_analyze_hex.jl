@@ -17,8 +17,8 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -55,7 +55,7 @@ for L = 32:32:128
     # xticks = 13:16)
     display(image)
 
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\mikes_loops_zoomed_beta_$β._N_t_$N_t.pdf")
 end
 
 
@@ -74,8 +74,8 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -116,7 +116,7 @@ for L = 32:32:128
     # xticks = int_start:int_end)
     display(image)
 
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\ratios_zoomed_beta_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\ratios_zoomed_beta_$β._N_t_$N_t.pdf")
 end
 
 
@@ -138,8 +138,8 @@ for L = 32:32:128
     loops   = [[1,1], [1,2], [2,1], [2,2], [2,3], [3,2], [3,3], [3,4], [4,3], [4,4], [4,5], [5,4], [5,5], [5,6], [6,5], [6,6]]
     num_loops = length(loops)
 
-    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
-    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    # base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\N_t_$N_t.N_x_$N_x._beta_$β._eps_$ϵ\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
+    base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2_data\\hex_data\\beta_$β\\N_t_$N_t.N_x_$N_x\\n_stout_$n_stout._rho_$ρ\\sim_count_$sim_count"
     mean_vals_path = string(base_path,"\\mean_vals.txt")
     # mean_vals_mike_path = string(base_path,"\\mean_vals_mike.txt")
 
@@ -221,7 +221,7 @@ for L = 32:32:128
     # xticks = 1:num_ratios)
     display(image)
 
-    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\strings_beta_$β._N_t_$N_t.pdf")
+    # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\strings_beta_$β._N_t_$N_t.pdf")
 
     push!(first_strings, strings[1])
     push!(first_string_errs_m, string_errs_m[1])
@@ -245,14 +245,14 @@ image_sqrts = scatter(
     markerstrokecolor = :auto
 )
 
-# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrts.pdf")
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrts.pdf")
 
 
 
 
-# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrts.txt", string_sqrts)
-# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrt_errs_m.txt", string_sqrt_errs_m)
-# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrt_errs_p.txt", string_sqrt_errs_p) 
+# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrts.txt", string_sqrts)
+# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrt_errs_m.txt", string_sqrt_errs_m)
+# writedlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\SU2\\hex_data\\creutz_ratios\\beta_$β\\string_sqrt_errs_p.txt", string_sqrt_errs_p) 
 
 
 
