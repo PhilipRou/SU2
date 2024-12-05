@@ -169,6 +169,13 @@ include("SU2_jackknives.jl")
         end
     end
 
+    @time bla = jack_conn_corr_mat_ev_mass_2pt_allofem(corrmats_symm, ops_smeared, 2, 3)
+    
+    m_evs_alt      = bla[1]
+    m_evs_errs_alt = bla[2]
+    evs_alt        = bla[3]
+    evs_errs_alt   = bla[4]
+
     let
         image_conn_evs = plot(
             title  = latexstring("EV's of conn. corr. 16² mats. \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
@@ -177,8 +184,8 @@ include("SU2_jackknives.jl")
         for i = 1:size(evs,2)
             image_conn_evs = scatter!(
                 Vector(0:Nz>>1) .+ (i-1)*0.05,
-                evs[:,i],
-                yerror = evs_errs[:,i],
+                evs_alt[:,i],
+                yerror = evs_errs_alt[:,i],
                 label = latexstring("EV nr. \$$i\$"),
                 markerstrokecolor = :auto,
                 ylim = (1e-16, 1e-3),
@@ -187,8 +194,8 @@ include("SU2_jackknives.jl")
             )
         end
         display(image_conn_evs)
-    # end
-    # let
+    end
+    let
         image_conn_evs_masses = plot(
             title  = latexstring("2pt Masses of EV's of conn. corr. 16² mats. \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
             xlabel = latexstring("\$t\$"),
@@ -196,8 +203,8 @@ include("SU2_jackknives.jl")
         for i = 1:3
             image_conn_evs_masses = scatter!(
                 Vector(0:Nz>>1) .+ (i-1)*0.05,
-                m_evs[:,i],
-                yerror = m_evs_errs[:,i],
+                m_evs_alt[:,i],
+                yerror = m_evs_errs_alt[:,i],
                 label = latexstring("EV nr. \$$i\$"),
                 markerstrokecolor = :auto,
                 # ylim = (1e-16, 1e-3),
@@ -228,6 +235,7 @@ include("SU2_jackknives.jl")
         # writedlm(bli, m_evs_errs)
         # close(bli)
     end
+
 
     
 
