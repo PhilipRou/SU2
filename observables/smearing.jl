@@ -559,11 +559,11 @@ function stout_cube_timeslice(U,ρ)
     return V
 end
 
-bla = gaugefield_SU2_cube(8, 8, true);
-bli = stout_cube_timeslice(bla, 0.24);
-# # coeffs_SU2(0.0, 0.0, 0.0, 0.0) in bli
-blub = stout(bla[1:2,:,:,1], 0.24);
-false in isapprox.(bli[1:2,:,:,1], blub)
+# bla = gaugefield_SU2_cube(8, 8, true);
+# bli = stout_cube_timeslice(bla, 0.24);
+# # # coeffs_SU2(0.0, 0.0, 0.0, 0.0) in bli
+# blub = stout(bla[1:2,:,:,1], 0.24);
+# false in isapprox.(bli[1:2,:,:,1], blub)
 
 
 function stout_cube_timeslice(U, n_stout, ρ)
