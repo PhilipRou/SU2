@@ -140,7 +140,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = evs_errs_ul[:,i],
                 label = latexstring("EV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-16, 1e-3),
+                ylim = (1e-16, 10*maximum(evs_ul)),
                 yaxis = :log,
                 legend = :topright
             )
@@ -217,7 +217,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = evs_errs_dr[:,i],
                 label = latexstring("EV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-16, 1e-3),
+                ylim = (1e-16, 10*maximum(evs_dr)),
                 yaxis = :log,
                 legend = :topright
             )
@@ -294,7 +294,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = evs_errs[:,i],
                 label = latexstring("EV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-16, 1e-3),
+                ylim = (1e-16, 10*maximum(evs)),
                 yaxis = :log,
                 legend = :topright,
                 rightmargin = 5mm
@@ -402,7 +402,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = GEVs_errs_ul[:,i],
                 label = latexstring("GEV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-4, 1.0),
+                ylim = (1e-4, 10*maximum(GEVs_ul)),
                 yaxis = :log,
                 legend = :topright
             )
@@ -478,7 +478,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = GEVs_errs_dr[:,i],
                 label = latexstring("GEV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-4, 1.0),
+                ylim = (1e-4, 10*maximum(GEVs_dr)),
                 yaxis = :log,
                 legend = :topright
             )
@@ -554,7 +554,7 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
                 yerror = GEVs_errs[:,i],
                 label = latexstring("GEV nr. \$$i\$"),
                 markerstrokecolor = :auto,
-                ylim = (1e-4, 1.0),
+                ylim = (1e-4, 10*maximum(GEVs)),
                 yaxis = :log,
                 legend = :topright
             )
@@ -607,5 +607,5 @@ for beta in [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0] #6.0:1.5:15.0
     end
 
 
-    
+
 end # beta
