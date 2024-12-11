@@ -446,6 +446,110 @@ function jack_conn_corr_mat_ev_mass_2pt_allofem(corr_mats_array, mean_vals, b_si
 end
 
 
+### NOT TO BE USED, WHY DID I WRITE THIS THING?!
+function jack_conn_corr_mat_ev_mass_2pt_allofem_plateau(corr_mats_array, mean_vals, b_size, n_masses, massplateau_range_1, massplateau_range_2)
+    N_blocks = Int(div(length(corr_mats_array[1]), b_size, RoundDown))
+    num_vals = size(corr_mats_array[1][1],1)
+    T_max = length(corr_mats_array)
+    jack_evs = Array{Float64}(undef, N_blocks, num_vals, T_max)
+    jack_masses = Array{Float64}(undef, N_blocks, n_masses, T_max-1) # n_masses instead of num_vals
+    jack_plateau_masses_1 = Array{Float64}(undef, N_blocks)
+    jack_plateau_masses_2 = Array{Float64}(undef, N_blocks)
+    blocked_means = Array{Float64}(undef, N_blocks, num_vals)
+    for op = 1:num_vals
+        blocked_means[:,op] = [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+    end
+    temp_means = blocked_means[2:end,:]
+    blocked_corrs = Vector{Vector{Matrix{Float64}}}(undef, T_max)
+    temp_corrs = Vector{Vector{Matrix{Float64}}}(undef, T_max)
+    for t = 1:T_max
+        blocked_corrs[t] = [mean(corr_mats_array[t][(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+        temp_corrs[t] = blocked_corrs[t][2:end]
+    end
+    for i = 1:N_blocks-1
+        temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        for t = 1:T_max
+            jack_evs[i,:,t] = reverse(eigvals(mean(temp_corrs[t]) - temp_means_mat))
+        end
+
+        for t = 1:T_max-1
+            for j = 1:n_masses
+                bla = jack_evs[i,j,t] / jack_evs[i,j,t+1]
+                if bla > 0.0
+                    jack_masses[i,j,t] = log(bla)
+                else
+                    jack_masses[i,j,t] = NaN
+                end
+            end
+        end
+
+        jack_plateau_masses_1[i] = mean(jack_masses[i, 1, massplateau_range_1])
+        jack_plateau_masses_2[i] = mean(jack_masses[i, 2, massplateau_range_2])
+
+        temp_means[i,:]  = blocked_means[i,:]
+        for t = 1:T_max
+            temp_corrs[t][i] = blocked_corrs[t][i]
+        end
+    end
+    temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    for t = 1:T_max
+        jack_evs[N_blocks,:,t] = reverse(eigvals(mean(temp_corrs[t]) - temp_means_mat))
+    end
+
+    for t = 1:T_max-1
+        for j = 1:n_masses
+            bla = jack_evs[N_blocks,j,t] / jack_evs[N_blocks,j,t+1]
+            if bla > 0.0
+                jack_masses[N_blocks,j,t] = log(bla)
+            else
+                jack_masses[N_blocks,j,t] = NaN
+            end
+        end
+    end
+
+    jack_plateau_masses_1[N_blocks] = mean(jack_masses[N_blocks, 1, massplateau_range_1])
+    jack_plateau_masses_2[N_blocks] = mean(jack_masses[N_blocks, 2, massplateau_range_2])
+
+    mean_means = [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_means_mat = [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    mean_evs = Array{Float64}(undef, num_vals, T_max)
+    for t = 1:T_max
+        mean_evs[:,t] = reverse(eigvals(mean(corr_mats_array[t]) - mean_means_mat))
+    end
+    mass_means = Array{Float64}(undef, n_masses, T_max-1)
+    for t = 1:T_max-1
+        for j = 1:n_masses
+            bla = mean_evs[j,t]/mean_evs[j,t+1]
+            if bla > 0.0
+                mass_means[j,t] = log(bla)
+            else
+                mass_means[j,t] = NaN
+            end
+        end
+    end
+    plateaumass_means = [mean(mass_means[1,massplateau_range_1]), mean(mass_means[2,massplateau_range_2])]
+    
+    σ_evs = Array{Float64}(undef, num_vals, T_max)
+    for t = 1:T_max
+        for i = 1:num_vals
+            σ_evs[i,t] = sqrt((N_blocks-1) * mean((jack_evs[:,i,t] .- mean_evs[i,t]).^2 )) 
+        end
+    end
+    σ_m = Array{Float64}(undef, n_masses, T_max-1)
+    for t = 1:T_max-1
+        for j = 1:n_masses
+            σ_m[j,t] = sqrt((N_blocks-1) * mean((jack_masses[:,j,t] .- mass_means[j,t]).^2 ))
+        end
+    end
+    σ_m_plat = [sqrt((N_blocks-1) * mean((jack_plateau_masses_1 .- plateaumass_means[1]).^2 )) ]
+    push!(σ_m_plat, sqrt((N_blocks-1) * mean((jack_plateau_masses_2 .- plateaumass_means[2]).^2 )))
+    
+    return transpose(mass_means), transpose(σ_m), transpose(mean_evs), transpose(σ_evs), transpose(plateaumass_means), transpose(σ_m_plat)
+end
+
+
 
 #=
 function jack_conn_corr_mat_ev_mass_2pt(corr_mats_t1, corr_mats_t2, mean_vals, b_size, n_masses)
@@ -775,6 +879,117 @@ function jack_conn_corr_mat_GEV_mass_2pt_allofem(t0, corr_mats_array_extern, mea
         end
     end
     return transpose(mass_means), transpose(σ_m), transpose(mean_GEVs), transpose(σ_GEVs)
+end
+
+
+
+function jack_conn_corr_mat_GEV_mass_2pt_allofem_plateau(t0, corr_mats_array_extern, mean_vals, b_size, n_masses, massplateau_range_1, massplateau_range_2)
+    corr_mats_array = corr_mats_array_extern[t0:end]
+    N_blocks = Int(div(length(corr_mats_array[1]), b_size, RoundDown))
+    num_vals = size(corr_mats_array[1][1],1)
+    T_max = length(corr_mats_array)
+    jack_GEVs = Array{Float64}(undef, N_blocks, num_vals, T_max-1)
+    jack_masses = Array{Float64}(undef, N_blocks, n_masses, T_max-2) # n_masses instead of num_vals
+    jack_plateau_masses_1 = Array{Float64}(undef, N_blocks)
+    jack_plateau_masses_2 = Array{Float64}(undef, N_blocks)
+    blocked_means = Array{Float64}(undef, N_blocks, num_vals)
+    for op = 1:num_vals
+        blocked_means[:,op] = [mean(mean_vals[(i-1)*b_size+1:i*b_size, op]) for i = 1:N_blocks]
+    end
+    temp_means = blocked_means[2:end,:]
+    blocked_corrs = Vector{Vector{Matrix{Float64}}}(undef, T_max)
+    temp_corrs = Vector{Vector{Matrix{Float64}}}(undef, T_max)
+    for t = 1:T_max
+        blocked_corrs[t] = [mean(corr_mats_array[t][(i-1)*b_size+1:i*b_size]) for i = 1:N_blocks]
+        temp_corrs[t] = blocked_corrs[t][2:end]
+    end
+    for i = 1:N_blocks-1
+        temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+        temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+        temp_conn_corr_t0 = mean(temp_corrs[1]) - temp_means_mat
+        for t = 1:T_max-1
+            # jack_evs[i,:,t] = reverse(eigvals(mean(temp_corrs[t]) - temp_means_mat))
+            jack_GEVs[i,:,t] = reverse(eigvals(mean(temp_corrs[t+1]) - temp_means_mat, temp_conn_corr_t0))
+        end
+
+        for t = 1:T_max-2
+            for j = 1:n_masses
+                bla = jack_GEVs[i,j,t] / jack_GEVs[i,j,t+1]
+                if bla > 0.0
+                    jack_masses[i,j,t] = log(bla)
+                else
+                    jack_masses[i,j,t] = NaN
+                end
+            end
+        end
+
+        jack_plateau_masses_1[i] = mean(jack_masses[i, 1, massplateau_range_1])
+        jack_plateau_masses_2[i] = mean(jack_masses[i, 2, massplateau_range_2])
+
+        temp_means[i,:]  = blocked_means[i,:]
+        for t = 1:T_max
+            temp_corrs[t][i] = blocked_corrs[t][i]
+        end
+    end
+    temp_mean_means = [mean(temp_means[:,op]) for op = 1:num_vals]
+    temp_means_mat  = [temp_mean_means[op1] * temp_mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    temp_conn_corr_t0 = mean(temp_corrs[1]) - temp_means_mat
+    for t = 1:T_max-1
+        # jack_evs[N_blocks,:,t] = reverse(eigvals(mean(temp_corrs[t]) - temp_means_mat))
+        jack_GEVs[N_blocks,:,t] = reverse(eigvals(mean(temp_corrs[t+1]) - temp_means_mat, temp_conn_corr_t0))
+    end
+
+    for t = 1:T_max-2
+        for j = 1:n_masses
+            bla = jack_GEVs[N_blocks,j,t] / jack_GEVs[N_blocks,j,t+1]
+            if bla > 0.0
+                jack_masses[N_blocks,j,t] = log(bla)
+            else
+                jack_masses[N_blocks,j,t] = NaN
+            end
+        end
+    end
+    
+    jack_plateau_masses_1[N_blocks] = mean(jack_masses[N_blocks, 1, massplateau_range_1])
+    jack_plateau_masses_2[N_blocks] = mean(jack_masses[N_blocks, 2, massplateau_range_2])
+
+    mean_means = [mean(mean_vals[:,op]) for op = 1:num_vals]
+    mean_means_mat = [mean_means[op1]*mean_means[op2] for op1 = 1:num_vals, op2 = 1:num_vals]
+    mean_conn_corr_t0 = mean(corr_mats_array[1]) - mean_means_mat
+    mean_GEVs = Array{Float64}(undef, num_vals, T_max-1)
+    for t = 1:T_max-1
+        # mean_evs[:,t] = reverse(eigvals(mean(corr_mats_array[t]) - mean_means_mat))
+        mean_GEVs[:,t] = reverse(eigvals(mean(corr_mats_array[t+1]) - mean_means_mat, mean_conn_corr_t0))
+    end
+    mass_means = Array{Float64}(undef, n_masses, T_max-2)
+    for t = 1:T_max-2
+        for j = 1:n_masses
+            bla = mean_GEVs[j,t]/mean_GEVs[j,t+1]
+            if bla > 0.0
+                mass_means[j,t] = log(bla)
+            else
+                mass_means[j,t] = NaN
+            end
+        end
+    end
+    plateaumass_means = [mean(mass_means[1,massplateau_range_1]), mean(mass_means[2,massplateau_range_2])]
+    
+    σ_GEVs = Array{Float64}(undef, num_vals, T_max-1)
+    for t = 1:T_max-1
+        for i = 1:num_vals
+            σ_GEVs[i,t] = sqrt((N_blocks-1) * mean((jack_GEVs[:,i,t] .- mean_GEVs[i,t]).^2 ))
+        end
+    end
+    σ_m = Array{Float64}(undef, n_masses, T_max-2)
+    for t = 1:T_max-2
+        for j = 1:n_masses
+            σ_m[j,t] = sqrt((N_blocks-1) * mean((jack_masses[:,j,t] .- mass_means[j,t]).^2 ))
+        end
+    end
+    σ_m_plat = [sqrt((N_blocks-1) * mean((jack_plateau_masses_1 .- plateaumass_means[1]).^2 )) ]
+    push!(σ_m_plat, sqrt((N_blocks-1) * mean((jack_plateau_masses_2 .- plateaumass_means[2]).^2 )))
+    
+    return transpose(mass_means), transpose(σ_m), transpose(mean_GEVs), transpose(σ_GEVs), transpose(plateaumass_means), transpose(σ_m_plat)
 end
 
 #=
