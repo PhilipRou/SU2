@@ -496,18 +496,18 @@ N_smear   = Int(5e4)
 # N_smear   = Int(20e4)
 m_smear_inds = collect(2000:2000:N_smear)
 
-for meas = 1:1
+for meas = 5:5
 # meas = 17
     show_s       = true
     show_s_neg   = false
-    show_z       = false
+    show_z       = true
     show_q       = false
     show_m_opt   = false
     show_m_anal  = false
     show_m_both  = true
     correct_sqrt = true
 
-    z = 3
+    z = 0
     ### interesting configs:
     ### smear_0
     # meas  1   q -3   z -1/-2
@@ -566,17 +566,23 @@ for meas = 1:1
         image_s = plot(
             flow_times[start_ind_s:skip_s:end], 
             smeared_actions[start_ind_s:skip_s:end],
-            title = latexstring("\$(s(U)-s_\\mathrm{inst.}^{(q)})/\\beta\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
-            xlabel = latexstring("flow time \$\\tau\$"),
+            # title = latexstring("\$(s(U)-s_\\mathrm{inst.}^{(q)})/\\beta\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            xlabel = latexstring("flow time \$\\tau/a^2\$"),
             label = :false,
             yaxis = :log,
-            yticks = [10.0^pow for pow = -14:2:4]
+            yticks = [10.0^pow for pow = -14:2:4],
+            tickfontsize = 10,
+            labelfontsize = 15,
+            legendfontsize = 11,
+            lw = 2, 
+            color = cb_blue
         )
         if show_z
-            hline!([(insta_action(1,2,L,L,q,z)-action(insta_U2(L,L,q),1))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
+            hline!([(insta_action(1,2,L,L,q,z)-action(insta_U2(L,L,q),1))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"), lw = 2, color = cb_orange)
             # hline!([(insta_action(1,2,L,L,q,z))/L^2], label = latexstring("spec. conf. for \$(q,z) = ($q,$z)\$"))
         end
         display(image_s)
+        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\smeared_s_sim_count_$(sim_count)_meas_$meas.pdf")
     end
     
     if show_s_neg
@@ -654,21 +660,40 @@ for meas = 1:1
         image_m_both = scatter(
             flow_times_m[start_ind_m:end], 
             smeared_m_anal[start_ind_m:end],
-            title = latexstring("\$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
-            xlabel = latexstring("flow time \$\\tau\$"),
+            # title = latexstring("\$||U-\\mathrm{inst.}||\$ during smearing\n\$\\beta = $β, L = $L, \\rho = $ρ, q = $q,\\, \\mathrm{Nr. meas.} = $meas\$"),
+            xlabel = latexstring("flow time \$\\tau/a^2\$"),
             label = "analytical",
             yaxis = :log,
-            yticks = [10.0^pow for pow = -8:1:4]
+            yticks = [10.0^pow for pow = -8:1:4],
+            tickfontsize = 10,
+            labelfontsize = 15,
+            legendfontsize = 11,
+            markersize = 5,
+            color = cb_blue,
         )
         image_m_both = scatter!(
             flow_times_m[start_ind_m:end], 
             smeared_m_opt[start_ind_m:end],
             label = "numerical",
+            markersize = 5,
+            color = cb_orange,
         )
         display(image_m_both)
+        # savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\smeared_metrics_sim_count_$(sim_count)_meas_$meas.pdf")
     end
 end
 
 
 fig_path = string(base_path,"\\both_norms_measnr_11.pdf")
 # savefig(fig_path)
+
+
+
+# bla = insta_U2(32,32,-30);
+# actions = [action(bla,1)]
+# bla = [ran_U2(0.5) for _ = 1:2, _ = 1:32, _ = 1:32] .* bla;
+# for _=1:2000
+#     bla = stout(bla,0.1)
+#     push!(actions, action(bla,1))
+# end
+# plot(actions)

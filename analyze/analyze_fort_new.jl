@@ -1,3 +1,4 @@
+#=
 include("SU2_analyze_head.jl")
 include("SU2_jackknives.jl")
 
@@ -601,6 +602,7 @@ for beta in [12.0, 16.0, 20.0]
 
 
 end # beta
+=#
 
 
 
@@ -610,24 +612,28 @@ end # beta
 
 
 
-#=
+include("SU2_analyze_head.jl")
+include("SU2_jackknives.jl")
 
 betas = [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0, 20.0]
 
-plat_ranges_1     = [1:5, 1:4, 3:7, 2:5, 1:7]
+# plat_ranges_1     = [1:5, 1:4, 3:7, 2:5, 1:7, 3:6, 2:4, 2:4]
+plat_ranges_1     = [1:5, 1:4, 3:7, 2:5, 1:7, 4:8, 4:8, 3:6]
 plat_ranges_2     = [1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:1]
 
-plat_ranges_GEV_1 = [1:2, 1:2, 1:3, 1:4, 1:6]
-plat_ranges_GEV_2 = [1:1, 1:2, 1:2, 1:3, 1:3]
+# plat_ranges_GEV_1 = [1:2, 1:2, 1:3, 1:4, 1:6, 1:4, 2:8, 3:6]
+# plat_ranges_GEV_2 = [1:1, 1:2, 1:2, 1:3, 1:3, 1:2, 1:4, 2:10]
+plat_ranges_GEV_1 = [1:2, 1:2, 1:3, 1:4, 1:3, 1:4, 2:8, 3:5]
+plat_ranges_GEV_2 = [1:1, 1:2, 1:2, 1:3, 1:3, 1:2, 3:4, 5:12]
 
 
 
-for beta_ind = 1:8 
-    @assert 1==0 "SAVEFIGS!!!!"
+for beta_ind = 7:7
+    # @assert 1==0 "SAVEFIGS!!!!"
+    beta      = betas[beta_ind]
     println("\n\n\n")
     println("\t\t\t Started analysis at beta = $beta")
     println("\n\n\n")
-    beta      = betas[beta_ind]
     Nx=Ny=Nz  = round(Int, beta*4)
     beta      = string(beta)*"0"
     n_stout   = 7
@@ -699,120 +705,120 @@ for beta_ind = 1:8
 
 
 
+    # println("Start Jack of mass plateau of evs dr at beta = $beta")
+    # plat_range_1 = plat_ranges_1[beta_ind]
+    # plat_range_2 = plat_ranges_2[beta_ind]
+    # plot_range_m_ev_dr = minimum([plat_range_1[1], plat_range_2[1]]):maximum([plat_range_1[end],plat_range_2[end]])+1
+    # @time blg = jack_conn_corr_mat_ev_mass_2pt_allofem_plateau(corrmats_symm_8x8_downright, ops_smeared[:,9:16], maximum([bsize_corrmats,bsize_ops_smeared]), 3, plat_range_1, plat_range_2)
+    # m_evs_dr           = blg[1]
+    # m_evs_errs_dr      = blg[2]
+    # evs_dr             = blg[3]
+    # evs_errs_dr        = blg[4]
+    # m_evs_plat_dr      = blg[5]
+    # m_evs_plat_errs_dr = blg[6]
 
-    
-    plat_range_1 = plat_ranges_1[beta_ind]
-    plat_range_2 = plat_ranges_2[beta_ind]
-    plot_range_m_ev_dr = minimum([plat_range_1[1], plat_range_2[1]]):maximum([plat_range_1[end],plat_range_2[end]])+1
-    @time blg = jack_conn_corr_mat_ev_mass_2pt_allofem_plateau(corrmats_symm_8x8_downright, ops_smeared[:,9:16], maximum([bsize_corrmats,bsize_ops_smeared]), 3, plat_range_1, plat_range_2)
-    m_evs_dr           = blg[1]
-    m_evs_errs_dr      = blg[2]
-    evs_dr             = blg[3]
-    evs_errs_dr        = blg[4]
-    m_evs_plat_dr      = blg[5]
-    m_evs_plat_errs_dr = blg[6]
+    # let
+    #     image_conn_evs = plot(
+    #         title  = latexstring("EV's of conn. corr. 8² mats. (bottom right) \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
+    #         xlabel = latexstring("\$t\$"),
+    #         )
+    #     for i = 1:4 # size(evs,2)
+    #         image_conn_evs = scatter!(
+    #             Vector(0:Nz>>1) .+ (i-1)*0.05,
+    #             evs_dr[:,i],
+    #             yerror = evs_errs_dr[:,i],
+    #             label = latexstring("EV nr. \$$i\$"),
+    #             markerstrokecolor = :auto,
+    #             ylim = (1e-16, 10*maximum(evs_dr)),
+    #             yaxis = :log,
+    #             legend = :topright
+    #         )
+    #     end
+    #     display(image_conn_evs)
+    #     # fig_path = base_path * "_evs_dr_8x8.pdf"
+    #     # savefig(fig_path)
+    # end
+    # let
+    #     image_conn_evs_masses = plot(
+    #         title  = latexstring("2pt Masses of EV's of conn. corr. 8² mats. (bottom right) \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
+    #         xlabel = latexstring("\$t\$"),
+    #         )
+    #     for i = 1:2#size(m_evs_dr,2)
+    #         image_conn_evs_masses = scatter!(
+    #             (Vector(0:Nz>>1) .+ 0.5 .+ (i-1)*0.05)[plot_range_m_ev_dr],
+    #             m_evs_dr[plot_range_m_ev_dr,i],
+    #             yerror = m_evs_errs_dr[plot_range_m_ev_dr,i],
+    #             label = latexstring("EV-mass nr. \$$i\$"),
+    #             color = cb_colors[i],
+    #             markerstrokecolor = cb_colors[i],
+    #             # ylim = (1e-16, 1e-3),
+    #             # yaxis = :log,
+    #             legend = :bottomleft,
+    #             markershape = [:circ, :diamond][i],
+    #             # rightmargin = 5mm
+    #         )
+    #     end
+    #     plat_range_1_plot = vcat(Vector(plat_range_1), [last(plat_range_1)+1])
+    #     image_conn_evs_masses = plot!(
+    #         (Vector(0:Nz>>1) .+ 0.5)[plat_range_1_plot],
+    #         m_evs_plat_dr[1] .* ones(length(plat_range_1_plot)),
+    #         ribbon = m_evs_plat_errs_dr[1] .* ones(length(plat_range_1_plot)),
+    #         color = cb_colors[1],
+    #         lw = 2,
+    #         label = "plateau nr. 1",
+    #     )
+    #     # image_conn_evs_masses = plot!(
+    #     #     (Vector(0:Nz>>1) .+ 0.55)[plat_range_2],
+    #     #     m_evs_plat_dr[2] .* ones(length(plat_range_2)),
+    #     #     ribbon = m_evs_plat_errs_dr[2] .* ones(length(plat_range_2)),
+    #     #     color = cb_colors[2],
+    #     #     lw = 2,
+    #     #     label = "plateau nr. 2",
+    #     #     linestyle = :dash,
+    #     # )
+    #     display(image_conn_evs_masses)
+    #     fig_path = base_path * "_m_plateau_evs_dr_8x8.pdf"
+    #     savefig(fig_path)
+    # end
 
-    let
-        image_conn_evs = plot(
-            title  = latexstring("EV's of conn. corr. 8² mats. (bottom right) \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
-            xlabel = latexstring("\$t\$"),
-            )
-        for i = 1:4 # size(evs,2)
-            image_conn_evs = scatter!(
-                Vector(0:Nz>>1) .+ (i-1)*0.05,
-                evs_dr[:,i],
-                yerror = evs_errs_dr[:,i],
-                label = latexstring("EV nr. \$$i\$"),
-                markerstrokecolor = :auto,
-                ylim = (1e-16, 10*maximum(evs_dr)),
-                yaxis = :log,
-                legend = :topright
-            )
-        end
-        display(image_conn_evs)
-        # fig_path = base_path * "_evs_dr_8x8.pdf"
-        # savefig(fig_path)
-    end
-    let
-        image_conn_evs_masses = plot(
-            title  = latexstring("2pt Masses of EV's of conn. corr. 8² mats. (bottom right) \n \$\\beta = $beta, L = $Nz, n_\\mathrm{smear} \\in\$, $(smearlist[2:end])"),
-            xlabel = latexstring("\$t\$"),
-            )
-        for i = 1:2#size(m_evs_dr,2)
-            image_conn_evs_masses = scatter!(
-                (Vector(0:Nz>>1) .+ 0.5 .+ (i-1)*0.05)[plot_range_m_ev_dr],
-                m_evs_dr[plot_range_m_ev_dr,i],
-                yerror = m_evs_errs_dr[plot_range_m_ev_dr,i],
-                label = latexstring("EV-mass nr. \$$i\$"),
-                color = cb_colors[i],
-                markerstrokecolor = cb_colors[i],
-                # ylim = (1e-16, 1e-3),
-                # yaxis = :log,
-                legend = :bottomleft,
-                markershape = [:circ, :diamond][i],
-                # rightmargin = 5mm
-            )
-        end
-        plat_range_1_plot = vcat(Vector(plat_range_1), [last(plat_range_1)+1])
-        image_conn_evs_masses = plot!(
-            (Vector(0:Nz>>1) .+ 0.5)[plat_range_1_plot],
-            m_evs_plat_dr[1] .* ones(length(plat_range_1_plot)),
-            ribbon = m_evs_plat_errs_dr[1] .* ones(length(plat_range_1_plot)),
-            color = cb_colors[1],
-            lw = 2,
-            label = "plateau nr. 1",
-        )
-        # image_conn_evs_masses = plot!(
-        #     (Vector(0:Nz>>1) .+ 0.55)[plat_range_2],
-        #     m_evs_plat_dr[2] .* ones(length(plat_range_2)),
-        #     ribbon = m_evs_plat_errs_dr[2] .* ones(length(plat_range_2)),
-        #     color = cb_colors[2],
-        #     lw = 2,
-        #     label = "plateau nr. 2",
-        #     linestyle = :dash,
-        # )
-        display(image_conn_evs_masses)
-        fig_path = base_path * "_m_plateau_evs_dr_8x8.pdf"
-        savefig(fig_path)
-    end
-
-    let
-        evs_path = base_path * "_evs_8x8_dr.txt"
-        blu = open(evs_path, "w")
-        writedlm(blu, evs_dr)
-        close(blu)
-        evs_errs_path = base_path * "_evs_errs_8x8_dr.txt"
-        bli = open(evs_errs_path, "w")
-        writedlm(bli, evs_errs_dr)
-        close(bli)
-    end
-    let
-        m_evs_path = base_path * "_m_evs_8x8_dr.txt"
-        blu = open(m_evs_path, "w")
-        writedlm(blu, m_evs_dr)
-        close(blu)
-        m_evs_errs_path = base_path * "_m_evs_errs_8x8_dr.txt"
-        bli = open(m_evs_errs_path, "w")
-        writedlm(bli, m_evs_errs_dr)
-        close(bli)
-    end
-    let
-        m_plat_evs_path = base_path * "_m_evs_plat_8x8_dr.txt"
-        blu = open(m_plat_evs_path, "w")
-        writedlm(blu, m_evs_plat_dr)
-        close(blu)
-        m_plat_evs_errs_path = base_path * "_m_evs_plat_errs_8x8_dr.txt"
-        bli = open(m_plat_evs_errs_path, "w")
-        writedlm(bli, m_evs_plat_errs_dr)
-        close(bli)
-    end
-
+    # let
+    #     evs_path = base_path * "_evs_8x8_dr.txt"
+    #     blu = open(evs_path, "w")
+    #     writedlm(blu, evs_dr)
+    #     close(blu)
+    #     evs_errs_path = base_path * "_evs_errs_8x8_dr.txt"
+    #     bli = open(evs_errs_path, "w")
+    #     writedlm(bli, evs_errs_dr)
+    #     close(bli)
+    # end
+    # let
+    #     m_evs_path = base_path * "_m_evs_8x8_dr.txt"
+    #     blu = open(m_evs_path, "w")
+    #     writedlm(blu, m_evs_dr)
+    #     close(blu)
+    #     m_evs_errs_path = base_path * "_m_evs_errs_8x8_dr.txt"
+    #     bli = open(m_evs_errs_path, "w")
+    #     writedlm(bli, m_evs_errs_dr)
+    #     close(bli)
+    # end
+    # let
+    #     m_plat_evs_path = base_path * "_m_evs_plat_8x8_dr.txt"
+    #     blu = open(m_plat_evs_path, "w")
+    #     writedlm(blu, m_evs_plat_dr)
+    #     close(blu)
+    #     m_plat_evs_errs_path = base_path * "_m_evs_plat_errs_8x8_dr.txt"
+    #     bli = open(m_plat_evs_errs_path, "w")
+    #     writedlm(bli, m_evs_plat_errs_dr)
+    #     close(bli)
+    # end
 
 
 
 
 
 
+    println("Start Jack of mass plateau of GEVS dr at beta = $beta")
+    t0 = 1
     plat_range_1_GEV_dr = plat_ranges_GEV_1[beta_ind]
     plat_range_2_GEV_dr = plat_ranges_GEV_2[beta_ind]
     plot_range_m_GEV_dr = minimum([plat_range_1_GEV_dr[1], plat_range_2_GEV_dr[1]]):maximum([plat_range_1_GEV_dr[end],plat_range_2_GEV_dr[end]])+1
@@ -888,26 +894,26 @@ for beta_ind = 1:8
         savefig(fig_path)
     end
 
-    let
-        GEVs_path = base_path*"_GEVs_t0_$(t0)_8x8_dr.txt"
-        blu = open(GEVs_path, "w")
-        writedlm(blu, GEVs_dr)
-        close(blu)
-        GEVs_errs_path = base_path*"_GEVs_errs_t0_$(t0)_8x8_dr.txt"
-        bli = open(GEVs_errs_path, "w")
-        writedlm(bli, GEVs_errs_dr)
-        close(bli)
-    end
-    let
-        m_GEVs_path = base_path * "_m_GEVs_t0_$(t0)_8x8_dr.txt"
-        blu = open(m_GEVs_path, "w")
-        writedlm(blu, m_GEVs_dr)
-        close(blu)
-        m_GEVs_errs_path = base_path * "_m_GEVs_errs_t0_$(t0)_8x8_dr.txt"
-        bli = open(m_GEVs_errs_path, "w")
-        writedlm(bli, m_GEVs_errs_dr)
-        close(bli)
-    end
+    # let
+    #     GEVs_path = base_path*"_GEVs_t0_$(t0)_8x8_dr.txt"
+    #     blu = open(GEVs_path, "w")
+    #     writedlm(blu, GEVs_dr)
+    #     close(blu)
+    #     GEVs_errs_path = base_path*"_GEVs_errs_t0_$(t0)_8x8_dr.txt"
+    #     bli = open(GEVs_errs_path, "w")
+    #     writedlm(bli, GEVs_errs_dr)
+    #     close(bli)
+    # end
+    # let
+    #     m_GEVs_path = base_path * "_m_GEVs_t0_$(t0)_8x8_dr.txt"
+    #     blu = open(m_GEVs_path, "w")
+    #     writedlm(blu, m_GEVs_dr)
+    #     close(blu)
+    #     m_GEVs_errs_path = base_path * "_m_GEVs_errs_t0_$(t0)_8x8_dr.txt"
+    #     bli = open(m_GEVs_errs_path, "w")
+    #     writedlm(bli, m_GEVs_errs_dr)
+    #     close(bli)
+    # end
     let
         m_plat_GEVs_path = base_path * "_m_GEVs_plat_t0_$(t0)_8x8_dr.txt"
         blu = open(m_plat_GEVs_path, "w")
@@ -920,4 +926,3 @@ for beta_ind = 1:8
     end
 end # beta_ind
 
-=#

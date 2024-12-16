@@ -428,7 +428,7 @@ let
         markershape = :rtriangle,
         markersize = 8,
         color = cb_orange,
-        # markerstrokecolor = cb_orange
+        markerstrokecolor = cb_orange
     )
     image_susc = scatter!(
         1 ./ betas .- versatz,
@@ -438,7 +438,7 @@ let
         markershape = :ltriangle,
         markersize = 8,
         color = cb_green,
-        # markerstrokecolor = cb_green
+        markerstrokecolor = cb_green
     )
     image_susc = scatter!(
         1 ./ betas,
@@ -448,7 +448,7 @@ let
         markershape = :diamond,
         markersize = 6,
         color = cb_blue,
-        # markerstrokecolor = cb_blue
+        markerstrokecolor = cb_blue
     )
     image_susc = plot!(
         [1/betas_anal[1]],
@@ -460,3 +460,83 @@ end
 
 fig_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\insta_updates\\susc_insta_update_2_eo.pdf"
 # savefig(fig_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Δq = 3
+base_path = "C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\julia_projects\\U2_data_new\\acc_1"
+charges_fine_path = string(base_path,"\\charges_L_64_deltaq_$(Δq).txt")
+charges_medium_path = string(base_path,"\\charges_L_48_deltaq_$(Δq).txt")
+charges_coarse_path = string(base_path,"\\charges_L_32_deltaq_$(Δq).txt")
+charges_fine = readdlm(charges_fine_path)
+charges_medium = readdlm(charges_medium_path)
+charges_coarse = readdlm(charges_coarse_path)
+
+
+
+let
+    plot_range = 1:1000
+
+    image_charge_series = plot(
+        charges_coarse[plot_range], 
+        label = latexstring("\$L = 32,\\, \\beta = 5.0\$"),
+        # color = cb_grey,
+        # color = :salmon,
+        color = :skyblue1,
+        alpha = 0.8,
+        linewidth = 1.5,
+    )
+    image_charge_series = plot!(
+        charges_medium[plot_range],
+        label = latexstring("\$L = 48,\\, \\beta = 11.25\$"),
+        # color = cb_blue,
+        # color = :firebrick1,
+        # color = :dodgerblue2,
+        color = :royalblue1,
+        # alpha = 0.9,
+        linewidth = 1.5,
+    )
+    image_charge_series = plot!(
+        charges_fine[plot_range],
+        label = latexstring("\$L = 64,\\, \\beta = 20.0\$"),
+        # color = cb_orange,
+        # color = :firebrick,
+        # color = :navyblue,
+        color = :mediumblue,
+        # alpha = 0.9,
+        linewidth = 1.5,
+    )
+    image_charge_series = plot!(
+        grid = :false,
+        legend = :bottomright,
+        background_color_legend = RGBA(1.0,1.0,1.0,0.85),
+        yticks = -16:4:16,
+        ylabel = latexstring("Top. Charge \$\\, q\$"),
+        xlabel = "MC Time",
+        size = (700,200),
+        left_margin = 3mm,
+        bottom_margin = 3mm,
+    )
+end
+# savefig("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\Master_Thesis\\plots\\insta_updates\\freezing.pdf")
+
+
+
+
+
+
