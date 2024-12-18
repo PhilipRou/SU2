@@ -342,7 +342,7 @@ for L = 32:32:128
 # L = 32
     N_t = L #+ i*16
     N_x = L #+ i*16
-    β   = 2.0 #N_t*N_x/128
+    β   = 8.0 #N_t*N_x/128
     hot = true
     ϵ   = 0.2 
     n_stout = 0
@@ -386,7 +386,7 @@ for L = 32:32:128
     x_lab = string.(loops)
 
     image = scatter(x_lab[int_start:1:int_end], jack_means[int_start:int_end], yerror = jack_mean_errs[int_start:int_end], label = "Single hit", color = cb_blue, markerstrokecolor = cb_blue, markersize = 5)
-    image = scatter!(x_lab[int_start:1:int_end], jack_means_mike[int_start:int_end], yerror = jack_mean_errs_mike[int_start:int_end], label = "One-link integral", color = cb_orange, markerstrokecolor = cb_orange, markersize = 5)
+    image = scatter!(x_lab[5:1:int_end], jack_means_mike[5:int_end], yerror = jack_mean_errs_mike[5:int_end], label = "One-link integral", color = cb_orange, markerstrokecolor = cb_orange, markersize = 5)
     image = plot!(
         xlabel = latexstring("\$[R,T]\$"),
         ylabel = latexstring("\$\\langle W(R,T) \\rangle\$"),
@@ -405,10 +405,10 @@ for L = 32:32:128
     )
     image = lens!(
         [13,16],
-        # [0.0,0.006],      # β = 8.0
+        [0.0,0.006],      # β = 8.0
         # [-0.0008, 0.0014],    # β = 6.0
         # [-0.001, 0.0012],    # β = 4.0
-        [-0.001, 0.001],    # β = 2.0
+        # [-0.001, 0.001],    # β = 2.0
         inset = (1, bbox(0.6,0.3,0.3,0.4)),
     )
     # image = plot!(title = "Various ⟨W(R,T)⟩ 

@@ -246,20 +246,17 @@ end
 
 
 
+
+
+
+
+include("SU2_analyze_head.jl")
+include("SU2_jackknives.jl")
 using LsqFit
 using QuadGK
 
-function analytic_plaq_U2(β)
-    numer(α) = besseli(0,β*cos(α)) + besseli(2,β*cos(α))
-    denom(α) = 2*besseli(1,β*cos(α))/cos(α)
-    return quadgk(numer,0,π)[1]/quadgk(denom,0,π)[1] - 1/β
-end
-
-function analytic_string_U2(β)
-    return -log(analytic_plaq_U2(β))
-end
-
 betas = [4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0, 20.0]
+strings = [NaN, 0.3129, 0.2562, NaN, NaN, 0.1179, NaN, NaN]
 
 all_ev_plat_ms = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\fortran_projects\\SU2_3D_data\\prel_16x16_data\\all_ev_plat_ms.txt")
 all_ev_plat_m_errs = readdlm("C:\\Users\\proue\\OneDrive\\Desktop\\Physik_Uni\\fortran_projects\\SU2_3D_data\\prel_16x16_data\\all_ev_plat_m_errs.txt")
@@ -274,10 +271,12 @@ all_ev_plat_m_errs = all_ev_plat_m_errs .* betas
 all_GEV_plat_ms = all_GEV_plat_ms .* betas
 all_GEV_plat_m_errs = all_GEV_plat_m_errs .* betas
 
-# all_GEV_plat_ms[1,1]     = NaN
-# all_GEV_plat_m_errs[1,1] = NaN
-# all_GEV_plat_ms[end,end]     = NaN
-# all_GEV_plat_m_errs[end,end] = NaN
+# all_ev_plat_ms = all_ev_plat_ms ./ strings
+# all_ev_plat_m_errs = all_ev_plat_m_errs ./ strings
+# all_GEV_plat_ms = all_GEV_plat_ms ./ strings
+# all_GEV_plat_m_errs = all_GEV_plat_m_errs ./ strings
+
+# scatter(betas_inv, all_GEV_plat_ms[:,2], yerror = all_GEV_plat_m_errs[:,2])
 
 model_const(x,p)     = p[1] .+ 0.0 .* x
 model_lin(x,p)       = p[1] .+ p[2] .* x
@@ -461,7 +460,7 @@ chisqdof_const_1 = round(sum(GEV_fit_const_1.resid.^2)/dof(GEV_fit_const_1), sig
 
 
 
-mask_2 = 2:6
+mask_2 = 2:7
 not_mask_2 = Vector(1:8)[(x-> !(x in (Vector(mask_2)))).(Vector(1:8))]
 
 wt_GEV_2 = all_GEV_plat_m_errs[mask_2,2].^(-2)
@@ -524,17 +523,6 @@ let
         markersize = 5,
         # ylim = (0.0,4.0)
     )
-    not_mask_2 = [7 ]
-    image_GEV_plat_ms = scatter!(
-        label = :false,
-        betas_inv[not_mask_2],
-        all_GEV_plat_ms[not_mask_2,2],
-        yerror = all_GEV_plat_m_errs[not_mask_2,2],
-        markershape = :diamond,
-        color = :white,
-        markersize = 5,
-        # alpha = 0.7
-    )
     image_GEV_plat_ms = plot!(
         betas_inv_plot,
         fit_values_plot_lin_2,
@@ -544,8 +532,21 @@ let
         label = "GEVs nr. 2: lin. fit",
         linestyle = :dash
     )
+    not_mask_2 = [7]
+    image_GEV_plat_ms = scatter!(
+        label = :false,
+        betas_inv[not_mask_2],
+        all_GEV_plat_ms[not_mask_2,2],
+        yerror = all_GEV_plat_m_errs[not_mask_2,2],
+        markershape = :diamond,
+        # color = :white,
+        color = cb_orange,
+        markerstrokecolor = cb_orange,
+        markersize = 5,
+        # alpha = 0.7
+    )
     display(image_GEV_plat_ms)
-    println("GEV nr. 1: m_eff = $cont_value_lin_1 + $cont_value_lin_err_upper_1 - $cont_value_lin_err_lower_1")
+    println("GEV nr. 1: m_eff = $cont_value_const_1 + $cont_value_const_err_upper_1 - $cont_value_const_err_lower_1")
     println("GEV nr. 2: m_eff = $cont_value_lin_2 + $cont_value_lin_err_upper_2 - $cont_value_lin_err_lower_2")
 end
 
